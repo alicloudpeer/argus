@@ -29,6 +29,17 @@ extension AppStateCoordinator {
             EconomicCalendarService.shared.checkAndNotifyMissingExpectations()
         }
 
+        // BorsaPy warm-up'ı erken başlat — Render.com free tier 40-60sn cold-start
+        // verebiliyor. Eskiden Faz 3'te (5sn delay sonrası) çağrılıyordu;
+        // kullanıcı bu pencerede BIST sembolüne tıklarsa ardı ardına timeout
+        // alıp circuit breaker açılıyor → AutoPilot BIST alımı 5dk bloklanıyor.
+        // Faz 1'de paralel başlatınca AutoPilot loop'u (Faz 3 + 5sn + 25sn defer)
+        // çalışmaya başladığında backend uyanmış oluyor.
+        Task.detached(priority: .userInitiated) {
+            ArgusLogger.phase(.veri, "BorsaPy: Backend ısındırılıyor (erken)...")
+            await BorsaPyProvider.shared.warmUp()
+        }
+
         ArgusLogger.success(.bootstrap, "Faz 1: UI hazır")
 
         // PHASE 2: GECİKTİRİLMİŞ — Ağır işlemler background'da
@@ -61,14 +72,9 @@ extension AppStateCoordinator {
         }
 
         // PHASE 3: LAZY — Scout/AutoPilot loop'ları daha geç
+        // (BorsaPy warm-up Faz 1'e taşındı)
         Task.detached(priority: .utility) {
             try? await Task.sleep(nanoseconds: 5_000_000_000)
-
-            // BorsaPy Warm-Up: Render.com cold start önleme
-            Task.detached(priority: .background) {
-                ArgusLogger.phase(.veri, "BorsaPy: Backend ısındırılıyor...")
-                await BorsaPyProvider.shared.warmUp()
-            }
 
             await MainActor.run {
                 ArgusLogger.phase(.autopilot, "Faz 3: Scout döngüsü başlatılıyor...")
