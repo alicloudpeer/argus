@@ -291,6 +291,15 @@ actor BorsaPyProvider {
     private func recordSuccess() {
         circuitQueue.sync {
             if consecutiveTimeouts > 0 { consecutiveTimeouts = 0 }
+            // Bir önceki timeout fırtınası nedeniyle circuit açıldıysa,
+            // backend artık yanıt veriyorsa circuit'i hemen kapat. Aksi halde
+            // 5dk pasif bekleme BIST trade'lerini gereksiz yere blokluyordu
+            // (TradeBrainExecutor'daki dataQualityPenalty=0.70 BIST güvenini
+            // %30 düşürüp eşik altına çekiyor → AutoPilot BIST alımı yapamıyor).
+            if circuitOpenUntil != nil {
+                circuitOpenUntil = nil
+                print("✅ BorsaPyProvider: Backend yanıt verdi, circuit erken kapatıldı")
+            }
         }
     }
     
