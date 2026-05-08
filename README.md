@@ -142,26 +142,30 @@ Her abone **kendi API anahtarlarını** alır. Geliştirici kendi anahtarların�
 
 | Servis | Anahtar | Zorunlu mu? | Link | Ücretsiz limit |
 |---|---|---|---|---|
-| Google Gemini | `GEMINI_KEY` | **Evet** | https://aistudio.google.com/app/apikey | 60 req/dk (free tier) |
+| **Cerebras** (Qwen 3) | `CEREBRAS_KEY` | **Tavsiye edilen** | https://cloud.cerebras.ai/ | **1M token/gün** ücretsiz, ~1400 tok/sn, kart istemez |
 | FMP | `FMP_KEY` | **Evet** | https://site.financialmodelingprep.com/developer/docs | 250 req/gün |
 | Twelve Data | `TWELVE_DATA_KEY` | **Evet** | https://twelvedata.com/ | 800 req/gün |
-| Gemini yedek (opsiyonel) | `GEMINI_KEY_BACKUP` | Hayır | (farklı Google hesabı, aynı aistudio URL'si) | 429 quota fallback için |
+| Google Gemini | `GEMINI_KEY` | Hayır (Cerebras yedeği) | https://aistudio.google.com/app/apikey | 60 req/dk (free tier) |
+| Gemini yedek (opsiyonel) | `GEMINI_KEY_BACKUP` | Hayır | (farklı Google hesabı, aynı aistudio URL'si) | Gemini için 429 quota fallback |
 | EODHD | `EODHD_KEY` | Hayır | https://eodhd.com/financial-apis/ | Geniş tarihçe + temettü |
 | Tiingo | `TIINGO_KEY` | Hayır | https://www.tiingo.com/account/api/token | Alternatif hisse verisi |
 | Alpha Vantage | `ALPHA_VANTAGE_KEY` | Hayır | https://www.alphavantage.co/support/#api-key | Makro indikatörler |
 | FRED | `FRED_KEY` | Hayır | https://fred.stlouisfed.org/docs/api/api_key.html | US makro (Aether) |
-| Groq | `GROQ_KEY` | Hayır | https://console.groq.com/keys | Hızlı LLM fallback |
-| DeepSeek | `DEEPSEEK_KEY` | Hayır | https://platform.deepseek.com/api_keys | Ucuz LLM fallback |
+| Groq | `GROQ_KEY` | Hayır | https://console.groq.com/keys | LLM en alt fallback |
+| DeepSeek | `DEEPSEEK_KEY` | Hayır | https://platform.deepseek.com/api_keys | Ucuz LLM alternatifi |
 | GLM (Zhipu) | `GLM_KEY` | Hayır | https://open.bigmodel.cn/ | Çinli LLM alternatifi |
 | Pinecone | `PINECONE_KEY` + `PINECONE_BASE_URL` | Hayır | Adım 5'e bak | RAG vektör arama |
 | BorsaPy | `BORSAPY_URL` + `BORSAPY_KEY` | BIST için evet | Adım 4'e bak | Kendi deploy |
 | Doviz.com | `DOVIZCOM_KEY` | Hayır | https://www.doviz.com/ | TR döviz yedek |
 
+> **LLM tercihi:** Argus, AI çağrılarında `Cerebras → Gemini → GLM → Groq` zincirini takip eder. Cerebras (Qwen 3 235B) hem en hızlı (1400 tok/sn) hem en cömert ücretsiz (1M token/gün) seçenek; tek başına `CEREBRAS_KEY` girersen Hermes haber analizi, Argus Konseyi tartışması ve tüm AI özellikleri çalışır. Diğer LLM key'leri yedek/fallback amaçlı, opsiyonel.
+
 **Agent her anahtarı aldıkça `Secrets.xcconfig`'e yazar.** Biçim:
 ```
-GEMINI_KEY = AIzaSyABC...
+CEREBRAS_KEY = csk-xxxxxxxxxxxxxxx
 FMP_KEY = 1234567890abcdef
 TWELVE_DATA_KEY = xxxxx
+GEMINI_KEY = AIzaSyABC...   # opsiyonel, Cerebras yedeği
 ```
 Tırnak işareti kullanma, `=` etrafında boşluk yeter.
 
@@ -259,10 +263,11 @@ Argus "eksik çalışmasın" ilkesine göre tasarlandı. Opsiyonel bir anahtar y
 
 | Eksik olan | Etki | Fallback davranışı |
 |---|---|---|
-| `GEMINI_KEY` | ❌ Kritik — Hermes LLM + chart pattern devre dışı | Uygulama çalışır, ama Hermes rapor üretemez; Konsey LLM tartışması yapılmaz |
+| `CEREBRAS_KEY` | ⚠️ Birincil LLM düşer | Gemini → GLM → Groq fallback zinciri devreye girer; Hermes/Konsey çalışmaya devam eder ama daha yavaş |
+| Tüm LLM key'leri boş (`CEREBRAS_KEY` + `GEMINI_KEY` + `GROQ_KEY` + `GLM_KEY`) | ❌ Kritik — Hermes LLM + chart pattern devre dışı | Uygulama çalışır, ama Hermes rapor üretemez; Konsey LLM tartışması yapılmaz |
 | `FMP_KEY` | ❌ Kritik — temel veri yok | Diğer providerlarda (Twelve Data, EODHD) varsa onlara düşer. Hepsi boşsa quote veri yok |
 | `TWELVE_DATA_KEY` | ⚠️ Orta — makro endeksler | FMP / Yahoo fallback. Quota aşımında alternatif kritik |
-| `GEMINI_KEY_BACKUP` | ⚠️ Düşük — quota dayanıklılığı | Birincil key 429 alınca 1. hesap yetmez; günlük 200 req sonrası Hermes susar |
+| `GEMINI_KEY_BACKUP` | ℹ️ Düşük | Sadece Gemini kullanıcıları için; Cerebras varsa zaten önceliklenir |
 | `BORSAPY_URL` boş | 🔄 BIST kullanıcıları için kritik | BIST sembolleri Yahoo fallback'e düşer (`.IS` suffix ile, sınırlı veri) |
 | `BORSAPY_KEY` boş + sunucu `BORSAPY_TOKEN` set | ❌ 401 Unauthorized | Tüm BorsaPy istekleri reddedilir; BIST Yahoo'ya düşer |
 | `PINECONE_KEY` | ⚠️ RAG devre dışı | Hermes haber + Konsey geçmiş karar zenginleştirmesi yok. `AlkindusRAGEngine.isEnabled = false`, sync retry queue sessiz skip eder |
@@ -271,7 +276,7 @@ Argus "eksik çalışmasın" ilkesine göre tasarlandı. Opsiyonel bir anahtar y
 | `TIINGO_KEY` | ℹ️ Düşük | FMP/Twelve Data fallback |
 | `ALPHA_VANTAGE_KEY` | ℹ️ Düşük | Aether'de bazı göstergeler boş döner, modül ağırlığı düşer |
 | `FRED_KEY` | ℹ️ Düşük | US makro göstergeleri pasif, Aether Türk-ağırlıklı kararlar verir |
-| `GROQ_KEY` / `DEEPSEEK_KEY` / `GLM_KEY` | ℹ️ Düşük — LLM redundancy | Gemini tek başına taşır. Gemini out ise Hermes susar |
+| `GEMINI_KEY` / `GROQ_KEY` / `DEEPSEEK_KEY` / `GLM_KEY` | ℹ️ Düşük — LLM redundancy | Cerebras tek başına taşır. Hepsi out ise Hermes susar |
 | `DOVIZCOM_KEY` | ℹ️ Düşük | TCMB EVDS + Yahoo FX fallback |
 
 **Agent kurulum sonunda özet ver:**
@@ -303,7 +308,7 @@ Argus "eksik çalışmasın" ilkesine göre tasarlandı. Opsiyonel bir anahtar y
             │
             ├── Global piyasa → FMP / Twelve Data / EODHD
             ├── BIST → BorsaPy microservice (Python/FastAPI, subscriber-hosted)
-            ├── AI → Gemini / Groq / GLM / DeepSeek
+            ├── AI → Cerebras (Qwen) / Gemini / GLM / Groq
             ├── Makro → FRED / TCMB EVDS
             └── RAG → Pinecone (subscriber-hosted, opsiyonel)
 ```
@@ -321,7 +326,8 @@ Detaylı modül dokümanları: `argus/Docs/Argus_Anatomy_*.md`
 | Simülatörde uygulama açılır ama Piyasa boş | API anahtarı eksik/yanlış | Ayarlar → API Key Merkezi → Test; log'larda "KeychainManager" satırına bak |
 | BIST ekranları "Veri yok" | BorsaPy çalışmıyor veya URL yanlış | `curl $BORSAPY_URL/health` ile test; Secrets.xcconfig'teki `BORSAPY_URL` doğru mu |
 | BorsaPy `401 Unauthorized` | Sunucuda `BORSAPY_TOKEN` var, iOS'ta `BORSAPY_KEY` eşleşmiyor | İki değeri birebir eşleştir (trim, büyük/küçük harf) |
-| Gemini 429 "quota exceeded" | Ücretsiz 60 req/dk tükendi | `GEMINI_KEY_BACKUP` ekle (farklı Google hesabı); pool round-robin devreye girer |
+| Cerebras 429 "rate limit" | 30 req/dk veya 1M tok/gün doldu | Saat başında pencere yenilenir; acilse Gemini fallback otomatik devreye girer |
+| Gemini 429 "quota exceeded" | Ücretsiz 60 req/dk tükendi | `GEMINI_KEY_BACKUP` ekle (farklı Google hesabı); ya da `CEREBRAS_KEY` ekleyip ana LLM'i değiştir |
 | Pinecone `.notConfigured` log | `PINECONE_BASE_URL` eksik veya parse edilemiyor | URL formatı: `https://<index>-<project>.svc.<region>.pinecone.io` (path olmadan) |
 | Pinecone upsert `400 dimension mismatch` | Index dimension 768 değil | Index'i sil, `dimension=768, metric=cosine` ile yeniden yarat |
 | Kayar bant boş | İlk core fetch gecikti | 60 sn bekle; log'da "SmartTicker" satırı check |
