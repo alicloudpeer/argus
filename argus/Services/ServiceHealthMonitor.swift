@@ -14,6 +14,7 @@ enum APIProvider: String, CaseIterable, Identifiable, Codable {
     case pinecone = "Pinecone"
     case massive = "Massive" // New Options Provider
     case groq = "Groq (Llama)"
+    case cerebras = "Cerebras (Qwen)"
     case deepSeek = "DeepSeek"
     case finnhub = "Finnhub"
 

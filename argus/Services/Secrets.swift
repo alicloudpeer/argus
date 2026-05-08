@@ -10,6 +10,7 @@ enum Secrets {
     static var glmKey: String { value(for: "GLM_KEY") }
     static var geminiKey: String { value(for: "GEMINI_KEY") }
     static var deepSeekKey: String { value(for: "DEEPSEEK_KEY") }
+    static var cerebrasKey: String { value(for: "CEREBRAS_KEY") }
 
     /// Gemini fallback key — ikinci üyelik. Birincil key 429 (quota) alırsa
     /// bu key devreye giriyor. İki hesap arasında round-robin için kullanılır.

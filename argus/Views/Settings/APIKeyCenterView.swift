@@ -173,6 +173,15 @@ struct APIKeyCenterView: View {
                 testMode: .unsupported
             ),
             KeyEntry(
+                id: "cerebras",
+                title: "Cerebras",
+                subtitle: "Qwen 3 — 1M token/gun ucretsiz",
+                placeholder: "Cerebras API Key (csk-...)",
+                category: .intelligence,
+                source: .provider(.cerebras),
+                testMode: .unsupported
+            ),
+            KeyEntry(
                 id: "gemini",
                 title: "Gemini",
                 subtitle: "Google model ailesi",
@@ -252,34 +261,34 @@ struct APIKeyCenterView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
-            VStack(spacing: 16) {
+            VStack(spacing: DesignTokens.Spacing.lg) {
                 summaryCard
                 searchAndFilterArea
 
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: DesignTokens.Spacing.lg) {
                         categoryChips
 
                         ForEach(visibleCategories) { category in
                             if let categoryEntries = groupedEntries[category] {
                                 TerminalSection(title: category.rawValue.uppercased()) {
-                                    VStack(spacing: 12) {
+                                    VStack(spacing: DesignTokens.Spacing.md) {
                                         ForEach(categoryEntries) { entry in
                                             keyRow(for: entry)
                                         }
                                     }
-                                    .padding(.vertical, 6)
+                                    .padding(.vertical, DesignTokens.Spacing.s6)
                                 }
                             }
                         }
                     }
-                    .padding(.bottom, 24)
+                    .padding(.bottom, DesignTokens.Spacing.xl)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
+            .padding(.horizontal, DesignTokens.Spacing.lg)
+            .padding(.top, DesignTokens.Spacing.lg)
         }
         .onAppear(perform: loadValuesFromStorage)
         .onReceive(NotificationCenter.default.publisher(for: .argusKeyStoreDidUpdate)) { _ in
@@ -305,18 +314,18 @@ struct APIKeyCenterView: View {
                 .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
                 .foregroundColor(DesignTokens.Colors.textTertiary)
         }
-        .padding(12)
+        .padding(DesignTokens.Spacing.md)
         .background(DesignTokens.Colors.Overlay.l06)
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(DesignTokens.Colors.Overlay.l08, lineWidth: 1)
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.r10)
+                .stroke(DesignTokens.Colors.Overlay.l08, lineWidth: DesignTokens.BorderWidth.regular)
         )
-        .cornerRadius(10)
+        .cornerRadius(DesignTokens.Radius.r10)
     }
 
     private var searchAndFilterArea: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 8) {
+        VStack(spacing: DesignTokens.Spacing.s10) {
+            HStack(spacing: DesignTokens.Spacing.sm) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(DesignTokens.Colors.textTertiary)
                 TextField("Saglayici ara", text: $searchText)
@@ -325,9 +334,9 @@ struct APIKeyCenterView: View {
                     .font(DesignTokens.Fonts.custom(size: 13, design: .monospaced))
                     .foregroundColor(DesignTokens.Colors.textPrimary)
             }
-            .padding(10)
+            .padding(DesignTokens.Spacing.s10)
             .background(DesignTokens.Colors.Overlay.l06)
-            .cornerRadius(8)
+            .cornerRadius(DesignTokens.Radius.sm)
 
             Picker("Filtre", selection: $filter) {
                 ForEach(KeyFilter.allCases) { filter in
@@ -340,7 +349,7 @@ struct APIKeyCenterView: View {
 
     private var categoryChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: DesignTokens.Spacing.sm) {
                 categoryChip(title: "Tum Kategoriler", isSelected: categoryFilter == nil) {
                     categoryFilter = nil
                 }
@@ -351,7 +360,7 @@ struct APIKeyCenterView: View {
                     }
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, DesignTokens.Spacing.xs)
         }
     }
 
@@ -360,10 +369,10 @@ struct APIKeyCenterView: View {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold, design: .monospaced))
                 .foregroundColor(isSelected ? .black : .gray)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
+                .padding(.horizontal, DesignTokens.Spacing.s10)
+                .padding(.vertical, DesignTokens.Spacing.s6)
                 .background(isSelected ? Color.cyan : DesignTokens.Colors.Overlay.l08)
-                .cornerRadius(8)
+                .cornerRadius(DesignTokens.Radius.sm)
         }
     }
 
@@ -386,12 +395,12 @@ struct APIKeyCenterView: View {
                     .font(DesignTokens.Fonts.custom(size: 9, weight: .bold, design: .monospaced))
                     .foregroundColor(configured ? .green : .red)
                     .padding(.horizontal, 7)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, DesignTokens.Spacing.xs)
                     .background((configured ? Color.green : Color.red).opacity(0.15))
-                    .cornerRadius(6)
+                    .cornerRadius(DesignTokens.Radius.r6)
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: DesignTokens.Spacing.sm) {
                 Group {
                     if revealed.contains(entry.id) {
                         TextField(
@@ -422,12 +431,12 @@ struct APIKeyCenterView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
+            .padding(.horizontal, DesignTokens.Spacing.s10)
+            .padding(.vertical, DesignTokens.Spacing.sm)
             .background(DesignTokens.Colors.Overlay.l05)
-            .cornerRadius(8)
+            .cornerRadius(DesignTokens.Radius.sm)
 
-            HStack(spacing: 8) {
+            HStack(spacing: DesignTokens.Spacing.sm) {
                 Button(action: { save(entry) }) {
                     Label("Kaydet", systemImage: "tray.and.arrow.down.fill")
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
@@ -462,7 +471,7 @@ struct APIKeyCenterView: View {
                 Text(testState.message)
                     .font(DesignTokens.Fonts.custom(size: 10, design: .monospaced))
                     .foregroundColor(testState.success ? .green : .orange)
-                    .padding(.top, 2)
+                    .padding(.top, DesignTokens.Spacing.xxs)
             }
         }
     }

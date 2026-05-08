@@ -50,7 +50,17 @@ final class GroqClient: Sendable {
     /// Generates a structured JSON object from a prompt
     /// Priority: Gemini 2.5 Flash -> GLM -> Groq
     func generateJSON<T: Decodable>(messages: [ChatMessage], maxTokens: Int = 1024) async throws -> T {
-        // 1. Try Gemini 2.5 Flash First (best quality + native JSON mode)
+        // 0. Try Cerebras first (Qwen 3 235B — 1M token/gun, ~1400 tok/sn)
+        if CerebrasClient.shared.hasKey {
+            do {
+                print("🤖 Trying Cerebras (Qwen 3 235B) for JSON...")
+                return try await CerebrasClient.shared.generateJSON(messages: messages, maxTokens: maxTokens)
+            } catch {
+                print("⚠️ Cerebras JSON Failed (\(error)). Trying Gemini...")
+            }
+        }
+
+        // 1. Try Gemini 2.5 Flash (best quality + native JSON mode)
         if !geminiKey.isEmpty {
             do {
                 print("🤖 Trying Gemini 2.5 Flash for JSON...")
@@ -321,9 +331,19 @@ final class GroqClient: Sendable {
     }
     
     /// Sends a standard chat prompt and returns string
-    /// Priority: Gemini 2.5 Flash -> GLM -> Groq
+    /// Priority: Cerebras (Qwen) -> Gemini 2.5 Flash -> GLM -> Groq
     func chat(messages: [ChatMessage], maxTokens: Int = 1024) async throws -> String {
-        // 1. Try Gemini 2.5 Flash First (best quality for analysis)
+        // 0. Try Cerebras first (Qwen 3 235B — 1M token/gun, ucretsiz)
+        if CerebrasClient.shared.hasKey {
+            do {
+                print("🤖 Trying Cerebras (Qwen 3 235B)...")
+                return try await CerebrasClient.shared.chat(messages: messages, maxTokens: maxTokens)
+            } catch {
+                print("⚠️ Cerebras Chat Failed (\(error)). Trying Gemini...")
+            }
+        }
+
+        // 1. Try Gemini 2.5 Flash (best quality for analysis)
         if !geminiKey.isEmpty {
             do {
                 print("🤖 Trying Gemini 2.5 Flash...")

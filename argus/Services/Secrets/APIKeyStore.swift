@@ -31,6 +31,7 @@ final class APIKeyStore: ObservableObject, @unchecked Sendable {
     var geminiApiKey: String { resolvedKey(for: .gemini, fallback: Secrets.geminiKey) }
     var glmApiKey: String { resolvedKey(for: .glm, fallback: Secrets.glmKey) }
     var groqApiKey: String { resolvedKey(for: .groq, fallback: Secrets.groqKey) }
+    var cerebrasApiKey: String { resolvedKey(for: .cerebras, fallback: Secrets.cerebrasKey) }
     var deepSeekApiKey: String { resolvedKey(for: .deepSeek, fallback: Secrets.deepSeekKey) }
     var fredApiKey: String { resolvedKey(for: .fred, fallback: Secrets.fredKey) }
 
@@ -140,6 +141,8 @@ final class APIKeyStore: ObservableObject, @unchecked Sendable {
             return Secrets.glmKey
         case .groq:
             return Secrets.groqKey
+        case .cerebras:
+            return Secrets.cerebrasKey
         case .fmp:
             return Secrets.fmpKey
         case .twelveData:
