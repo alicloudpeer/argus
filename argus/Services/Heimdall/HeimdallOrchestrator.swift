@@ -154,9 +154,8 @@ final class HeimdallOrchestrator {
             ]
         case .crypto:
             return [
-                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
                 ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) },
-                ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) }
+                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) }
             ]
         case .usEquity:
             // 2026-05-08: Stooq birincil — keyless CSV, tek HTTP'de yüzlerce
@@ -465,11 +464,11 @@ final class HeimdallOrchestrator {
                 ChainStep(provider: "binance") { [binance] in
                     try await binance.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
                 },
-                ChainStep(provider: "yahoo") { [yahoo] in
-                    try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
-                },
                 ChainStep(provider: "finnhub") { [finnhub] in
                     try await finnhub.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+                },
+                ChainStep(provider: "yahoo") { [yahoo] in
+                    try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
                 }
             ]
         case .usEquity, .index, .forex, .commodity:

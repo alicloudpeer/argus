@@ -131,6 +131,15 @@ struct argusApp: App {
                                 // One-time startup logic
                                 coordinator.bootstrap()
 
+                                // BorsaPy is hosted on Render's free tier and
+                                // sleeps after ~15 minutes idle. Pinging it as
+                                // soon as the app foregrounds lets the cold
+                                // start happen in parallel with bootstrap so
+                                // the first BIST quote does not eat 30-60s.
+                                Task.detached(priority: .background) {
+                                    await BorsaPyProvider.shared.warmUp()
+                                }
+
                                 // 🧠 Chiron: Start background learning analysis
                                 Task.detached(priority: .background) {
                                     try? await Task.sleep(nanoseconds: 10_000_000_000)

@@ -142,7 +142,9 @@ enum DesignTokens {
     enum Spacing {
         static let xxs: CGFloat = 2
         static let xs:  CGFloat = 4
+        static let s6:  CGFloat = 6
         static let sm:  CGFloat = 8
+        static let s10: CGFloat = 10
         static let md:  CGFloat = 12
         static let lg:  CGFloat = 16
         static let xl:  CGFloat = 24
@@ -160,7 +162,9 @@ enum DesignTokens {
 
     enum Radius {
         static let xs:      CGFloat = 4
+        static let r6:      CGFloat = 6
         static let sm:      CGFloat = 8
+        static let r10:     CGFloat = 10
         static let md:      CGFloat = 12
         static let lg:      CGFloat = 16
         static let xl:      CGFloat = 20
@@ -170,6 +174,14 @@ enum DesignTokens {
         static let small    = sm
         static let medium   = md
         static let large    = lg
+    }
+
+    // MARK: - BorderWidth
+
+    enum BorderWidth {
+        static let hairline: CGFloat = 0.5
+        static let regular:  CGFloat = 1
+        static let thick:    CGFloat = 2
     }
 
     // MARK: - Opacity
