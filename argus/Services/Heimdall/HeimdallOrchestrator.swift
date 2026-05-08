@@ -159,16 +159,21 @@ final class HeimdallOrchestrator {
                 ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) }
             ]
         case .usEquity:
+            // 2026-05-08: Stooq birincil — keyless CSV, tek HTTP'de yüzlerce
+            // sembol, ~70-200ms yanıt. Yahoo cap=4 inflight × 25sn timeout
+            // başarısızlığında fallback. 304 sembollük watchlist için 1dk
+            // bekleme yerine birkaç saniye.
             return [
-                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
                 ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) },
+                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
                 ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) },
                 ChainStep(provider: "fmp")     { [fmp]     in try await Self.fmpToQuote(fmp: fmp, symbol: resolved) }
             ]
         case .index, .forex, .commodity:
+            // Stooq US index/FX/commodity için de hızlı; Yahoo fallback.
             return [
-                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
                 ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) },
+                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
                 ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) }
             ]
         }
@@ -468,16 +473,19 @@ final class HeimdallOrchestrator {
                 }
             ]
         case .usEquity, .index, .forex, .commodity:
+            // 2026-05-08: Daily/üstü timeframe'de Stooq birincil — keyless ve hızlı.
+            // Intraday için Stooq verisi yok, Yahoo birincil olarak kalır.
+            // Yahoo rate cap timeout'unda Finnhub fallback.
             var steps: [ChainStep<[Candle]>] = []
-            steps.append(ChainStep(provider: "yahoo") { [yahoo] in
-                try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
-            })
             if isDaily {
                 let interval = Self.stooqInterval(for: timeframe)
                 steps.append(ChainStep(provider: "stooq") { [stooq] in
                     try await stooq.fetchDailyCandles(symbol: resolved, limit: limit, interval: interval)
                 })
             }
+            steps.append(ChainStep(provider: "yahoo") { [yahoo] in
+                try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+            })
             steps.append(ChainStep(provider: "finnhub") { [finnhub] in
                 try await finnhub.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
             })
