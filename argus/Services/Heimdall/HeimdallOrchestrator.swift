@@ -208,9 +208,10 @@ final class HeimdallOrchestrator {
     // MARK: - Quote batch (300-400 watchlist warm tier)
 
     /// Groups symbols by market, fans out one-shot batch requests where
-    /// available (Stooq snapshot for global, BorsaPy parallel for BIST,
-    /// Finnhub parallel for crypto), and falls back to chunked
-    /// per-symbol Yahoo for anything still missing.
+    /// available, and returns as soon as the global path resolves.
+    /// BIST runs detached so a sleeping BorsaPy backend does not stall
+    /// the warm tier; its results stream directly into MarketDataStore
+    /// once they arrive.
     func requestQuotesBatch(symbols: [String], context: UsageContext = .interactive) async -> [String: Quote] {
         guard !symbols.isEmpty else { return [:] }
 
@@ -222,19 +223,20 @@ final class HeimdallOrchestrator {
         }
         let buckets = Dictionary(grouping: routes, by: \.destination)
 
+        // BIST is decoupled: BorsaPy can take 5-30s when Render cold-
+        // starts. Awaiting it here would also block the Stooq result
+        // for every US ticker on the same watchlist. Run it detached
+        // and let it write into the store on its own schedule.
+        if let bist = buckets[.bist], !bist.isEmpty {
+            Task { [weak self] in
+                guard let self = self else { return }
+                await self.streamBistBucket(bist)
+            }
+        }
+
         var combined: [String: Quote] = [:]
 
         await withTaskGroup(of: [String: Quote].self) { group in
-            if let bist = buckets[.bist], !bist.isEmpty {
-                group.addTask { [weak self] in
-                    guard let self = self else { return [:] }
-                    return await self.parallelFetch(routes: bist) { route in
-                        let bare = SymbolResolver.bareBistSymbol(route.resolved)
-                        let q = try await self.borsaPy.getBistQuote(symbol: bare)
-                        return Self.convert(bist: q, canonical: route.original)
-                    }
-                }
-            }
             if let crypto = buckets[.crypto], !crypto.isEmpty, finnhub.hasKey {
                 group.addTask { [weak self] in
                     guard let self = self else { return [:] }
@@ -257,18 +259,45 @@ final class HeimdallOrchestrator {
             }
         }
 
-        // Yahoo single-symbol backstop for anything the buckets did not
-        // satisfy: BIST symbols BorsaPy didn't answer, crypto when
-        // Finnhub had no key or no result, and US tickers Stooq dropped.
-        // Yahoo natively handles `.IS`, `-USD`, `=X`, `=F` and `^...`
-        // formats so a single endpoint covers all of them.
-        let missing = routes.filter { combined[$0.original] == nil }
+        // Yahoo single-symbol backstop for anything the global buckets
+        // did not satisfy. BIST is handled separately by the detached
+        // task above so we exclude it here.
+        let missing = routes.filter { route in
+            guard combined[route.original] == nil else { return false }
+            return route.destination != .bist
+        }
         if !missing.isEmpty {
             let recovered = await yahooChunkedFallback(missing)
             for (key, value) in recovered { combined[key] = value }
         }
 
         return combined
+    }
+
+    /// Walks the BIST bucket and pushes each successful fetch directly
+    /// into `MarketDataStore`. Yahoo `.IS` is the fallback for symbols
+    /// BorsaPy could not answer.
+    private func streamBistBucket(_ routes: [Route]) async {
+        await withTaskGroup(of: Void.self) { group in
+            for route in routes {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    let bare = SymbolResolver.bareBistSymbol(route.resolved)
+                    do {
+                        let bist = try await self.borsaPy.getBistQuote(symbol: bare)
+                        let quote = Self.convert(bist: bist, canonical: route.original)
+                        await MarketDataStore.shared.recordBatchQuote(symbol: route.original, quote: quote, source: "Batch-BIST")
+                    } catch {
+                        // BorsaPy failed (sleeping, circuit open, network).
+                        // Fall through to Yahoo `.IS` so the BIST symbol
+                        // still lands in the store eventually.
+                        if let quote = try? await self.yahoo.fetchQuote(symbol: route.resolved) {
+                            await MarketDataStore.shared.recordBatchQuote(symbol: route.original, quote: quote, source: "Batch-BIST-Yahoo")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private struct Route {

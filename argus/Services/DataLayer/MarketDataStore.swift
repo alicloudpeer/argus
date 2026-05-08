@@ -290,6 +290,14 @@ final class MarketDataStore: ObservableObject {
         self.quotes[symbol] = val
         return val
     }
+
+    /// Direct batch ingestion for slow buckets (BIST) that orchestrate
+    /// themselves outside of `ensureQuotes`. The bucket pushes results
+    /// here as soon as each symbol resolves, without blocking the
+    /// global warm-tier path.
+    func recordBatchQuote(symbol: String, quote: Quote, source: String = "Batch") {
+        _ = processQuoteSuccess(symbol: symbol, quote: quote, source: source)
+    }
     
     private func processQuoteFailure(symbol: String, error: Error) -> DataValue<Quote> {
         // print yerine kategori bazlı log — DataPipeline bölümünden filtrelenir.
