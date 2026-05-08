@@ -1,31 +1,38 @@
 import Foundation
 
-/// "The Gatekeeper" - SIMPLIFIED Yahoo-Only Mode
-/// All routing complexity removed. Direct Yahoo Finance calls.
+/// "The Gatekeeper" - market-aware data orchestrator with inline
+/// multi-provider fallback chains. Each data method walks a chain of
+/// providers in order, respecting per-provider/endpoint circuit
+/// breakers; the first one to succeed wins. Yahoo stays as a first
+/// class citizen alongside Stooq, Finnhub, FMP, Binance, BorsaPy and
+/// FRED.
 @MainActor
 final class HeimdallOrchestrator {
     static let shared = HeimdallOrchestrator()
-    
-    private let yahoo = YahooFinanceProvider.shared
-    private let fred = FredProvider.shared
-    
+
+    private let yahoo   = YahooFinanceProvider.shared
+    private let borsaPy = BorsaPyProvider.shared
+    private let stooq   = StooqProvider.shared
+    private let finnhub = FinnhubProvider.shared
+    private let binance = BinanceCandleAdapter.shared
+    private let fmp     = FMPProvider.shared
+    private let news    = GoogleNewsRSSProvider.shared
+    private let fred    = FredProvider.shared
+    private let resolver = SymbolResolver.shared
+
     private init() {
-        print("🏛️ HEIMDALL: Yahoo Direct Mode initialized")
+        print("HEIMDALL: multi-provider chain initialized")
     }
 
-    /// Y3-HOTFIX: Lokal throttle vs. gerçek provider hatası ayrımı.
-    /// `HeimdallNetwork`'ün kendi "rate cap" frenini provider'ın arızasıyla karıştırıp
-    /// circuit breaker'ı açmamak için bu sentinel'i ayrı tutuyoruz. Yerel fren → transient,
-    /// retry+jitter çöz; circuit'e yazma. Gerçek 429/5xx → failure raporla, eşik dolarsa aç.
+    // MARK: - Error helpers
+
     private func isLocalThrottle(_ error: Error) -> Bool {
-        if let heimdall = error as? HeimdallCoreError {
-            return heimdall.code == HeimdallNetwork.localThrottleCode
+        if let h = error as? HeimdallCoreError {
+            return h.code == HeimdallNetwork.localThrottleCode
         }
         return false
     }
 
-    /// Phase 7 PR-3: Auth/entitlement hatası mı?
-    /// Bu kategoride sembol-spesifik paywall var; SymbolBlocklist'e raporlanır.
     private func isAuthOrEntitlementError(_ error: Error) -> Bool {
         if let h = error as? HeimdallCoreError {
             return h.category == .authInvalid || h.category == .entitlementDenied
@@ -33,8 +40,6 @@ final class HeimdallOrchestrator {
         return false
     }
 
-    /// Phase 7 PR-3: Sembol kara listede ise atılan sentinel hata.
-    /// Provider'a network çağrısı yapılmadan, hızlıca dönen lokal hata.
     private func symbolBlockedError(provider: String, endpoint: String, symbol: String, reason: String) -> HeimdallCoreError {
         HeimdallCoreError(
             category: .authInvalid,
@@ -44,460 +49,14 @@ final class HeimdallOrchestrator {
         )
     }
 
-    // MARK: - Quote
-
-    /// 2026-05-04: Coalescer ile inflight dedup.
-    /// AutoPilotService bu metodu **direkt** çağırıyor, MarketDataStore'un kendi
-    /// coalescer'ını atlıyor — UI ile AutoPilot aynı sembol için eş zamanlı 2
-    /// ayrı network çağrısı atabiliyordu. Orkestratör katmanında dedup her iki
-    /// yolu da yakalar; ikinci çağıran inflight task'ın sonucunu bekler.
-    func requestQuote(symbol: String, context: UsageContext = .interactive) async throws -> Quote {
-        try await RequestCoalescer.shared.coalesce(key: "quote:\(symbol)") { [self] in
-            try await performRequestQuote(symbol: symbol, context: context)
-        }
+    private func circuitKey(provider: String, endpoint: String) -> String {
+        "\(provider):\(endpoint)"
     }
 
-    private func performRequestQuote(symbol: String, context: UsageContext) async throws -> Quote {
-        let provider = "yahoo"
-        let endpoint = "/quote"
-        let circuitProvider = circuitKey(provider: provider, endpoint: "quote")
-
-        // Phase 7 PR-3: Sembol kara listede mi? Network'e gitmeden hızlıca dön.
-        if await SymbolBlocklist.shared.isBlocked(symbol),
-           let reason = await SymbolBlocklist.shared.reasonFor(symbol) {
-            throw symbolBlockedError(provider: provider, endpoint: endpoint, symbol: symbol, reason: reason)
-        }
-
-        // Circuit Breaker Check
-        guard await HeimdallCircuitBreaker.shared.canRequest(provider: circuitProvider) else {
-            await HeimdallLogger.shared.warn("circuit_blocked", provider: provider, errorClass: "circuit_open")
-            throw HeimdallCoreError(category: .rateLimited, code: 503, message: "Circuit open for \(provider)/quote", bodyPrefix: "")
-        }
-
-        await RateLimiter.shared.waitIfNeeded()
-        let start = Date()
-
-        do {
-            let quote = try await yahoo.fetchQuote(symbol: symbol)
-            let latency = Int(Date().timeIntervalSince(start) * 1000)
-
-            await HeimdallCircuitBreaker.shared.reportSuccess(provider: circuitProvider)
-            await SymbolBlocklist.shared.reportSuccess(symbol: symbol)
-            await HeimdallLogger.shared.info("fetch_success", provider: provider, endpoint: endpoint, symbol: symbol, latencyMs: latency)
-            await HealthStore.shared.reportSuccess(provider: provider, latency: Double(latency))
-
-            return quote
-        } catch {
-            // Y3-HOTFIX: lokal fren ≠ provider arızası — circuit'i kirletme.
-            // Phase 7 PR-5 (2026-04-29): Sembol-spesifik auth/entitlement hataları
-            // da provider arızası DEĞİL — Yahoo provider sağlam ama o sembol
-            // paywalled. CB'yi sembol kara listesi yerine geçiremeyiz.
-            if !isLocalThrottle(error) && !isAuthOrEntitlementError(error) {
-                await HeimdallCircuitBreaker.shared.reportFailure(provider: circuitProvider, error: error)
-                await HealthStore.shared.reportError(provider: provider, error: error)
-            }
-            // Phase 7 PR-3: Auth/entitlement hatası → SymbolBlocklist'e raporla.
-            // 2 ardışık hatadan sonra sembol 24 saatlik kara listeye alınır.
-            if isAuthOrEntitlementError(error) {
-                await SymbolBlocklist.shared.reportFailure(symbol: symbol, reason: "quote auth/paywall")
-            }
-            await HeimdallLogger.shared.error("fetch_failed", provider: provider, errorClass: classifyError(error), errorMessage: error.localizedDescription, endpoint: endpoint)
-
-            // Fallback: Finnhub (API key varsa)
-            if let fallbackQuote = try? await FinnhubProvider.shared.fetchQuote(symbol: symbol) {
-                await HeimdallLogger.shared.info("fallback_success", provider: "finnhub", endpoint: endpoint, symbol: symbol, latencyMs: 0)
-                return fallbackQuote
-            }
-
-            throw error
-        }
-    }
-
-    // MARK: - Quote Batch (DEPRECATED — Yahoo paywalled, do not call)
-    //
-    // ⚠️ Yahoo (en geç 2025) `v7/finance/quote?symbols=...` çoklu-sembol formuna
-    // **HTTP 401 Unauthorized** döndürmeye başladı:
-    //
-    //   "User is unable to access this feature"
-    //   bit.ly/yahoo-finance-api-feedback
-    //
-    // Tek-sembol form (`?symbols=AAPL`) hâlâ çalışıyor; çoklu engellendi.
-    // PR-A bu yolu denedi ama production'da 401 fırtınası ürettiği için geri
-    // alındı (Phase 6 PR-A Rollback). Method burada duruyor ki Yahoo politikası
-    // gevşerse veya başka batch destekleyen bir provider eklendiğinde tekrar
-    // wire'lanabilsin.
-    //
-    // Kanonik akış: `MarketDataStore.ensureQuotes(symbols:)` → chunked paralel
-    // tek-sembol `requestQuote` çağrıları (inflight semaphore ile rate-limit'li).
-    @available(*, deprecated, message: "Yahoo batch quote endpoint paywalled (HTTP 401). Use ensureQuotes which routes through single-symbol requestQuote.")
-    func requestQuotesBatch(symbols: [String], context: UsageContext = .interactive) async throws -> [String: Quote] {
-        guard !symbols.isEmpty else { return [:] }
-
-        let provider = "yahoo"
-        let endpoint = "/quote"
-        let circuitProvider = circuitKey(provider: provider, endpoint: "quote")
-
-        // Circuit Breaker Check
-        guard await HeimdallCircuitBreaker.shared.canRequest(provider: circuitProvider) else {
-            await HeimdallLogger.shared.warn("circuit_blocked", provider: provider, errorClass: "circuit_open")
-            throw HeimdallCoreError(category: .rateLimited, code: 503, message: "Circuit open for \(provider)/quote", bodyPrefix: "")
-        }
-
-        await RateLimiter.shared.waitIfNeeded()
-        let start = Date()
-
-        do {
-            let result = try await yahoo.fetchBatchQuotes(symbols: symbols)
-            let latency = Int(Date().timeIntervalSince(start) * 1000)
-
-            await HeimdallCircuitBreaker.shared.reportSuccess(provider: circuitProvider)
-            await HeimdallLogger.shared.info(
-                "fetch_success",
-                provider: provider,
-                endpoint: endpoint,
-                symbol: "BATCH(\(symbols.count))",
-                latencyMs: latency
-            )
-            await HealthStore.shared.reportSuccess(provider: provider, latency: Double(latency))
-            return result
-        } catch {
-            // Phase 7 PR-5: Auth/entitlement hataları sembol-spesifik (paywall),
-            // provider arızası değil → CB'yi tetikleme.
-            if !isLocalThrottle(error) && !isAuthOrEntitlementError(error) {
-                await HeimdallCircuitBreaker.shared.reportFailure(provider: circuitProvider, error: error)
-                await HealthStore.shared.reportError(provider: provider, error: error)
-            }
-            await HeimdallLogger.shared.error(
-                "fetch_failed",
-                provider: provider,
-                errorClass: classifyError(error),
-                errorMessage: error.localizedDescription,
-                endpoint: endpoint
-            )
-            throw error
-        }
-    }
-
-    // MARK: - Fundamentals
-
-    /// 2026-05-04: Coalescer ile inflight dedup (bilanço fetch'i en pahalı endpoint).
-    func requestFundamentals(symbol: String, context: UsageContext = .interactive) async throws -> FinancialsData {
-        try await RequestCoalescer.shared.coalesce(key: "fundamentals:\(symbol)") { [self] in
-            try await performRequestFundamentals(symbol: symbol, context: context)
-        }
-    }
-
-    private func performRequestFundamentals(symbol: String, context: UsageContext) async throws -> FinancialsData {
-        let provider = "yahoo"
-        let endpoint = "/fundamentals"
-        let circuitProvider = circuitKey(provider: provider, endpoint: "fundamentals")
-
-        // Phase 7 PR-3: Sembol kara listede ise cache fallback'e düş, yeni istek yok.
-        if await SymbolBlocklist.shared.isBlocked(symbol) {
-            if let cached = await getCachedFundamentals(symbol: symbol) {
-                await HeimdallLogger.shared.warn(
-                    "cache_fallback_used",
-                    provider: provider,
-                    errorClass: "symbol_blocked",
-                    errorMessage: "Fundamentals served from cache (symbol blocked)",
-                    endpoint: endpoint
-                )
-                return cached
-            }
-            let reason = await SymbolBlocklist.shared.reasonFor(symbol) ?? "blocked"
-            throw symbolBlockedError(provider: provider, endpoint: endpoint, symbol: symbol, reason: reason)
-        }
-
-        guard await HeimdallCircuitBreaker.shared.canRequest(provider: circuitProvider) else {
-            if let cached = await getCachedFundamentals(symbol: symbol) {
-                await HeimdallLogger.shared.warn(
-                    "cache_fallback_used",
-                    provider: provider,
-                    errorClass: "circuit_open",
-                    errorMessage: "Fundamentals served from cache",
-                    endpoint: endpoint
-                )
-                return cached
-            }
-            throw HeimdallCoreError(category: .rateLimited, code: 503, message: "Circuit open for \(provider)/fundamentals", bodyPrefix: "")
-        }
-
-        await RateLimiter.shared.waitIfNeeded()
-        let start = Date()
-
-        do {
-            let data = try await yahoo.fetchFundamentals(symbol: symbol)
-            let latency = Int(Date().timeIntervalSince(start) * 1000)
-            await HeimdallCircuitBreaker.shared.reportSuccess(provider: circuitProvider)
-            await SymbolBlocklist.shared.reportSuccess(symbol: symbol)
-            await HeimdallLogger.shared.info("fetch_success", provider: provider, endpoint: endpoint, symbol: symbol, latencyMs: latency)
-            DataCacheService.shared.save(value: data, kind: .fundamentals, symbol: symbol, source: "Yahoo")
-            return data
-        } catch {
-            // Y3-HOTFIX: lokal fren ≠ provider arızası — circuit'i kirletme.
-            // Phase 7 PR-5: Auth/entitlement hataları sembol-spesifik (paywall),
-            // provider arızası değil → CB'yi tetikleme.
-            if !isLocalThrottle(error) && !isAuthOrEntitlementError(error) {
-                await HeimdallCircuitBreaker.shared.reportFailure(provider: circuitProvider, error: error)
-            }
-            // Phase 7 PR-3: Auth/entitlement hatası → SymbolBlocklist'e raporla.
-            if isAuthOrEntitlementError(error) {
-                await SymbolBlocklist.shared.reportFailure(symbol: symbol, reason: "fundamentals auth/paywall")
-            }
-            await HeimdallLogger.shared.error("fetch_failed", provider: provider, errorClass: classifyError(error), errorMessage: error.localizedDescription, endpoint: endpoint)
-            if shouldFallbackToCachedFundamentals(error),
-               let cached = await getCachedFundamentals(symbol: symbol) {
-                await HeimdallLogger.shared.warn(
-                    "cache_fallback_used",
-                    provider: provider,
-                    errorClass: "rate_limit_or_transient",
-                    errorMessage: "Fundamentals served from cache after provider failure",
-                    endpoint: endpoint
-                )
-                return cached
-            }
-            throw error
-        }
-    }
-
-    
-    // MARK: - Candles
-
-    /// 2026-05-04: Coalescer ile inflight dedup. Anahtar timeframe+limit içerir
-    /// (aynı sembol farklı timeframe → ayrı task). providerTag/instrument şu an
-    /// rotalama için kullanılmıyor (Yahoo Direct Mode), key'e dahil edilmedi.
-    func requestCandles(
-        symbol: String,
-        timeframe: String,
-        limit: Int,
-        context: UsageContext = .interactive,
-        provider providerTag: ProviderTag? = nil,
-        instrument: CanonicalInstrument? = nil
-    ) async throws -> [Candle] {
-        let key = "candles:\(symbol):\(timeframe):\(limit)"
-        return try await RequestCoalescer.shared.coalesce(key: key) { [self] in
-            try await performRequestCandles(symbol: symbol, timeframe: timeframe, limit: limit, context: context, providerTag: providerTag, instrument: instrument)
-        }
-    }
-
-    private func performRequestCandles(
-        symbol: String,
-        timeframe: String,
-        limit: Int,
-        context: UsageContext,
-        providerTag: ProviderTag?,
-        instrument: CanonicalInstrument?
-    ) async throws -> [Candle] {
-        let provider = "yahoo"
-        let endpoint = "/candles"
-        let circuitProvider = circuitKey(provider: provider, endpoint: "candles")
-
-        // Phase 7 PR-3: Sembol kara listede ise hızlıca dön.
-        if await SymbolBlocklist.shared.isBlocked(symbol),
-           let reason = await SymbolBlocklist.shared.reasonFor(symbol) {
-            throw symbolBlockedError(provider: provider, endpoint: endpoint, symbol: symbol, reason: reason)
-        }
-
-        guard await HeimdallCircuitBreaker.shared.canRequest(provider: circuitProvider) else {
-            throw HeimdallCoreError(category: .rateLimited, code: 503, message: "Circuit open for \(provider)/candles", bodyPrefix: "")
-        }
-
-        await RateLimiter.shared.waitIfNeeded()
-        let start = Date()
-
-        do {
-            let candles = try await yahoo.fetchCandles(symbol: symbol, timeframe: timeframe, limit: limit)
-            let latency = Int(Date().timeIntervalSince(start) * 1000)
-            await HeimdallCircuitBreaker.shared.reportSuccess(provider: circuitProvider)
-            await SymbolBlocklist.shared.reportSuccess(symbol: symbol)
-            await HeimdallLogger.shared.info("fetch_success", provider: provider, endpoint: endpoint, symbol: symbol, latencyMs: latency)
-            return candles
-        } catch {
-            // Y3-HOTFIX: lokal fren ≠ provider arızası — circuit'i kirletme.
-            // Phase 7 PR-5: Auth/entitlement hataları sembol-spesifik (paywall),
-            // provider arızası değil → CB'yi tetikleme.
-            if !isLocalThrottle(error) && !isAuthOrEntitlementError(error) {
-                await HeimdallCircuitBreaker.shared.reportFailure(provider: circuitProvider, error: error)
-            }
-            // Phase 7 PR-3: Auth/entitlement hatası → SymbolBlocklist'e raporla.
-            if isAuthOrEntitlementError(error) {
-                await SymbolBlocklist.shared.reportFailure(symbol: symbol, reason: "candles auth/paywall")
-            }
-            await HeimdallLogger.shared.error("fetch_failed", provider: provider, errorClass: classifyError(error), errorMessage: error.localizedDescription, endpoint: endpoint)
-
-            // Fallback: Finnhub (API key varsa)
-            if let fallbackCandles = try? await FinnhubProvider.shared.fetchCandles(symbol: symbol, timeframe: timeframe, limit: limit),
-               !fallbackCandles.isEmpty {
-                await HeimdallLogger.shared.info("fallback_success", provider: "finnhub", endpoint: endpoint, symbol: symbol, latencyMs: 0)
-                return fallbackCandles
-            }
-
-            throw error
-        }
-    }
-
-
-    // MARK: - News
-    
-    func requestNews(symbol: String, limit: Int = 10, context: UsageContext = .interactive) async throws -> [NewsArticle] {
-        await RateLimiter.shared.waitIfNeeded()
-        print("🏛️ Yahoo Direct: News for \(symbol)")
-        return try await yahoo.fetchNews(symbol: symbol)
-    }
-    
-    // MARK: - Screener (Phoenix)
-    
-    func requestScreener(type: ScreenerType, limit: Int = 10) async throws -> [Quote] {
-        await RateLimiter.shared.waitIfNeeded()
-        print("🏛️ Yahoo Direct: Screener \(type)")
-        return try await yahoo.fetchScreener(type: type, limit: limit)
-    }
-    
-    // MARK: - Macro
-    
-    func requestMacro(symbol: String, context: UsageContext = .interactive) async throws -> HeimdallMacroIndicator {
-        // Routing Logic
-        if symbol.hasPrefix("FRED.") || ["INFLATION", "FEDFUNDS", "GDP", "UNRATE"].contains(symbol) {
-            // Map common aliases to FRED Series IDs
-            let seriesId: String
-            switch symbol {
-            case "INFLATION": seriesId = "CPIAUCSL"
-            case "FEDFUNDS": seriesId = "FEDFUNDS"
-            case "GDP": seriesId = "GDPC1"
-            case "UNRATE": seriesId = "UNRATE"
-            default: seriesId = symbol.replacingOccurrences(of: "FRED.", with: "")
-            }
-            
-            print("🏛️ HEIMDALL: Routing \(symbol) -> FRED Provider (\(seriesId))")
-            
-            // Fetch series from Fred
-            let series = try await fred.fetchSeries(seriesId: seriesId, limit: 1)
-            guard let latest = series.first else { throw URLError(.badServerResponse) }
-            
-            return HeimdallMacroIndicator(
-                symbol: symbol,
-                value: latest.1,
-                change: nil,
-                changePercent: nil,
-                lastUpdated: latest.0
-            )
-        } else {
-            // Default to Yahoo (VIX, DXY, Etc)
-            print("🏛️ HEIMDALL: Routing \(symbol) -> Yahoo Provider")
-            return try await yahoo.fetchMacro(symbol: symbol)
-        }
-    }
-    
-    // MARK: - FRED Series (Special - Direct to FRED)
-    
-    func requestMacroSeries(instrument: CanonicalInstrument, limit: Int = 24) async throws -> [(Date, Double)] {
-        guard let seriesId = instrument.fredSeriesId else {
-            throw HeimdallCoreError(category: .symbolNotFound, code: 404, message: "No FRED Series ID for \(instrument.internalId)", bodyPrefix: "")
-        }
-        
-        let provider = "fred"
-        let endpoint = "/series/\(seriesId)"
-        
-        // Circuit Breaker Check
-        guard await HeimdallCircuitBreaker.shared.canRequest(provider: provider) else {
-            await HeimdallLogger.shared.warn("circuit_blocked", provider: provider, errorClass: "circuit_open", endpoint: endpoint)
-            throw HeimdallCoreError(category: .rateLimited, code: 503, message: "Circuit open for FRED", bodyPrefix: "")
-        }
-        
-        let start = Date()
-        
-        do {
-            let result = try await fred.fetchSeries(seriesId: seriesId, limit: limit)
-            let latency = Int(Date().timeIntervalSince(start) * 1000)
-            
-            await HeimdallCircuitBreaker.shared.reportSuccess(provider: provider)
-            await HeimdallLogger.shared.info("fetch_success", provider: provider, endpoint: endpoint, symbol: seriesId, latencyMs: latency)
-            
-            return result
-        } catch {
-            await HeimdallCircuitBreaker.shared.reportFailure(provider: provider, error: error)
-            await HeimdallLogger.shared.error("fetch_failed", provider: provider, errorClass: classifyError(error), errorMessage: error.localizedDescription, endpoint: endpoint)
-            throw error
-        }
-    }
-    
-    func requestFredSeries(series: FredProvider.SeriesInfo, limit: Int = 24) async throws -> [(Date, Double)] {
-        let provider = "fred"
-        let endpoint = "/series/\(series.rawValue)"
-        
-        guard await HeimdallCircuitBreaker.shared.canRequest(provider: provider) else {
-            throw HeimdallCoreError(category: .rateLimited, code: 503, message: "Circuit open for FRED", bodyPrefix: "")
-        }
-        
-        let start = Date()
-        
-        do {
-            let result = try await fred.fetchSeries(seriesId: series.rawValue, limit: limit)
-            let latency = Int(Date().timeIntervalSince(start) * 1000)
-            
-            await HeimdallCircuitBreaker.shared.reportSuccess(provider: provider)
-            await HeimdallLogger.shared.info("fetch_success", provider: provider, endpoint: endpoint, latencyMs: latency)
-            
-            return result
-        } catch {
-            await HeimdallCircuitBreaker.shared.reportFailure(provider: provider, error: error)
-            await HeimdallLogger.shared.error("fetch_failed", provider: provider, errorClass: classifyError(error), errorMessage: error.localizedDescription)
-            throw error
-        }
-    }
-    
-    // MARK: - Instrument Candles
-    
-    func requestInstrumentCandles(instrument: CanonicalInstrument, timeframe: String = "1D", limit: Int = 60) async throws -> [Candle] {
-        if instrument.internalId == "macro.trend" {
-            throw HeimdallCoreError(category: .unknown, code: 400, message: "Cannot fetch candles for derived (TREND)", bodyPrefix: "")
-        }
-        
-        // FIX: Yahoo için yahooSymbol kullan, yoksa internalId'ye fallback
-        let symbol = instrument.yahooSymbol ?? instrument.internalId
-        return try await requestCandles(symbol: symbol, timeframe: timeframe, limit: limit, instrument: instrument)
-    }
-    
-    // MARK: - System Health
-    
-    enum SystemHealthStatus: String {
-        case operational = "Operational"
-        case degraded = "Degraded"
-        case critical = "Critical - DO NOT TRADE"
-    }
-    
-    func checkSystemHealth() async -> SystemHealthStatus {
-        // Y3-HOTFIX Phase 2 (2026-04-24): Üçüncü katman koruma.
-        // 72f9ef4 circuit breaker'ı (Layer 1) ve requestQuote HealthStore'u (Layer 2) ayırmıştı,
-        // ama bu health probe `yahoo.fetchQuote`'u doğrudan çağırıyor — lokal rate limiter
-        // window'u dolmuşsa (319 sembol batch + MTF fan-out) probe'un kendisi self-throttle
-        // yiyor ve `.critical` raporluyor. Sonuç: AutoPilot/Scout sistem sağlıklıyken tarama iptal.
-        //
-        // Invariant (lessons.md Ders 5): "Self-imposed backpressure must not cascade".
-        // Self-throttle ≠ Yahoo down. Probe lokal fren nedeniyle düşerse `.degraded` raporla —
-        // AutoPilotService/ArgusScoutService `.critical` kontrolü yapıyor, `.degraded` geçiyor.
-        do {
-            _ = try await yahoo.fetchQuote(symbol: "SPY")
-            return .operational
-        } catch {
-            if isLocalThrottle(error) {
-                return .degraded
-            }
-            return .critical
-        }
-    }
-    
-    func getProviderScores() async -> [String: ProviderScore] {
-        return ["Yahoo": ProviderScore.neutral]
-    }
-    
-    // MARK: - Error Classification Helper
-    
     private func classifyError(_ error: Error) -> String {
         if let heimdallError = error as? HeimdallCoreError {
             return heimdallError.category.rawValue
         }
-        
         if let urlError = error as? URLError {
             switch urlError.code {
             case .timedOut: return "timeout"
@@ -507,14 +66,686 @@ final class HeimdallOrchestrator {
             default: return "network"
             }
         }
-        
         return "unknown"
     }
-    
-    private func circuitKey(provider: String, endpoint: String) -> String {
-        "\(provider):\(endpoint)"
+
+    // MARK: - Chain runner
+
+    private struct ChainStep<T> {
+        let provider: String
+        let body: () async throws -> T
     }
-    
+
+    /// Walks the provider chain for the given endpoint. Respects circuit
+    /// breakers, retries on the next provider when one fails, and reports
+    /// the surviving provider as the source string.
+    private func firstSuccess<T>(_ steps: [ChainStep<T>], endpoint: String, symbol: String) async throws -> (T, String) {
+        var lastError: Error?
+        for step in steps {
+            let circuit = circuitKey(provider: step.provider, endpoint: endpoint)
+            guard await HeimdallCircuitBreaker.shared.canRequest(provider: circuit) else {
+                lastError = HeimdallCoreError(category: .circuitOpen, code: 503, message: "Circuit open for \(step.provider)/\(endpoint)", bodyPrefix: "")
+                continue
+            }
+            let start = Date()
+            do {
+                let value = try await step.body()
+                let latency = Int(Date().timeIntervalSince(start) * 1000)
+                await HeimdallCircuitBreaker.shared.reportSuccess(provider: circuit)
+                await HeimdallLogger.shared.info("fetch_success", provider: step.provider, endpoint: endpoint, symbol: symbol, latencyMs: latency)
+                await HealthStore.shared.reportSuccess(provider: step.provider, latency: Double(latency))
+                return (value, step.provider)
+            } catch {
+                if !isLocalThrottle(error) && !isAuthOrEntitlementError(error) {
+                    await HeimdallCircuitBreaker.shared.reportFailure(provider: circuit, error: error)
+                    await HealthStore.shared.reportError(provider: step.provider, error: error)
+                }
+                await HeimdallLogger.shared.warn(
+                    "chain_step_failed",
+                    provider: step.provider,
+                    errorClass: classifyError(error),
+                    errorMessage: error.localizedDescription,
+                    endpoint: endpoint
+                )
+                lastError = error
+            }
+        }
+        throw lastError ?? HeimdallCoreError(category: .emptyPayload, code: 204, message: "All providers exhausted for \(symbol)/\(endpoint)", bodyPrefix: "")
+    }
+
+    // MARK: - Quote (single)
+
+    func requestQuote(symbol: String, context: UsageContext = .interactive) async throws -> Quote {
+        if await SymbolBlocklist.shared.isBlocked(symbol),
+           let reason = await SymbolBlocklist.shared.reasonFor(symbol) {
+            throw symbolBlockedError(provider: "argus", endpoint: "quote", symbol: symbol, reason: reason)
+        }
+        await RateLimiter.shared.waitIfNeeded()
+
+        let resolved = resolver.resolve(symbol)
+        let destination = resolver.marketDestination(for: resolved)
+        let chain = quoteChain(destination: destination, resolved: resolved, original: symbol)
+
+        do {
+            let (quote, _) = try await firstSuccess(chain, endpoint: "quote", symbol: symbol)
+            await SymbolBlocklist.shared.reportSuccess(symbol: symbol)
+            return quote
+        } catch {
+            if isAuthOrEntitlementError(error) {
+                await SymbolBlocklist.shared.reportFailure(symbol: symbol, reason: "quote auth/paywall")
+            }
+            throw error
+        }
+    }
+
+    private func quoteChain(destination: MarketDestination, resolved: String, original: String) -> [ChainStep<Quote>] {
+        let bareBist = SymbolResolver.bareBistSymbol(resolved)
+
+        switch destination {
+        case .bist:
+            return [
+                ChainStep(provider: "borsapy") { [borsaPy] in
+                    let bist = try await borsaPy.getBistQuote(symbol: bareBist)
+                    return Self.convert(bist: bist, canonical: original)
+                },
+                ChainStep(provider: "yahoo") { [yahoo] in
+                    try await yahoo.fetchQuote(symbol: resolved)
+                }
+            ]
+        case .crypto:
+            return [
+                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
+                ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) },
+                ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) }
+            ]
+        case .usEquity:
+            return [
+                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
+                ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) },
+                ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) },
+                ChainStep(provider: "fmp")     { [fmp]     in try await Self.fmpToQuote(fmp: fmp, symbol: resolved) }
+            ]
+        case .index, .forex, .commodity:
+            return [
+                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
+                ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) },
+                ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) }
+            ]
+        }
+    }
+
+    private static func singleFromBatch(stooq: StooqProvider, resolved: String, original: String) async throws -> Quote {
+        let map = try await stooq.fetchSnapshotBatch(symbols: [resolved])
+        if let quote = map[resolved] ?? map[original] { return quote }
+        throw HeimdallCoreError(category: .emptyPayload, code: 204, message: "Stooq empty for \(resolved)", bodyPrefix: "")
+    }
+
+    private static func fmpToQuote(fmp: FMPProvider, symbol: String) async throws -> Quote {
+        guard fmp.hasKey, let q = try await fmp.fetchQuote(symbol: symbol), let price = q.price else {
+            throw HeimdallCoreError(category: .emptyPayload, code: 204, message: "FMP empty for \(symbol)", bodyPrefix: "")
+        }
+        var quote = Quote(
+            c: price,
+            d: q.change,
+            dp: q.changesPercentage,
+            currency: "USD",
+            shortName: q.name,
+            symbol: symbol
+        )
+        quote.previousClose = q.previousClose
+        quote.volume = q.volume.map(Double.init)
+        quote.timestamp = q.timestamp.map { Date(timeIntervalSince1970: TimeInterval($0)) } ?? Date()
+        quote.peRatio = q.pe
+        quote.eps = q.eps
+        quote.marketCap = q.marketCap
+        return quote
+    }
+
+    // MARK: - Quote batch (300-400 watchlist warm tier)
+
+    /// Groups symbols by market, fans out one-shot batch requests where
+    /// available (Stooq snapshot for global, BorsaPy parallel for BIST,
+    /// Finnhub parallel for crypto), and falls back to chunked
+    /// per-symbol Yahoo for anything still missing.
+    func requestQuotesBatch(symbols: [String], context: UsageContext = .interactive) async -> [String: Quote] {
+        guard !symbols.isEmpty else { return [:] }
+
+        // Resolve once so buckets, fallback filter, and chain closures
+        // share the same canonical form.
+        let routes: [Route] = symbols.map { sym in
+            let resolved = resolver.resolve(sym)
+            return Route(original: sym, resolved: resolved, destination: resolver.marketDestination(for: resolved))
+        }
+        let buckets = Dictionary(grouping: routes, by: \.destination)
+
+        var combined: [String: Quote] = [:]
+
+        await withTaskGroup(of: [String: Quote].self) { group in
+            if let bist = buckets[.bist], !bist.isEmpty {
+                group.addTask { [weak self] in
+                    guard let self = self else { return [:] }
+                    return await self.parallelFetch(routes: bist) { route in
+                        let bare = SymbolResolver.bareBistSymbol(route.resolved)
+                        let q = try await self.borsaPy.getBistQuote(symbol: bare)
+                        return Self.convert(bist: q, canonical: route.original)
+                    }
+                }
+            }
+            if let crypto = buckets[.crypto], !crypto.isEmpty, finnhub.hasKey {
+                group.addTask { [weak self] in
+                    guard let self = self else { return [:] }
+                    return await self.parallelFetch(routes: crypto) { route in
+                        let q = try await self.finnhub.fetchQuote(symbol: route.resolved)
+                        return q.with(symbol: route.original)
+                    }
+                }
+            }
+            for destination: MarketDestination in [.usEquity, .index, .forex, .commodity] {
+                if let bucket = buckets[destination], !bucket.isEmpty {
+                    group.addTask { [weak self] in
+                        guard let self = self else { return [:] }
+                        return await self.batchSnapshotBucket(bucket)
+                    }
+                }
+            }
+            for await partial in group {
+                for (key, value) in partial { combined[key] = value }
+            }
+        }
+
+        // Yahoo single-symbol backstop for anything the buckets did not
+        // satisfy: BIST symbols BorsaPy didn't answer, crypto when
+        // Finnhub had no key or no result, and US tickers Stooq dropped.
+        // Yahoo natively handles `.IS`, `-USD`, `=X`, `=F` and `^...`
+        // formats so a single endpoint covers all of them.
+        let missing = routes.filter { combined[$0.original] == nil }
+        if !missing.isEmpty {
+            let recovered = await yahooChunkedFallback(missing)
+            for (key, value) in recovered { combined[key] = value }
+        }
+
+        return combined
+    }
+
+    private struct Route {
+        let original: String
+        let resolved: String
+        let destination: MarketDestination
+    }
+
+    /// Generic parallel per-symbol fetch with timeout-friendly TaskGroup
+    /// semantics. Used by buckets that have no native batch endpoint.
+    private func parallelFetch(routes: [Route], fetch: @escaping (Route) async throws -> Quote) async -> [String: Quote] {
+        var out: [String: Quote] = [:]
+        await withTaskGroup(of: (String, Quote?).self) { group in
+            for route in routes {
+                group.addTask {
+                    do {
+                        return (route.original, try await fetch(route))
+                    } catch {
+                        return (route.original, nil)
+                    }
+                }
+            }
+            for await (symbol, quote) in group {
+                if let quote = quote { out[symbol] = quote }
+            }
+        }
+        return out
+    }
+
+    private func batchSnapshotBucket(_ routes: [Route]) async -> [String: Quote] {
+        let circuit = circuitKey(provider: "stooq", endpoint: "quote")
+        guard await HeimdallCircuitBreaker.shared.canRequest(provider: circuit) else {
+            return [:]
+        }
+        do {
+            let map = try await stooq.fetchSnapshotBatch(symbols: routes.map(\.resolved))
+            await HeimdallCircuitBreaker.shared.reportSuccess(provider: circuit)
+            var out: [String: Quote] = [:]
+            for route in routes {
+                if let quote = map[route.resolved] {
+                    out[route.original] = quote.with(symbol: route.original)
+                }
+            }
+            return out
+        } catch {
+            await HeimdallCircuitBreaker.shared.reportFailure(provider: circuit, error: error)
+            await HeimdallLogger.shared.warn(
+                "batch_snapshot_failed",
+                provider: "stooq",
+                errorClass: classifyError(error),
+                errorMessage: error.localizedDescription,
+                endpoint: "quote"
+            )
+            return [:]
+        }
+    }
+
+    /// Yahoo single-symbol fetch fan-out for symbols Stooq dropped.
+    /// 8 chunk x 800ms stays within Yahoo's 5 r/s sliding window.
+    private func yahooChunkedFallback(_ routes: [Route]) async -> [String: Quote] {
+        var out: [String: Quote] = [:]
+        let chunkSize = 8
+        let chunkDelayNs: UInt64 = 800_000_000
+
+        let chunks = stride(from: 0, to: routes.count, by: chunkSize).map {
+            Array(routes[$0..<min($0 + chunkSize, routes.count)])
+        }
+        for (index, batch) in chunks.enumerated() {
+            let partial = await parallelFetch(routes: batch) { [yahoo] route in
+                try await yahoo.fetchQuote(symbol: route.resolved)
+            }
+            for (key, value) in partial { out[key] = value }
+            if index < chunks.count - 1 {
+                try? await Task.sleep(nanoseconds: chunkDelayNs)
+            }
+        }
+        return out
+    }
+
+    // MARK: - Fundamentals
+
+    func requestFundamentals(symbol: String, context: UsageContext = .interactive) async throws -> FinancialsData {
+        let resolved = resolver.resolve(symbol)
+        let destination = resolver.marketDestination(for: resolved)
+
+        if await SymbolBlocklist.shared.isBlocked(symbol) {
+            if let cached = await getCachedFundamentals(symbol: symbol) { return cached }
+            let reason = await SymbolBlocklist.shared.reasonFor(symbol) ?? "blocked"
+            throw symbolBlockedError(provider: "argus", endpoint: "fundamentals", symbol: symbol, reason: reason)
+        }
+
+        await RateLimiter.shared.waitIfNeeded()
+
+        let chain = fundamentalsChain(destination: destination, resolved: resolved, original: symbol)
+        do {
+            let (data, provider) = try await firstSuccess(chain, endpoint: "fundamentals", symbol: symbol)
+            await SymbolBlocklist.shared.reportSuccess(symbol: symbol)
+            DataCacheService.shared.save(value: data, kind: .fundamentals, symbol: symbol, source: provider)
+            return data
+        } catch {
+            if isAuthOrEntitlementError(error) {
+                await SymbolBlocklist.shared.reportFailure(symbol: symbol, reason: "fundamentals auth/paywall")
+            }
+            if shouldFallbackToCachedFundamentals(error),
+               let cached = await getCachedFundamentals(symbol: symbol) {
+                return cached
+            }
+            throw error
+        }
+    }
+
+    private func fundamentalsChain(destination: MarketDestination, resolved: String, original: String) -> [ChainStep<FinancialsData>] {
+        let bareBist = SymbolResolver.bareBistSymbol(resolved)
+
+        switch destination {
+        case .bist:
+            return [
+                ChainStep(provider: "borsapy") { [borsaPy] in
+                    let bist = try await borsaPy.getFinancialStatements(symbol: bareBist)
+                    return Self.convert(bistFinancials: bist, canonical: original)
+                },
+                ChainStep(provider: "yahoo") { [yahoo] in
+                    try await yahoo.fetchFundamentals(symbol: resolved)
+                }
+            ]
+        default:
+            return [
+                ChainStep(provider: "yahoo") { [yahoo] in
+                    try await yahoo.fetchFundamentals(symbol: resolved)
+                },
+                ChainStep(provider: "fmp") { [fmp, finnhub] in
+                    let metrics = try? await finnhub.fetchBasicFinancials(symbol: resolved)
+                    return try await fmp.fetchFundamentals(symbol: resolved, mergingFinnhub: metrics)
+                },
+                ChainStep(provider: "finnhub") { [finnhub] in
+                    let metrics = try await finnhub.fetchBasicFinancials(symbol: resolved)
+                    return Self.convert(finnhubMetrics: metrics, canonical: original)
+                }
+            ]
+        }
+    }
+
+    // MARK: - Candles
+
+    func requestCandles(
+        symbol: String,
+        timeframe: String,
+        limit: Int,
+        context: UsageContext = .interactive,
+        provider providerTag: ProviderTag? = nil,
+        instrument: CanonicalInstrument? = nil
+    ) async throws -> [Candle] {
+        if await SymbolBlocklist.shared.isBlocked(symbol),
+           let reason = await SymbolBlocklist.shared.reasonFor(symbol) {
+            throw symbolBlockedError(provider: "argus", endpoint: "candles", symbol: symbol, reason: reason)
+        }
+        await RateLimiter.shared.waitIfNeeded()
+
+        let resolved = resolver.resolve(symbol)
+        let destination = resolver.marketDestination(for: resolved)
+        let chain = candleChain(destination: destination, resolved: resolved, original: symbol, timeframe: timeframe, limit: limit)
+        do {
+            let (candles, _) = try await firstSuccess(chain, endpoint: "candles", symbol: symbol)
+            await SymbolBlocklist.shared.reportSuccess(symbol: symbol)
+            return candles
+        } catch {
+            if isAuthOrEntitlementError(error) {
+                await SymbolBlocklist.shared.reportFailure(symbol: symbol, reason: "candles auth/paywall")
+            }
+            throw error
+        }
+    }
+
+    private func candleChain(destination: MarketDestination, resolved: String, original: String, timeframe: String, limit: Int) -> [ChainStep<[Candle]>] {
+        let isDaily = Self.isDailyOrLonger(timeframe: timeframe)
+        let bareBist = SymbolResolver.bareBistSymbol(resolved)
+
+        switch destination {
+        case .bist:
+            var steps: [ChainStep<[Candle]>] = []
+            if isDaily {
+                steps.append(ChainStep(provider: "borsapy") { [borsaPy] in
+                    let bistCandles = try await borsaPy.getBistHistory(symbol: bareBist, days: max(limit, 30))
+                    return bistCandles.map { Candle(date: $0.date, open: $0.open, high: $0.high, low: $0.low, close: $0.close, volume: $0.volume) }
+                })
+            }
+            steps.append(ChainStep(provider: "yahoo") { [yahoo] in
+                try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+            })
+            return steps
+        case .crypto:
+            return [
+                ChainStep(provider: "binance") { [binance] in
+                    try await binance.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+                },
+                ChainStep(provider: "yahoo") { [yahoo] in
+                    try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+                },
+                ChainStep(provider: "finnhub") { [finnhub] in
+                    try await finnhub.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+                }
+            ]
+        case .usEquity, .index, .forex, .commodity:
+            var steps: [ChainStep<[Candle]>] = []
+            steps.append(ChainStep(provider: "yahoo") { [yahoo] in
+                try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+            })
+            if isDaily {
+                let interval = Self.stooqInterval(for: timeframe)
+                steps.append(ChainStep(provider: "stooq") { [stooq] in
+                    try await stooq.fetchDailyCandles(symbol: resolved, limit: limit, interval: interval)
+                })
+            }
+            steps.append(ChainStep(provider: "finnhub") { [finnhub] in
+                try await finnhub.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+            })
+            return steps
+        }
+    }
+
+    // MARK: - News
+
+    func requestNews(symbol: String, limit: Int = 10, context: UsageContext = .interactive) async throws -> [NewsArticle] {
+        await RateLimiter.shared.waitIfNeeded()
+        return try await news.fetchNews(symbol: symbol, limit: limit)
+    }
+
+    // MARK: - Screener
+
+    func requestScreener(type: ScreenerType, limit: Int = 10) async throws -> [Quote] {
+        await RateLimiter.shared.waitIfNeeded()
+        let circuit = circuitKey(provider: "yahoo", endpoint: "screener")
+        if await HeimdallCircuitBreaker.shared.canRequest(provider: circuit) {
+            do {
+                let result = try await yahoo.fetchScreener(type: type, limit: limit)
+                await HeimdallCircuitBreaker.shared.reportSuccess(provider: circuit)
+                return result
+            } catch {
+                if !isLocalThrottle(error) {
+                    await HeimdallCircuitBreaker.shared.reportFailure(provider: circuit, error: error)
+                }
+                await HeimdallLogger.shared.warn(
+                    "screener_yahoo_failed",
+                    provider: "yahoo",
+                    errorClass: classifyError(error),
+                    errorMessage: error.localizedDescription,
+                    endpoint: "screener"
+                )
+            }
+        }
+        // Local universe fallback: a small fixed list ranked by Stooq snapshot.
+        let snapshot = try await stooq.fetchSnapshotBatch(symbols: Self.screenerUniverse)
+        switch type {
+        case .gainers:
+            return Array(snapshot.values.sorted { ($0.dp ?? 0) > ($1.dp ?? 0) }.prefix(limit))
+        case .losers:
+            return Array(snapshot.values.sorted { ($0.dp ?? 0) < ($1.dp ?? 0) }.prefix(limit))
+        case .mostActive:
+            return Array(snapshot.values.sorted { ($0.volume ?? 0) > ($1.volume ?? 0) }.prefix(limit))
+        case .etf:
+            return Array(snapshot.values.prefix(limit))
+        }
+    }
+
+    // MARK: - Macro
+
+    func requestMacro(symbol: String, context: UsageContext = .interactive) async throws -> HeimdallMacroIndicator {
+        if symbol.hasPrefix("FRED.") || ["INFLATION", "FEDFUNDS", "GDP", "UNRATE"].contains(symbol) {
+            let seriesId: String
+            switch symbol {
+            case "INFLATION": seriesId = "CPIAUCSL"
+            case "FEDFUNDS":  seriesId = "FEDFUNDS"
+            case "GDP":       seriesId = "GDPC1"
+            case "UNRATE":    seriesId = "UNRATE"
+            default: seriesId = symbol.replacingOccurrences(of: "FRED.", with: "")
+            }
+            let series = try await fred.fetchSeries(seriesId: seriesId, limit: 1)
+            guard let latest = series.first else { throw URLError(.badServerResponse) }
+            return HeimdallMacroIndicator(
+                symbol: symbol,
+                value: latest.1,
+                change: nil,
+                changePercent: nil,
+                lastUpdated: latest.0
+            )
+        }
+
+        let resolved = resolver.resolve(symbol)
+        let chain: [ChainStep<HeimdallMacroIndicator>] = [
+            ChainStep(provider: "yahoo") { [yahoo] in
+                try await yahoo.fetchMacro(symbol: resolved)
+            },
+            ChainStep(provider: "stooq") { [stooq] in
+                let map = try await stooq.fetchSnapshotBatch(symbols: [resolved])
+                guard let quote = map[resolved] else {
+                    throw HeimdallCoreError(category: .emptyPayload, code: 204, message: "Stooq macro empty for \(resolved)", bodyPrefix: "")
+                }
+                return HeimdallMacroIndicator(
+                    symbol: symbol,
+                    value: quote.c,
+                    change: quote.d,
+                    changePercent: quote.dp,
+                    lastUpdated: quote.timestamp ?? Date()
+                )
+            }
+        ]
+        let (indicator, _) = try await firstSuccess(chain, endpoint: "macro", symbol: symbol)
+        return indicator
+    }
+
+    func requestMacroSeries(instrument: CanonicalInstrument, limit: Int = 24) async throws -> [(Date, Double)] {
+        guard let seriesId = instrument.fredSeriesId else {
+            throw HeimdallCoreError(category: .symbolNotFound, code: 404, message: "No FRED Series ID for \(instrument.internalId)", bodyPrefix: "")
+        }
+        return try await fred.fetchSeries(seriesId: seriesId, limit: limit)
+    }
+
+    func requestFredSeries(series: FredProvider.SeriesInfo, limit: Int = 24) async throws -> [(Date, Double)] {
+        try await fred.fetchSeries(seriesId: series.rawValue, limit: limit)
+    }
+
+    func requestInstrumentCandles(instrument: CanonicalInstrument, timeframe: String = "1D", limit: Int = 60) async throws -> [Candle] {
+        if instrument.internalId == "macro.trend" {
+            throw HeimdallCoreError(category: .unknown, code: 400, message: "Cannot fetch candles for derived (TREND)", bodyPrefix: "")
+        }
+        let symbol = instrument.yahooSymbol ?? instrument.internalId
+        return try await requestCandles(symbol: symbol, timeframe: timeframe, limit: limit, instrument: instrument)
+    }
+
+    // MARK: - System health
+
+    enum SystemHealthStatus: String {
+        case operational = "Operational"
+        case degraded = "Degraded"
+        case critical = "Critical - DO NOT TRADE"
+    }
+
+    func checkSystemHealth() async -> SystemHealthStatus {
+        do {
+            _ = try await yahoo.fetchQuote(symbol: "SPY")
+            return .operational
+        } catch {
+            if isLocalThrottle(error) { return .degraded }
+            // If Yahoo is misbehaving but Stooq still works, downgrade
+            // rather than blocking the whole app.
+            if (try? await stooq.fetchSnapshotBatch(symbols: ["SPY"])) != nil {
+                return .degraded
+            }
+            return .critical
+        }
+    }
+
+    func getProviderScores() async -> [String: ProviderScore] {
+        return [
+            "Yahoo": ProviderScore.neutral,
+            "Stooq": ProviderScore.neutral,
+            "Finnhub": ProviderScore.neutral,
+            "BorsaPy": ProviderScore.neutral,
+            "FMP": ProviderScore.neutral,
+            "Binance": ProviderScore.neutral
+        ]
+    }
+
+    // MARK: - Conversion helpers
+
+    private static let screenerUniverse: [String] = [
+        "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "JPM",
+        "V", "JNJ", "WMT", "PG", "HD", "MA", "DIS", "BAC", "XOM", "PFE",
+        "INTC", "CSCO", "T", "VZ", "PEP", "KO"
+    ]
+
+    private static func isDailyOrLonger(timeframe: String) -> Bool {
+        switch timeframe.lowercased() {
+        case "1d", "1day", "1g", "d", "1week", "1wk", "1w", "1month", "1mo", "3month", "1y": return true
+        default: return false
+        }
+    }
+
+    private static func stooqInterval(for timeframe: String) -> StooqProvider.Interval {
+        switch timeframe.lowercased() {
+        case "1week", "1wk", "1w":      return .weekly
+        case "1month", "1mo", "3month": return .monthly
+        default:                        return .daily
+        }
+    }
+
+    nonisolated static func convert(bist: BistQuote, canonical: String) -> Quote {
+        let prevClose = bist.previousClose > 0 ? bist.previousClose : nil
+        var quote = Quote(
+            c: bist.last,
+            d: prevClose.map { bist.last - $0 },
+            dp: prevClose.map { (bist.last - $0) / $0 * 100 },
+            currency: "TRY",
+            shortName: nil,
+            symbol: canonical
+        )
+        quote.previousClose = prevClose
+        quote.volume = bist.volume
+        quote.timestamp = bist.timestamp
+        return quote
+    }
+
+    nonisolated static func convert(bistFinancials: BistFinancials, canonical: String) -> FinancialsData {
+        var data = FinancialsData(
+            symbol: canonical,
+            currency: "TRY",
+            lastUpdated: bistFinancials.timestamp,
+            totalRevenue: bistFinancials.revenue,
+            netIncome: bistFinancials.netProfit,
+            totalShareholderEquity: bistFinancials.totalEquity,
+            marketCap: bistFinancials.marketCap,
+            revenueHistory: [],
+            netIncomeHistory: [],
+            ebitda: bistFinancials.ebitda,
+            shortTermDebt: bistFinancials.shortTermDebt,
+            longTermDebt: bistFinancials.longTermDebt,
+            operatingCashflow: bistFinancials.operatingCashFlow,
+            capitalExpenditures: nil,
+            cashAndCashEquivalents: bistFinancials.cash,
+            peRatio: bistFinancials.pe,
+            forwardPERatio: nil,
+            priceToBook: bistFinancials.pb,
+            evToEbitda: nil,
+            dividendYield: nil,
+            earningsPerShare: bistFinancials.eps,
+            forwardGrowthEstimate: nil,
+            isETF: false,
+            targetMeanPrice: nil,
+            targetHighPrice: nil,
+            targetLowPrice: nil,
+            recommendationMean: nil,
+            numberOfAnalystOpinions: nil
+        )
+        data.profitMargin = bistFinancials.netMargin
+        data.returnOnEquity = bistFinancials.roe
+        data.returnOnAssets = bistFinancials.roa
+        data.debtToEquity = bistFinancials.debtToEquity
+        data.currentRatio = bistFinancials.currentRatio
+        data.revenueGrowth = bistFinancials.revenueGrowth
+        data.earningsGrowth = bistFinancials.netProfitGrowth
+        data.grossMargin = bistFinancials.grossMargin
+        data.operatingMargin = bistFinancials.operatingMargin
+        return data
+    }
+
+    nonisolated static func convert(finnhubMetrics: FinnhubProvider.BasicFinancials, canonical: String) -> FinancialsData {
+        var data = FinancialsData(
+            symbol: canonical,
+            currency: "USD",
+            lastUpdated: Date(),
+            totalRevenue: finnhubMetrics.revenueTTM,
+            netIncome: finnhubMetrics.netIncomeAnnual,
+            totalShareholderEquity: nil,
+            marketCap: finnhubMetrics.marketCapitalization,
+            revenueHistory: [],
+            netIncomeHistory: [],
+            ebitda: nil,
+            shortTermDebt: nil,
+            longTermDebt: nil,
+            operatingCashflow: nil,
+            capitalExpenditures: nil,
+            cashAndCashEquivalents: nil,
+            peRatio: finnhubMetrics.peTTM,
+            forwardPERatio: nil,
+            priceToBook: finnhubMetrics.pbAnnual,
+            evToEbitda: nil,
+            dividendYield: finnhubMetrics.dividendYieldIndicatedAnnual,
+            earningsPerShare: finnhubMetrics.epsTTM,
+            forwardGrowthEstimate: nil,
+            isETF: false,
+            targetMeanPrice: nil,
+            targetHighPrice: nil,
+            targetLowPrice: nil,
+            recommendationMean: nil,
+            numberOfAnalystOpinions: nil
+        )
+        data.returnOnEquity = finnhubMetrics.roeTTM
+        data.currentRatio = finnhubMetrics.currentRatioAnnual
+        return data
+    }
+
     private func shouldFallbackToCachedFundamentals(_ error: Error) -> Bool {
         if let heimdallError = error as? HeimdallCoreError {
             switch heimdallError.category {
@@ -524,16 +755,12 @@ final class HeimdallOrchestrator {
                 return heimdallError.code == 1013
             }
         }
-        
         let nsError = error as NSError
-        if nsError.code == 1013 || nsError.code == 429 {
-            return true
-        }
-        
+        if nsError.code == 1013 || nsError.code == 429 { return true }
         let message = nsError.localizedDescription.lowercased()
         return message.contains("1013") || message.contains("rate limit") || message.contains("try again later")
     }
-    
+
     private func getCachedFundamentals(symbol: String) async -> FinancialsData? {
         guard let entry = await DataCacheService.shared.getEntry(kind: .fundamentals, symbol: symbol) else {
             return nil
@@ -542,7 +769,20 @@ final class HeimdallOrchestrator {
     }
 }
 
-// MARK: - Usage Context (required for API compatibility)
+// MARK: - Quote rename helper
+
+private extension Quote {
+    func with(symbol: String) -> Quote {
+        var copy = self
+        copy.symbol = symbol
+        return copy
+    }
+}
+
+/// Hint for upstream callers about how a request should be prioritized
+/// (interactive vs background vs realtime). Not yet wired into rate
+/// limiter scheduling; kept on the public API so a future PR can use
+/// it without breaking signatures.
 enum UsageContext {
     case interactive
     case background

@@ -680,33 +680,7 @@ actor AtlasV2Engine {
     }
     
     private func getSectorFromYahoo(symbol: String) async throws -> String? {
-        guard let url = URL(string: "https://query1.finance.yahoo.com/v10/finance/quoteSummary/\(symbol)?modules=assetProfile") else {
-            print("Invalid URL")
-            return nil
-        }
-        
-        do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-            
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                print("Invalid response")
-                return nil
-            }
-            
-            let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-            
-            guard let quoteSummary = json?["quoteSummary"] as? [String: Any],
-                  let result = quoteSummary["result"] as? [[String: Any]],
-                  let assetProfile = result.first?["assetProfile"] as? [String: Any],
-                  let sector = assetProfile["sector"] as? String else {
-                print("Failed to parse sector from JSON")
-                return nil
-            }
-            
-            return sector
-        } catch {
-            print("Error fetching sector: \(error)")
-            return nil
-        }
+        let profile = try? await FMPProvider.shared.fetchProfile(symbol: symbol)
+        return profile?.sector
     }
 }

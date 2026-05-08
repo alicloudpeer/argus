@@ -1,8 +1,7 @@
 import Foundation
 
-/// Y6: SymbolResolver'ın atabileceği hata türleri.
-/// Lenient `resolve` geriye dönük uyumluluk için log + pass-through yaparken
-/// `resolveStrict` bu hataları fırlatır; network çağrısından önce çürük sembolleri reddeder.
+/// Errors thrown by `SymbolResolver` when a symbol cannot be sent to a
+/// network provider.
 enum SymbolResolverError: Error, LocalizedError {
     case emptySymbol
     case invalidCharacters(symbol: String)
@@ -20,13 +19,25 @@ enum SymbolResolverError: Error, LocalizedError {
     }
 }
 
-/// "The Translator" - Resolves common symbol aliases to Provider-Specific tickers.
-/// Especially for Yahoo Finance (e.g. SILVER -> SI=F).
+/// Where a symbol should be routed in the new market data pipeline. The
+/// orchestrator picks the provider chain based on this value rather than
+/// hard-coding `.IS` and `=X` aliases throughout the codebase.
+enum MarketDestination: String, Sendable {
+    case bist
+    case usEquity
+    case forex
+    case commodity
+    case crypto
+    case index
+}
+
+/// Resolves user-facing symbol aliases into the canonical form used by
+/// the rest of the data pipeline and tells the orchestrator which
+/// market a symbol belongs to.
 struct SymbolResolver {
     static let shared = SymbolResolver()
-    
-    // Static Mappings
-    private let yahooAliases: [String: String] = [
+
+    private let aliases: [String: String] = [
         "SILVER": "SI=F",
         "GOLD": "GC=F",
         "COPPER": "HG=F",
@@ -51,64 +62,62 @@ struct SymbolResolver {
         "GBPUSD": "GBPUSD=X",
         "USDTRY": "USDTRY=X"
     ]
-    
-    /// Resolves `SILVER` to `SI=F` for Yahoo, or pass-through for others.
-    /// Lenient sürüm — geçersiz girdide `validate` uyarı loglar, orijinali geri döner.
-    /// Yeni/kritik call-site'lar `resolveStrict` tercih etmeli (network'e gitmeden fail-close).
-    func resolve(_ symbol: String, for provider: ProviderTag) -> String {
+
+    func resolve(_ symbol: String) -> String {
         do {
-            return try resolveStrict(symbol, for: provider)
+            return try resolveStrict(symbol)
         } catch {
             print("⚠️ SymbolResolver: \(error.localizedDescription) — pass-through kullanılıyor.")
             return symbol.uppercased()
         }
     }
 
-    /// Y6: Strict sürüm — çürük sembolü provider'a hiç göndermez.
-    /// Boş/whitespace/aşırı uzun/geçersiz karakter durumlarında throw atar; caller bu
-    /// sembolü atlar (skip) ve diğer sembollerle devam eder. Bu sayede malformed URL
-    /// üretip provider'ın 4xx/5xx döngüsüne girmiyoruz, rate quota'yı koruyoruz.
-    func resolveStrict(_ symbol: String, for provider: ProviderTag) throws -> String {
+    /// Backwards compatible overload kept so existing call sites that
+    /// pass a `ProviderTag` keep compiling. The provider tag is ignored
+    /// in the new pipeline; routing happens via `marketDestination`.
+    func resolve(_ symbol: String, for provider: ProviderTag) -> String {
+        return resolve(symbol)
+    }
+
+    private static let allowedSymbolCharacters = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_^=&/")
+
+    func resolveStrict(_ symbol: String) throws -> String {
         let trimmed = symbol.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw SymbolResolverError.emptySymbol }
         guard trimmed.count <= 20 else { throw SymbolResolverError.tooLong(length: trimmed.count) }
 
-        // Geçerli karakter seti: borsa ticker notasyonları — alfanumerik + . - _ ^ = & /
-        // Örn: "BTC-USD", "SI=F", "DX-Y.NYB", "^VIX", "BRK.B", "S&P500"
-        let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_^=&/")
-        if trimmed.unicodeScalars.contains(where: { !allowed.contains($0) }) {
+        if trimmed.unicodeScalars.contains(where: { !Self.allowedSymbolCharacters.contains($0) }) {
             throw SymbolResolverError.invalidCharacters(symbol: trimmed)
         }
 
         let upper = trimmed.uppercased()
-
-        switch provider {
-        case .yahoo:
-            if let alias = yahooAliases[upper] {
-                print("🔁 SymbolAlias: \(symbol) -> \(alias) (Provider: \(provider.rawValue))")
-                return alias
-            }
-            if upper.hasSuffix(".IS") {
-                return upper
-            }
-            if isBistSymbol(upper) {
-                let bistSymbol = "\(upper).IS"
-                print("🇹🇷 BIST Symbol: \(symbol) -> \(bistSymbol)")
-                return bistSymbol
-            }
-            return upper
-
-        case .eodhd:
-            // EODHD kendi mapSymbol'ünü provider katmanında uyguluyor.
-            return upper
-
-        default:
-            return upper
-        }
+        if let alias = aliases[upper] { return alias }
+        if upper.hasSuffix(".IS") { return upper }
+        if isBistSymbol(upper) { return "\(upper).IS" }
+        return upper
     }
-    
-    // MARK: - BIST Detection
-    // BIST 30 + Önemli BIST 100 sembolleri
+
+    /// Strict overload kept for source compatibility with callers that
+    /// still pass a `ProviderTag`. The provider tag has no effect.
+    func resolveStrict(_ symbol: String, for provider: ProviderTag) throws -> String {
+        return try resolveStrict(symbol)
+    }
+
+    /// Determines which market a canonical symbol should be routed to.
+    /// Accepts either bare or already-resolved symbols (e.g. `THYAO` and
+    /// `THYAO.IS` both return `.bist`).
+    func marketDestination(for symbol: String) -> MarketDestination {
+        let upper = symbol.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        if upper.hasSuffix(".IS") || isBistSymbol(upper) { return .bist }
+        if upper.hasSuffix("=X") { return .forex }
+        if upper.hasSuffix("=F") { return .commodity }
+        if upper.hasPrefix("^") || upper == "DX-Y.NYB" { return .index }
+        if upper.contains("-USD") { return .crypto }
+        return .usEquity
+    }
+
+    // MARK: - BIST detection
+
     private let bistSymbols: Set<String> = [
         "THYAO", "ASELS", "KCHOL", "AKBNK", "GARAN", "SAHOL", "TUPRS", "EREGL",
         "BIMAS", "SISE", "PETKM", "SASA", "HEKTS", "FROTO", "TOASO", "ENKAI",
@@ -120,22 +129,15 @@ struct SymbolResolver {
         "KORDS", "LOGO", "MAVI", "NETAS", "OTKAR", "PRKME", "QUAGR", "RYGYO",
         "TURSG", "TTRAK", "ZOREN"
     ]
-    
-    /// Sembol BIST mı?
-    ///
-    /// BUG FIX: Eskiden yalnızca `bistSymbols` set'ine bakıyordu. Set elle bakımlı
-    /// (~67 sembol) — AYGAZ, AGHOL gibi BIST 100 dışı ama geçerli BIST hisseleri
-    /// set'te olmadığından `.IS` suffix'li alım bile USD portföye düşüyordu.
-    ///
-    /// Yeni mantık: `.IS` suffix'i deterministik BIST sinyali. Suffix varsa
-    /// tartışmasız BIST. Set sadece suffix'siz (çıplak) sembol girilirse
-    /// fallback olarak kontrol edilir — listede var olmayan çıplak sembol
-    /// USD kabul edilir (kullanıcı istiyorsa `.IS` ekleyebilir).
+
     func isBistSymbol(_ symbol: String) -> Bool {
         let upper = symbol.uppercased()
-        if upper.hasSuffix(".IS") {
-            return true
-        }
+        if upper.hasSuffix(".IS") { return true }
         return bistSymbols.contains(upper)
+    }
+
+    /// Strips `.IS` so the bare ticker can be sent to BorsaPy.
+    static func bareBistSymbol(_ symbol: String) -> String {
+        symbol.uppercased().replacingOccurrences(of: ".IS", with: "")
     }
 }

@@ -354,7 +354,7 @@ final class YahooFinanceProvider: HeimdallProvider {
     }
     func fetchNews(symbol: String) async throws -> [NewsArticle] {
         // Real news source (Google News RSS via YahooFinanceNewsProvider)
-        return try await YahooFinanceNewsProvider.shared.fetchNews(symbol: symbol, limit: 12)
+        return try await GoogleNewsRSSProvider.shared.fetchNews(symbol: symbol, limit: 12)
     }
     
     // MARK: - Heimdall Protocol Adapters

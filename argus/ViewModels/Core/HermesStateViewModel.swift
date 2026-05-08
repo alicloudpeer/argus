@@ -100,6 +100,6 @@ final class HermesStateViewModel: ObservableObject {
         if symbol.uppercased().hasSuffix(".IS") || SymbolResolver.shared.isBistSymbol(symbol) {
              return (try? await RSSNewsProvider().fetchNews(symbol: symbol, limit: 20)) ?? []
         }
-        return (try? await YahooFinanceNewsProvider.shared.fetchNews(symbol: symbol, limit: 15)) ?? []
+        return (try? await GoogleNewsRSSProvider.shared.fetchNews(symbol: symbol, limit: 15)) ?? []
     }
 }

@@ -187,7 +187,7 @@ class HermesFeedState: ObservableObject {
                 if isBist {
                     articles = try await RSSNewsProvider().fetchNews(symbol: symbol, limit: 10)
                 } else {
-                    articles = try await YahooFinanceNewsProvider.shared.fetchNews(symbol: symbol, limit: 8)
+                    articles = try await GoogleNewsRSSProvider.shared.fetchNews(symbol: symbol, limit: 8)
                 }
 
                 guard !articles.isEmpty else { continue }

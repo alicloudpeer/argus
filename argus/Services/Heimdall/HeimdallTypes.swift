@@ -74,6 +74,9 @@ enum ProviderTag: String, Codable, CaseIterable {
     case massive = "Massive" // New Options Provider
     case localScanner = "LocalScanner" // Fallback
     case coingecko = "CoinGecko"
+    case stooq = "Stooq"
+    case borsapy = "BorsaPy"
+    case binance = "Binance"
     case unknown = "Unknown"
 }
 

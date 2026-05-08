@@ -55,6 +55,9 @@ final class HeimdallRateLimiter {
         case .fred:         return 120
         case .massive:      return 30
         case .localScanner: return 1000   // Local
+        case .stooq:        return 600    // Keyless CSV; conservative ceiling
+        case .borsapy:      return 300    // Self-hosted; gated by BorsaPyRequestGate
+        case .binance:      return 600    // Public API, generous limits
         case .unknown:      return 60
         }
     }

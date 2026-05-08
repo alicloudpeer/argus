@@ -93,7 +93,7 @@ final class HermesNewsViewModel: ObservableObject {
                 if isBist {
                     articles = try await RSSNewsProvider().fetchNews(symbol: symbol, limit: 30)
                 } else {
-                    articles = try await YahooFinanceNewsProvider.shared.fetchNews(symbol: symbol, limit: 20)
+                    articles = try await GoogleNewsRSSProvider.shared.fetchNews(symbol: symbol, limit: 20)
                 }
 
                 self.newsBySymbol[symbol] = articles
@@ -345,7 +345,7 @@ final class HermesNewsViewModel: ObservableObject {
             if isBist {
                 articles = try await RSSNewsProvider().fetchNews(symbol: symbol, limit: 20)
             } else {
-                articles = try await YahooFinanceNewsProvider.shared.fetchNews(symbol: symbol, limit: 15)
+                articles = try await GoogleNewsRSSProvider.shared.fetchNews(symbol: symbol, limit: 15)
             }
 
             self.newsBySymbol[symbol] = articles
