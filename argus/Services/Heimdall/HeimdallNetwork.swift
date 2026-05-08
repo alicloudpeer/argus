@@ -178,11 +178,12 @@ enum HeimdallNetwork {
             // semaphore'a giriyor (Yahoo: 4 paralel max).
             // Phase 5 (2026-05-05, Round 13): Timeout 30 → 15sn. AutoPilot batch tarama
             // sırasında 304 sembol × 2 endpoint = 608 istek Yahoo cap'ini saturate
-            // ediyor. Eski 30sn timeout sonrası cache fallback'e geçiyordu — kullanıcı
-            // tarama bitişini boşa bekliyordu. 15sn timeout daha hızlı cache fallback
-            // → toplam scan süresi yarıya iner. Cache fallback zaten "hot data" sağlar
-            // (180sn TTL, runtime'da en yeni veri).
-            try await HeimdallRateLimiter.shared.acquireSlot(for: provider, timeout: 15)
+            // ediyor. Eski 30sn timeout sonrası cache fallback'e geçiyordu.
+            // Phase 6 (2026-05-08): Timeout 15 → 25sn. 15sn'lik timeout aslında "cache
+            // fallback"e geçmiyordu — `try?` ile nil dönüp `quote?.c ?? 0` üzerinden
+            // 0.0 fiyatla AtlasV2 yanlış skor hesaplıyordu (bozuk karar). 25sn slot
+            // beklemesi pahalı ama gerçek veriyle skorlama her zaman daha değerli.
+            try await HeimdallRateLimiter.shared.acquireSlot(for: provider, timeout: 25)
             defer {
                 Task.detached {
                     await HeimdallRateLimiter.shared.releaseSlot(for: provider)

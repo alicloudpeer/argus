@@ -34,12 +34,24 @@ actor AtlasV2Engine {
         }
         print("✅ AtlasV2: Fundamentals received for \(symbol)")
         
-        // 2. Quote çek (güncel fiyat için, timeout ile) - increased to 20s
-        print("🔍 AtlasV2: Fetching quote for \(symbol)...")
-        let quote = try? await withTimeout(seconds: 20) {
-            try await HeimdallOrchestrator.shared.requestQuote(symbol: symbol)
+        // 2. Quote çek — önce MarketDataStore cache'i (ensureQuote/refreshQuotes
+        // tarafından dolduruluyor). Cache hit ise network çağrısı atlanıyor;
+        // 30+ BUY sinyalinde 30+ duplicate Yahoo isteğini engelliyor.
+        // Cache miss ise direkt orchestrator'a düşer.
+        let cachedQuote = await MainActor.run {
+            MarketDataStore.shared.getQuote(for: symbol)
         }
-        print("✅ AtlasV2: Quote received for \(symbol): \(quote?.c ?? 0)")
+        let quote: Quote?
+        if let cached = cachedQuote, cached.currentPrice > 0 {
+            print("⚡ AtlasV2: \(symbol) quote cache hit — \(cached.currentPrice)")
+            quote = cached
+        } else {
+            print("🔍 AtlasV2: Fetching quote for \(symbol)...")
+            quote = try? await withTimeout(seconds: 20) {
+                try await HeimdallOrchestrator.shared.requestQuote(symbol: symbol)
+            }
+            print("✅ AtlasV2: Quote received for \(symbol): \(quote?.c ?? 0)")
+        }
         
         // 3. Sektör benchmark'ını al (dinamik Yahoo verisi + statik fallback)
         let sector = try? await getSectorFromYahoo(symbol: symbol)
