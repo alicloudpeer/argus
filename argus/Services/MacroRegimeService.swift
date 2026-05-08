@@ -32,26 +32,54 @@ struct MacroResult: Sendable {
 
 final class MacroRegimeService: @unchecked Sendable {
     static let shared = MacroRegimeService()
-    
+
     // Internal Cache
     private var cachedResult: MacroResult?
     private var lastFetchTime: Date?
     private let cacheDuration: TimeInterval = 5 * 60 // 5 Minutes (reduced for faster updates)
-    
+
+    // 2026-05-08: Inflight coalescer — bootstrap + AnalysisBridge + AutoPilotService
+    // paralel computeMacroEnvironment çağırınca cache hit olmadığı için aynı
+    // ağ trafiği 2-3 kez başlıyordu (logda "AETHER: Full refresh başlatılıyor"
+    // ardı ardına 2x). İlk çağrı task'ı saklar, sonrakiler aynı task'ın
+    // sonucunu bekler — tek refresh, tek Yahoo trafiği.
+    private var inflightTask: Task<MacroResult, Never>?
+    private let inflightLock = NSLock()
+
     private init() {
         // Startup Protection
         AetherCardsManifest.verify()
     }
-    
+
     // MARK: - Public API (Heimdall 4.0)
-    
+
     func evaluate(forceRefresh: Bool = false) async -> MacroResult {
         // 1. Check Cache
         if !forceRefresh, let cached = cachedResult, let last = lastFetchTime, -last.timeIntervalSinceNow < cacheDuration {
         // DEBUG: print("✅ Aether: Using Valid Cached Result (Score: \(cached.output.score10))")
             return cached
         }
-        
+
+        // 2. Inflight coalescer — paralel çağrılar tek refresh'i bekler
+        inflightLock.lock()
+        if let existing = inflightTask {
+            inflightLock.unlock()
+            return await existing.value
+        }
+        // Singleton — strong self güvenli, weak gerek yok
+        let task = Task<MacroResult, Never> {
+            let result = await self._performEvaluate(forceRefresh: forceRefresh)
+            self.inflightLock.lock()
+            self.inflightTask = nil
+            self.inflightLock.unlock()
+            return result
+        }
+        inflightTask = task
+        inflightLock.unlock()
+        return await task.value
+    }
+
+    private func _performEvaluate(forceRefresh: Bool) async -> MacroResult {
         print("🌐 AETHER: Full refresh başlatılıyor...")
         let startTime = Date()
 

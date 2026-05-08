@@ -62,12 +62,13 @@ extension AppStateCoordinator {
 
             // Initial data load — TVM.loadData()'dan taşındı.
             // Quotes startWatchlistLoop'un immediate run'ında Tier 1+2 ile çekiliyor.
-            // Macro/discover/candle/losers paralel başlasın.
+            // loadDiscoverData zaten gainers + losers + mostActive paralel çekiyor;
+            // ayrıca fetchTopLosers çağırırsak losers Yahoo screener 2x istek gider.
+            // Kaldırıldı (2026-05-08 logda gözlendi: "Screener: losers" 2 kez).
             ArgusLogger.phase(.veri, "Faz 2: Initial data load başlatılıyor...")
             market.loadMacroEnvironment()
             market.loadDiscoverData()
             Task { await market.fetchCandles() }
-            Task { await market.fetchTopLosers() }
         }
 
         // PHASE 3: Scout/Watchlist polling — UI bloklamadan paralel başlar.
