@@ -496,28 +496,24 @@ final class MarketDataStore: ObservableObject {
     /// sonraki 5 backoff'ta zaten beklerken yeni chunk geliyor. Eskiden 304
     /// sembolün hepsi aynı anda paralel gönderiliyordu → acquireSlot kuyruğu
     /// patlayıp 200+ istek 30s'de timeout oluyordu ("kimisi boş" semptomu).
-    // Phase 6 PR-A ROLLBACK (2026-04-29):
+    // Yahoo cap = 300 req / 60s sliding window = 5 req/s sustained.
+    // Eski 8@800ms = 10 r/s burst → bot heuristic (>10 paralel) tetikleniyor,
+    // sonrası `acquireSlot` 30s timeout kuyruğunda boğuluyordu ("dakikalarca
+    // bekleme" + "kimi sembol boş" semptomları).
     //
-    // Yahoo `v7/finance/quote?symbols=A,B,C` batch endpoint'ini engelledi
-    // (HTTP 401 "User is unable to access this feature" — bit.ly/yahoo-finance-api-feedback).
-    // Production loglarında onlarca 401 alındı. PR-A iyi niyetli ama fiilen
-    // ÇALIŞMAYAN bir yola gitti. `requestQuotesBatch` artık çağrılmıyor (deprecated).
-    //
-    // Yeni yaklaşım: Phase 5'in chunked yaklaşımına dön — N sembol için
-    // 8'lik chunk × inflight semaphore (Yahoo cap=4) ile akar şekilde dağılan
-    // single quote istekleri. Tek-sembol endpoint hâlâ çalışıyor.
-    //
-    // Phase 5'ten farklılıklar:
-    //  • Chunk 4 → 8 (PR-D SWR çoğu çağrıyı zaten kesiyor; daha büyük chunk OK)
-    //  • Delay 2sn → 800ms (inflight semaphore + SWR yastığı yeterli; uzun delay
-    //    artık gereksiz)
-    private static let chunkSize = 8
-    private static let chunkDelayNs: UInt64 = 800_000_000 // 800 ms
+    // Yeni hedef: chunk=4 (bot eşiğinin altında), gecikme parametrik.
+    // Priority tier 1100ms → 3.6 r/s, background tier 1400ms → 2.86 r/s.
+    // İki tier ardışık çalışır; toplam ortalama ≤4 r/s, 60s pencere içinde
+    // ~240 req — ~60 req/min headroom grafik+modül çağrılarına kalıyor.
+    private static let chunkSize = 4
+    private static let priorityChunkDelayNs: UInt64 = 1_100_000_000 // 3.6 r/s
+    private static let backgroundChunkDelayNs: UInt64 = 1_400_000_000 // 2.86 r/s
 
     /// Watchlist gibi N>1 senaryolarda sembolleri chunked paralel olarak çeker.
     /// SWR ve in-flight coalescing `ensureQuote` içinde devrede; aynı sembol için
     /// duplikate fetch yok. Cache fresh olanlar zaten orada filtreleniyor.
-    func ensureQuotes(symbols: [String]) async {
+    /// `priority=true` UI-blocking ilk fetch, `priority=false` arka plan refill.
+    func ensureQuotes(symbols: [String], priority: Bool = false) async {
         let needsFetch = symbols.filter { sym in
             if let current = quotes[sym] {
                 let age = -current.provenance.fetchedAt.timeIntervalSinceNow
@@ -526,6 +522,10 @@ final class MarketDataStore: ObservableObject {
             return true
         }
         guard !needsFetch.isEmpty else { return }
+
+        let delayNs = priority
+            ? MarketDataStore.priorityChunkDelayNs
+            : MarketDataStore.backgroundChunkDelayNs
 
         let chunks = stride(from: 0, to: needsFetch.count, by: MarketDataStore.chunkSize).map {
             Array(needsFetch[$0..<min($0 + MarketDataStore.chunkSize, needsFetch.count)])
@@ -540,7 +540,7 @@ final class MarketDataStore: ObservableObject {
                 }
             }
             if index < chunks.count - 1 {
-                try? await Task.sleep(nanoseconds: MarketDataStore.chunkDelayNs)
+                try? await Task.sleep(nanoseconds: delayNs)
             }
         }
     }
@@ -553,9 +553,10 @@ final class MarketDataStore: ObservableObject {
     /// tekil/anında senaryolar batch latency'sini bekleyemez).
 
     /// Batch Refresh Logic - ViewModel'lerden çağrılan public API.
-    /// Yahoo `v7/finance/quote?symbols=...` üzerinden tek batch istekle akar.
-    func refreshQuotes(symbols: [String]) async throws {
-        await ensureQuotes(symbols: symbols)
+    /// `priority=true` Tier 1 (UI blocking, 3.6 r/s),
+    /// `priority=false` Tier 2 (background fill, 2.86 r/s).
+    func refreshQuotes(symbols: [String], priority: Bool = false) async throws {
+        await ensureQuotes(symbols: symbols, priority: priority)
     }
     // MARK: - Historical Data Access (Validator)
     

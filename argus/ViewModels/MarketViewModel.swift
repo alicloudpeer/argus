@@ -267,8 +267,27 @@ final class MarketViewModel: ObservableObject {
 
         guard !allSymbols.isEmpty else { return }
 
+        // Tier 1 (priority, UI bloklayan): kullanıcının ilk göreceği şeyler —
+        // açık pozisyonlar + watchlist ilk 20 + Safe ilk 5 ≈ 30 sembol.
+        // Yahoo cap 5 r/s; 4'lü chunk + 1.1s ara = 3.6 r/s → ~8 sn'de tamam.
+        // Tier 2 (background): kalan tüm semboller — 4'lü chunk + 1.4s ara
+        // = 2.86 r/s. Detached, UI bloklamaz.
+        let prioritySet = Set(portfolioSymbols)
+            .union(watchlist.prefix(20))
+            .union(safeSymbols.prefix(5))
+        let priorityList = allSymbols.filter { prioritySet.contains($0) }
+        let backgroundList = allSymbols.filter { !prioritySet.contains($0) }
+
         do {
-            try await MarketDataStore.shared.refreshQuotes(symbols: allSymbols)
+            // Tier 1: priority await
+            try await MarketDataStore.shared.refreshQuotes(symbols: priorityList, priority: true)
+
+            // Tier 2: background detached
+            if !backgroundList.isEmpty {
+                Task.detached(priority: .utility) {
+                    try? await MarketDataStore.shared.refreshQuotes(symbols: backgroundList, priority: false)
+                }
+            }
         } catch {
             print("Watchlist Refresh Failed: \(error)")
         }

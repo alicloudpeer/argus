@@ -42,48 +42,46 @@ extension AppStateCoordinator {
 
         ArgusLogger.success(.bootstrap, "Faz 1: UI hazır")
 
-        // PHASE 2: GECİKTİRİLMİŞ — Ağır işlemler background'da
-        Task.detached(priority: .background) {
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+        // PHASE 2: Stream + initial data load — hemen başlar, fake delay yok.
+        // Stream WebSocket; HTTP burst yapmaz, Yahoo cap'ini yemez.
+        // Tier 1 fetch (Watchlist loop içinde) chunked 4@1.1s → 3.6 r/s.
+        // Eski 2sn Task.sleep gereksizdi — UI render zaten render kuyruğunda.
+        Task { @MainActor in
+            let market = MarketViewModel.shared
+            let risk = RiskViewModel.shared
 
-            await MainActor.run {
-                let market = MarketViewModel.shared
-                let risk = RiskViewModel.shared
+            // RL-Lite: Tune System based on history
+            ArgusFeedbackLoopService.shared.tuneSystem(history: risk.portfolio)
 
-                // RL-Lite: Tune System based on history
-                ArgusFeedbackLoopService.shared.tuneSystem(history: risk.portfolio)
+            // Enable Live Mode
+            market.isLiveMode = true
 
-                // Enable Live Mode
-                market.isLiveMode = true
+            // Connect Stream for Watchlist (WebSocket — ücretsiz cap)
+            ArgusLogger.phase(.veri, "Faz 2: Stream bağlanıyor...")
+            MarketDataProvider.shared.connectStream(symbols: market.watchlist)
 
-                // Connect Stream for Watchlist
-                ArgusLogger.phase(.veri, "Faz 2: Stream bağlanıyor...")
-                MarketDataProvider.shared.connectStream(symbols: market.watchlist)
-
-                // Initial data load — TVM.loadData()'dan taşındı.
-                // Quotes startWatchlistLoop tarafından zaten immediate çekiliyor;
-                // burada candle/macro/discover/losers paralel başlasın.
-                ArgusLogger.phase(.veri, "Faz 2: Initial data load başlatılıyor...")
-                market.loadMacroEnvironment()
-                market.loadDiscoverData()
-                Task { await market.fetchCandles() }
-                Task { await market.fetchTopLosers() }
-            }
+            // Initial data load — TVM.loadData()'dan taşındı.
+            // Quotes startWatchlistLoop'un immediate run'ında Tier 1+2 ile çekiliyor.
+            // Macro/discover/candle/losers paralel başlasın.
+            ArgusLogger.phase(.veri, "Faz 2: Initial data load başlatılıyor...")
+            market.loadMacroEnvironment()
+            market.loadDiscoverData()
+            Task { await market.fetchCandles() }
+            Task { await market.fetchTopLosers() }
         }
 
-        // PHASE 3: LAZY — Scout/AutoPilot loop'ları daha geç
-        // (BorsaPy warm-up Faz 1'e taşındı)
-        Task.detached(priority: .utility) {
-            try? await Task.sleep(nanoseconds: 5_000_000_000)
+        // PHASE 3: Scout/Watchlist polling — UI bloklamadan paralel başlar.
+        // (BorsaPy warm-up Faz 1'e taşındı, AutoPilot 9sn'de Tier 1 bitsin diye)
+        Task { @MainActor in
+            ArgusLogger.phase(.autopilot, "Faz 3: Scout + Watchlist döngüsü başlatılıyor...")
+            SignalViewModel.shared.startScoutLoop()
+            MarketViewModel.shared.startWatchlistLoop()
 
-            await MainActor.run {
-                ArgusLogger.phase(.autopilot, "Faz 3: Scout döngüsü başlatılıyor...")
-                SignalViewModel.shared.startScoutLoop()
-
-                MarketViewModel.shared.startWatchlistLoop()
-
-                Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: 5_000_000_000)
+            // AutoPilot ML — Tier 1 fetch'in (~8sn) tamamlanmasına süre tanı,
+            // ondan sonra başlasın. Aynı saniyede ağ üstüne çıkmasın.
+            Task.detached(priority: .utility) {
+                try? await Task.sleep(nanoseconds: 9_000_000_000)
+                await MainActor.run {
                     AutoPilotStore.shared.startAutoPilotLoop()
                 }
             }
