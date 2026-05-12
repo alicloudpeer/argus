@@ -232,38 +232,11 @@ extension AutoPilotStore {
                     }
                 }
 
-                // Get Data — candle yoksa signal hâlâ değerli, cache'den devam et
-                let candlesOpt = await MarketDataStore.shared.ensureCandles(symbol: signal.symbol, timeframe: "1day").value
-                let candles = candlesOpt ?? []
-                if candles.isEmpty {
-                    ArgusLogger.warn("AutoPilotStore: \(signal.symbol) mum yok, convene cache denenecek", category: "OTOPİLOT")
+                // Council kararı evaluate()'den taşınıyor — double convene yok.
+                guard let decision = signal.grandDecision else {
+                    ArgusLogger.warn("AutoPilotStore: BUY sinyali Council kararı taşımıyor: \(signal.symbol)", category: "OTOPİLOT")
+                    continue
                 }
-
-                let macro = await MacroSnapshotService.shared.getSnapshot()
-
-                var sirkiyeInput: SirkiyeEngine.SirkiyeInput? = nil
-                if SymbolResolver.shared.isBistSymbol(signal.symbol) {
-                    sirkiyeInput = await prepareSirkiyeInput(macro: macro)
-                }
-
-                let snapshot = try? await FinancialSnapshotService.shared.fetchSnapshot(symbol: signal.symbol)
-
-                // Hermes news: cache'den al, yoksa nil (graceful degradation)
-                let isBist = SymbolResolver.shared.isBistSymbol(signal.symbol)
-                let news: HermesNewsSnapshot? = isBist
-                    ? await HermesNewsSnapshot.fromBistCache(symbol: signal.symbol)
-                    : HermesNewsSnapshot.fromCache(symbol: signal.symbol)
-
-                let decision = await ArgusGrandCouncil.shared.convene(
-                    symbol: signal.symbol,
-                    candles: candles,
-                    snapshot: snapshot,
-                    macro: macro,
-                    news: news,
-                    engine: .pulse,
-                    sirkiyeInput: sirkiyeInput,
-                    origin: "AUTOPILOT_STORE"
-                )
 
                 SignalStateViewModel.shared.grandDecisions[signal.symbol] = decision
                 decisionsForExecution[signal.symbol] = decision

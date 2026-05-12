@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Auto-Pilot Service
 /// The Engine for Automated Trading (Paper Mode).
 /// STRICTLY uses REAL Data. NO Simulations.
-final class AutoPilotService: Sendable {
+actor AutoPilotService {
     static let shared = AutoPilotService()
     
     // State
@@ -236,7 +236,7 @@ final class AutoPilotService: Sendable {
                         
                         // 2. Scores
                         let orion = OrionAnalysisService.shared.calculateOrionScore(symbol: symbol, candles: candles, spyCandles: nil)
-                        let atlas = FundamentalScoreStore.shared.getScore(for: symbol)
+                        let atlas = await MainActor.run { FundamentalScoreStore.shared.getScore(for: symbol) }
                         
                         // 3. Evaluate via Argus Engine
                         let decision = await ArgusAutoPilotEngine.shared.evaluate(
@@ -261,11 +261,12 @@ final class AutoPilotService: Sendable {
                                 symbol: symbol,
                                 action: sig.action,
                                 reason: sig.reason,
-                                confidence: 80.0,
+                                confidence: sig.grandDecision?.confidence ?? 0.5,
                                 timestamp: Date(),
                                 stopLoss: sig.stopLoss,
                                 takeProfit: sig.takeProfit,
-                                trimPercentage: sig.trimPercentage
+                                trimPercentage: sig.trimPercentage,
+                                grandDecision: sig.grandDecision
                             )
                         }
 

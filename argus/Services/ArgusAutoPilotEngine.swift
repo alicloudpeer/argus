@@ -61,8 +61,9 @@ struct AutoPilotSignal {
     let reason: String
     let stopLoss: Double?
     let takeProfit: Double?
-    let strategy: AutoPilotEngine 
+    let strategy: AutoPilotEngine
     let trimPercentage: Double? // New: Partial Sell Support
+    let grandDecision: ArgusGrandDecision? // Council kararını pipeline boyunca taşır — double convene önlenir
 }
 
 // MARK: - Engine
@@ -115,7 +116,7 @@ final class ArgusAutoPilotEngine: Sendable {
             
             // Hard Stop Loss (Emergency)
             if let sl = trade.stopLoss, quote.currentPrice < sl {
-                let signal = AutoPilotSignal(action: .sell, quantity: trade.quantity, reason: "Stop Loss Tetiklendi (%5 Zarar) 🛑", stopLoss: nil, takeProfit: nil, strategy: trade.engine ?? .pulse, trimPercentage: nil)
+                let signal = AutoPilotSignal(action: .sell, quantity: trade.quantity, reason: "Stop Loss Tetiklendi (%5 Zarar) 🛑", stopLoss: nil, takeProfit: nil, strategy: trade.engine ?? .pulse, trimPercentage: nil, grandDecision: nil)
                 signals.append(signal)
             }
         }
@@ -225,15 +226,15 @@ final class ArgusAutoPilotEngine: Sendable {
                  let stopLimit = -8.0
                  if pnlPercent < stopLimit {
                      let reason = "Corse Stop: %\(String(format: "%.1f", pnlPercent)) Zarar (Swing Limit) 🛑"
-                     return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil),
+                     return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil, grandDecision: nil),
                              ScoutLog(symbol: symbol, status: "SATIŞ", reason: reason, score: overallScore))
                  }
-                 
+
                  // 2. PARTIAL PROFIT TAKING (KADEMELİ SATIŞ) - NEW
                  // If profit is good (>15%) but score is weakening (<65), secure 50%
                  if pnlPercent > 15.0 && overallScore < 65.0 {
                      let reason = "Corse Kâr Al (Trim): %\(String(format: "%.1f", pnlPercent)) Kâr, Skor Zayıflıyor (\(Int(overallScore))) ✂️"
-                     return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: 0.5),
+                     return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: 0.5, grandDecision: nil),
                              ScoutLog(symbol: symbol, status: "AZALT", reason: reason, score: overallScore))
                  }
                  
@@ -253,7 +254,7 @@ final class ArgusAutoPilotEngine: Sendable {
                  if pnlPercent > profitThreshold {
                      if dropFromPeak >= trailPct {
                           let reason = "Corse İz Süren: Zirveden %\(String(format: "%.1f", dropFromPeak)) Düşüş (Kâr Koruması, Eşik: %\(trailPct)) 🦅💰"
-                          return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil),
+                          return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil, grandDecision: nil),
                                   ScoutLog(symbol: symbol, status: "SATIŞ", reason: reason, score: overallScore))
                      }
                  }
@@ -263,7 +264,7 @@ final class ArgusAutoPilotEngine: Sendable {
                  // Corse is more patient than Pulse
                  if overallScore < 55.0 {
                       let reason = "Corse Tezi Bozuldu (Argus Puanı: \(Int(overallScore))). 🚪"
-                      return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil),
+                      return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil, grandDecision: nil),
                               ScoutLog(symbol: symbol, status: "SATIŞ", reason: reason, score: overallScore))
                  }
                  
@@ -281,7 +282,7 @@ final class ArgusAutoPilotEngine: Sendable {
                  // 1. HARD STOP (Tight)
                  if pnlPercent < -2.0 {
                      let reason = "Sniper Stop: %\(String(format: "%.1f", pnlPercent)) Zarar (Katı Kural) 🛑"
-                     return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil),
+                     return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil, grandDecision: nil),
                              ScoutLog(symbol: symbol, status: "SATIŞ", reason: reason, score: overallScore))
                  }
                  
@@ -292,7 +293,7 @@ final class ArgusAutoPilotEngine: Sendable {
                  if pnlPercent > 1.5 {
                      if dropFromPeak >= 1.0 {
                           let reason = "İz Süren Stop: Zirveden %\(String(format: "%.1f", dropFromPeak)) Düşüş 📉💰"
-                          return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil),
+                          return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil, grandDecision: nil),
                                   ScoutLog(symbol: symbol, status: "SATIŞ", reason: reason, score: overallScore))
                      }
                  }
@@ -301,7 +302,7 @@ final class ArgusAutoPilotEngine: Sendable {
                      // Hysteresis buffer: Sadece puan çok düşükse (%4+ kâr ve puan < 50) çıkış yap
                      if pnlPercent > 4.0 && overallScore < AutoPilotConfig.exitScoreThreshold - 5 {
                          let reason = "Momentum Kaybı: Kâr koruma (Kâr: %\(String(format: "%.1f", pnlPercent)), Puan: \(Int(overallScore)) < \(Int(AutoPilotConfig.exitScoreThreshold - 5))). 📉"
-                         return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil),
+                         return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil, grandDecision: nil),
                                  ScoutLog(symbol: symbol, status: "SATIŞ", reason: reason, score: overallScore))
                      }
 
@@ -316,7 +317,7 @@ final class ArgusAutoPilotEngine: Sendable {
                           
                           if localScore < momentumThreshold {
                                let reason = "Anlık Momentum Kaybı (Yerel: \(Int(localScore)) < \(Int(momentumThreshold))). Çıkış. 🚪"
-                               return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil),
+                               return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil, grandDecision: nil),
                                        ScoutLog(symbol: symbol, status: "SATIŞ", reason: reason, score: overallScore))
                           }
                       }
@@ -327,14 +328,14 @@ final class ArgusAutoPilotEngine: Sendable {
                           // Granular Reason for Debugging
                           let components = "Atlas: \(Int(overallScore)), Orion: \(Int(orionScore ?? 0)), Aether: \(Int(aetherRating?.numericScore ?? 0))"
                           let reason = "Argus Tezi Tamamen Bitti (Puan: \(Int(overallScore)) < 50 | \(components)). 🚪"
-                          return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil),
+                          return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil, grandDecision: nil),
                                   ScoutLog(symbol: symbol, status: "SATIŞ", reason: reason, score: overallScore))
                      }
                 
                 // 5. TAKE PROFIT (Sniper Targets)
                 if pnlPercent >= 4.0 {
                      let reason = "Sniper Hedef: %4 Kâr (Tam Çıkış) 🎯"
-                     return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil),
+                     return (AutoPilotSignal(action: .sell, quantity: existingTrade.quantity, reason: reason, stopLoss: nil, takeProfit: nil, strategy: mode, trimPercentage: nil, grandDecision: nil),
                              ScoutLog(symbol: symbol, status: "SATIŞ", reason: reason, score: overallScore))
                 }
                 
@@ -417,6 +418,9 @@ final class ArgusAutoPilotEngine: Sendable {
                 ? await HermesNewsSnapshot.fromBistCache(symbol: symbol)
                 : await MainActor.run { HermesNewsSnapshot.fromCache(symbol: symbol) }
 
+            let demeterScore = await DemeterEngine.shared.scoreForSymbol(symbol)
+            let athenaResult = await MainActor.run { SignalStateViewModel.shared.athenaResults[symbol] }
+
             // Use .pulse engine - Async Call
             let decision = await ArgusGrandCouncil.shared.convene(
                 symbol: symbol,
@@ -425,6 +429,8 @@ final class ArgusAutoPilotEngine: Sendable {
                 macro: macro,
                 news: news,
                 engine: .pulse,
+                athena: athenaResult,
+                demeter: demeterScore,
                 origin: "AUTOPILOT"
             )
             
@@ -444,7 +450,20 @@ final class ArgusAutoPilotEngine: Sendable {
                      return (nil, ScoutLog(symbol: symbol, status: "RED", reason: "🏛️ Konsey Kararı: \(gd.action.rawValue) - Giriş Yasak", score: overallScore))
                     
                 case .neutral:
-                     return (nil, ScoutLog(symbol: symbol, status: "BEKLE", reason: "🏛️ Konsey Kararı: İZLE / NÖTR", score: overallScore))
+                    // Shadow Trade Tier: Nötr kararları Chiron için logla
+                    if gd.confidence >= 0.40 {
+                        await MainActor.run {
+                            LearningPersistenceManager.shared.logShadowEntry(
+                                symbol: symbol,
+                                price: currentPrice,
+                                atlas: gd.atlasDecision?.netSupport ?? 0,
+                                orion: gd.orionDecision.netSupport,
+                                aether: gd.aetherDecision.netSupport,
+                                vix: macro.vix ?? 0
+                            )
+                        }
+                    }
+                    return (nil, ScoutLog(symbol: symbol, status: "BEKLE", reason: "🏛️ Konsey Kararı: İZLE / NÖTR", score: overallScore))
                     
                 case .aggressiveBuy, .accumulate:
                     // Earnings guard penalty'sini confidence'a uygula
@@ -452,6 +471,19 @@ final class ArgusAutoPilotEngine: Sendable {
 
                     // CHURN PREVENTION: Minimum Confidence Filter
                     if adjustedConfidence * 100 < AutoPilotConfig.minimumConfidencePercent {
+                        // Shadow Trade Tier: Düşük güvenli BUY sinyallerini Chiron için logla
+                        if adjustedConfidence >= 0.20 {
+                            await MainActor.run {
+                                LearningPersistenceManager.shared.logShadowEntry(
+                                    symbol: symbol,
+                                    price: currentPrice,
+                                    atlas: gd.atlasDecision?.netSupport ?? 0,
+                                    orion: gd.orionDecision.netSupport,
+                                    aether: gd.aetherDecision.netSupport,
+                                    vix: macro.vix ?? 0
+                                )
+                            }
+                        }
                         let penaltyTag = safetyResult.confidenceMultiplier < 1.0 ? " [earnings penalty ×\(safetyResult.confidenceMultiplier)]" : ""
                         let reason = "⚠️ Düşük Güven Reddi: %\(Int(adjustedConfidence * 100)) < %\(Int(AutoPilotConfig.minimumConfidencePercent))\(penaltyTag)"
                         return (nil, ScoutLog(symbol: symbol, status: "RED", reason: reason, score: adjustedConfidence * 100))
@@ -508,7 +540,8 @@ final class ArgusAutoPilotEngine: Sendable {
                         stopLoss: stopLoss,
                         takeProfit: takeProfit,
                         strategy: engine,
-                        trimPercentage: nil
+                        trimPercentage: nil,
+                        grandDecision: grandDecision
                     )
 
                     ArgusLogger.info("KONSEY KARARI doğrudan uygulanıyor: \(gd.action.rawValue) for \(symbol)", category: "AUTOPILOT")
@@ -527,100 +560,7 @@ final class ArgusAutoPilotEngine: Sendable {
         return (nil, ScoutLog(symbol: symbol, status: "RED", reason: "Beklenmeyen durum", score: overallScore))
         
     }
-    
-    // MARK: - Entry Logic
-    
-    private func checkCorseEntry(
-        symbol: String, price: Double, equity: Double, buyingPower: Double,
-        atlas: Double?, orion: Double?, aether: MacroEnvironmentRating?, hermes: NewsInsight?,
-        demeterScore: Double?,
-        dqScore: Double, candles: [Candle]?, overallScore: Double,
-        argusMultiplier: Double = 1.0 // ARGUS V3 MULTIPLIER
-    ) -> AutoPilotSignal? {
-        // CORSE (SWING) ENTRY REQUIREMENTS
-        // More relaxed than before - Hermes is OPTIONAL
-        
-        // 1. Atlas (Fundamentals) - Optional for Commodities/Crypto
-        if let at = atlas, at < 55 { return nil }  // Lowered from 60
-        
-        // 2. Overall Score threshold
-        guard overallScore >= 65 else { return nil }  // Lowered from 70
-               
-        // 3. Orion (Technical) - Required
-        guard let or = orion, or >= 55 else { return nil }  // Lowered from 60
-        
-        // 4. Aether (Macro) - Required but lenient
-        guard let ae = aether, ae.numericScore >= 30 else { return nil }  // Was 20, slightly raised for safety
-        
-        // 5. Hermes (News) - OPTIONAL (was blocking most entries)
-        let _ = (hermes?.confidence ?? 50) >= 40
-        // Just log if missing, don't block
-        if hermes == nil {
-            ArgusLogger.info("Corse Entry: Hermes verisi yok, haber onayı olmadan devam", category: "AUTOPILOT")
-        }
-        
-        // 6. Demeter (Sector) - Optional for now
-        // guard (demeterScore ?? 50) >= 35 else { return nil }
-        
-        // Calculate Volatility (ATR)
-        let atr = candles != nil ? OrionAnalysisService.shared.calculateATR(candles: candles!) : 0.0
-        
-        // Suggest Buy
-        let (qty, sl, tp, riskMult) = calculatePositionSize(
-            strategy: .corse, symbol: symbol, price: price, equity: equity, buyingPower: buyingPower,
-            aetherScore: ae.numericScore, volatility: atr,
-            argusMultiplier: argusMultiplier
-        )
-        
-        if qty > 0 {
-            logDecision(symbol: symbol, mode: .corse, action: "buy", qty: qty, price: price, sl: sl, tp: tp, riskMult: riskMult, dq: dqScore, overallScore: overallScore, scores: (atlas, or, ae.numericScore, hermes?.confidence, demeterScore))
-            return AutoPilotSignal(action: .buy, quantity: qty, reason: "Corse Swing: Güçlü Trend Başlangıcı (Volatilite: \(String(format:"%.2f", atr)))", stopLoss: sl, takeProfit: tp, strategy: .corse, trimPercentage: nil)
-        }
-        return nil
-    }
-    
-    private func checkPulseEntry(
-        symbol: String, price: Double, equity: Double, buyingPower: Double,
-        orion: Double?, orionDetails: OrionComponentScores?, aether: MacroEnvironmentRating?, hermes: NewsInsight?,
-        demeterScore: Double?,
-        dqScore: Double, overallScore: Double?, candles: [Candle]?,
-        argusMultiplier: Double = 1.0 // ARGUS V3 MULTIPLIER
-    ) -> AutoPilotSignal? {
-        
-        // SPECIAL: Dip Hunter Mode (Orion 3.0 Phoenix)
-        // Phoenix Removed from AutoPilot Logic (Use standalone Phoenix)
-        
-        // --- THRESHOLD LOGIC ---
-        // Normal Mode: Hermes >= 70, Orion >= 55
-        // Dip Mode: Disabled for now (Phoenix Removed)
-        
-        let hermesThreshold = 70.0
-        
-        guard let hm = hermes, hm.confidence >= hermesThreshold,
-              let or = orion, or >= 55,
-              let ae = aether, ae.numericScore >= 40 else { return nil }
-        
-        // Demeter Check: Pulse needs good sector?
-        // guard (demeterScore ?? 50) >= 50 else { return nil }
-        
-        // Calculate Volatility (ATR)
-        let atr = candles != nil ? OrionAnalysisService.shared.calculateATR(candles: candles!) : 0.0
 
-        // Suggest Buy
-         let (qty, sl, tp, riskMult) = calculatePositionSize(
-            strategy: .pulse, symbol: symbol, price: price, equity: equity, buyingPower: buyingPower,
-            aetherScore: ae.numericScore, volatility: atr,
-            argusMultiplier: argusMultiplier
-        )
-        
-        if qty > 0 {
-            let reason = "Pulse Scalp: Anlık Trend Takibi ve Momentum Alımı"
-            logDecision(symbol: symbol, mode: .pulse, action: "buy", qty: qty, price: price, sl: sl, tp: tp, riskMult: riskMult, dq: dqScore, overallScore: overallScore, scores: (nil, or, ae.numericScore, hm.confidence, demeterScore))
-             return AutoPilotSignal(action: .buy, quantity: qty, reason: reason, stopLoss: sl, takeProfit: tp, strategy: .pulse, trimPercentage: nil)
-        }
-        return nil
-    }
-    
     // MARK: - Position Management (Exit)
     
 

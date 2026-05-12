@@ -218,6 +218,23 @@ final class SignalViewModel: ObservableObject {
         await orionTask.value
         await fundamentalTask.value
 
+        // Athena Factor Computation — tüm veri hazır olduktan sonra senkron hesapla.
+        let financials = FundamentalScoreStore.shared.getRawData(for: symbol)
+        let atlasResult = FundamentalScoreStore.shared.getScore(for: symbol)
+        let candles = MarketViewModel.shared.candles[symbol] ?? []
+        let orionScore = SignalStateViewModel.shared.orionScores[symbol]
+        let regime = ChironRegimeEngine.shared.globalResult.regime
+
+        let athenaResult = AthenaFactorService.shared.calculateFactors(
+            symbol: symbol,
+            financials: financials,
+            atlasResult: atlasResult,
+            candles: candles,
+            orionScore: orionScore,
+            regime: regime
+        )
+        SignalStateViewModel.shared.athenaResults[symbol] = athenaResult
+
         await updateAssetType(for: symbol, to: assetType)
     }
 

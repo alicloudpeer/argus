@@ -37,79 +37,71 @@ final class AlertManager: ObservableObject {
             }
             .store(in: &cancellables)
 
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(handleTradeBrainBuy(_:)),
-            name: .tradeBrainBuyOrder, object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(handleTradeBrainSell(_:)),
-            name: .tradeBrainSellOrder, object: nil
-        )
+        // tradeBrainBuyOrder / tradeBrainSellOrder observers kaldirildi.
+        // Artik TradeBrainExecutor dogrudan executeBuy()/executeSell() cagiriyor.
     }
 
-    @objc private func handleTradeBrainBuy(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let symbol = userInfo["symbol"] as? String,
-              let quantity = userInfo["quantity"] as? Double,
-              let price = userInfo["price"] as? Double else {
-            ArgusLogger.error("📥 BUY notification ALINDI ama userInfo eksik", category: "EXECUTION")
+    // handleTradeBrainBuy / handleTradeBrainSell kaldirildi.
+    // Artik executeBuy() / executeSell() public API'si kullaniliyor.
+
+    // MARK: - Direct Execution API (replaces NotificationCenter fire-and-forget)
+
+    /// TradeBrainExecutor'dan dogrudan cagrilir. Alim yapar, plan olusturur, sonucu doner.
+    @discardableResult
+    func executeBuy(
+        symbol: String,
+        quantity: Double,
+        price: Double,
+        rationale: String,
+        stopLoss: Double?,
+        takeProfit: Double?,
+        decision: ArgusGrandDecision?
+    ) -> Trade? {
+        guard let trade = self.buy(
+            symbol: symbol,
+            quantity: quantity,
+            source: .autoPilot,
+            engine: .pulse,
+            stopLoss: stopLoss,
+            takeProfit: takeProfit,
+            rationale: rationale,
+            referencePrice: price
+        ) else {
+            let reason = ExecutionLogger.shared.lastTradeError ?? "bilinmeyen sebep"
+            ArgusLogger.error("TRADE BRAIN ALIM RED: \(symbol) → \(reason)", category: "EXECUTION")
+            return nil
+        }
+
+        if let decision = decision ?? SignalStateViewModel.shared.grandDecisions[symbol] {
+            _ = PositionPlanStore.shared.createPlan(for: trade, decision: decision)
+            ArgusLogger.info("Trade Brain Plan oluşturuldu: \(symbol)", category: "EXECUTION")
+        } else {
+            ArgusLogger.warn("Trade Brain Plan atlandı (karar yok): \(symbol)", category: "EXECUTION")
+        }
+
+        ArgusLogger.info("TRADE BRAIN ALIM: \(symbol) - \(String(format: "%.4f", quantity)) adet @ \(String(format: "%.2f", price))", category: "EXECUTION")
+        return trade
+    }
+
+    /// TradeBrainExecutor'dan dogrudan cagrilir. Satim/trim yapar.
+    func executeSell(
+        tradeId: UUID,
+        price: Double,
+        reason: String,
+        trimPercentage: Double? = nil
+    ) {
+        guard let trade = PortfolioStore.shared.trades.first(where: { $0.id == tradeId }) else {
+            ArgusLogger.error("TRADE BRAIN SATIŞ: trade bulunamadı (id=\(tradeId))", category: "EXECUTION")
             return
         }
 
-        let rationale = userInfo["rationale"] as? String ?? "Trade Brain Execution"
-        // ATR-bazlı SL/TP referansı (Faz 2.1): Alkindus R-multiple outcome
-        // grading için zorunlu. Eski sürüm nil geçiyordu.
-        let stopLossRef = userInfo["stopLoss"] as? Double
-        let takeProfitRef = userInfo["takeProfit"] as? Double
-
-        ArgusLogger.info("📥 BUY notification ALINDI: \(symbol) qty=\(String(format: "%.4f", quantity)) @ \(String(format: "%.2f", price)) SL=\(stopLossRef.map { String(format: "%.2f", $0) } ?? "—") TP=\(takeProfitRef.map { String(format: "%.2f", $0) } ?? "—") — buy() çağrılıyor", category: "EXECUTION")
-
-        Task { @MainActor in
-            guard let trade = self.buy(
-                symbol: symbol,
-                quantity: quantity,
-                source: .autoPilot,
-                engine: .pulse,
-                stopLoss: stopLossRef,
-                takeProfit: takeProfitRef,
-                rationale: rationale,
-                referencePrice: price
-            ) else {
-                let reason = ExecutionLogger.shared.lastTradeError ?? "bilinmeyen sebep"
-                ArgusLogger.error("TRADE BRAIN ALIM RED: \(symbol) → \(reason)", category: "EXECUTION")
-                return
-            }
-
-            if let decision = SignalStateViewModel.shared.grandDecisions[symbol] {
-                _ = PositionPlanStore.shared.createPlan(for: trade, decision: decision)
-                ArgusLogger.info("Trade Brain Plan oluşturuldu: \(symbol)", category: "EXECUTION")
-            } else {
-                ArgusLogger.warn("Trade Brain Plan atlandı (karar yok): \(symbol)", category: "EXECUTION")
-            }
-
-            ArgusLogger.info("TRADE BRAIN ALIM: \(symbol) - \(String(format: "%.4f", quantity)) adet @ \(String(format: "%.2f", price))", category: "EXECUTION")
-        }
-    }
-
-    @objc private func handleTradeBrainSell(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let _ = userInfo["price"] as? Double,
-              let reason = userInfo["reason"] as? String else { return }
-
-        if let tradeIdStr = userInfo["tradeId"] as? String,
-           let tradeId = UUID(uuidString: tradeIdStr),
-           let trade = PortfolioStore.shared.trades.first(where: { $0.id == tradeId }) {
-
-            Task { @MainActor in
-                if let trimPercentage = userInfo["trimPercentage"] as? Double, trimPercentage > 0, trimPercentage < 100 {
-                    let quantity = trade.quantity * (trimPercentage / 100.0)
-                    self.sell(symbol: trade.symbol, quantity: quantity, source: .autoPilot, reason: reason)
-                    ArgusLogger.info("TRADE BRAIN SATIŞ(TRIM): \(trade.symbol) %\(Int(trimPercentage)) - \(reason)", category: "EXECUTION")
-                } else {
-                    self.sell(symbol: trade.symbol, quantity: trade.quantity, source: .autoPilot, reason: reason)
-                    ArgusLogger.info("TRADE BRAIN SATIŞ: \(trade.symbol) - \(reason)", category: "EXECUTION")
-                }
-            }
+        if let trim = trimPercentage, trim > 0, trim < 100 {
+            let quantity = trade.quantity * (trim / 100.0)
+            self.sell(symbol: trade.symbol, quantity: quantity, source: .autoPilot, reason: reason)
+            ArgusLogger.info("TRADE BRAIN SATIŞ(TRIM): \(trade.symbol) %\(Int(trim)) - \(reason)", category: "EXECUTION")
+        } else {
+            self.sell(symbol: trade.symbol, quantity: trade.quantity, source: .autoPilot, reason: reason)
+            ArgusLogger.info("TRADE BRAIN SATIŞ: \(trade.symbol) - \(reason)", category: "EXECUTION")
         }
     }
 
@@ -192,6 +184,8 @@ final class AlertManager: ObservableObject {
                 ScanOrchestrator.shared.addAgoraSnapshot(snapshot)
                 return nil
             }
+        } else {
+            ArgusLogger.warning(.autopilot, "AGORA: \(symbol) için Council kararı bulunamadı — governor atlandı")
         }
 
         if let trade = PortfolioStore.shared.buy(
@@ -271,6 +265,8 @@ final class AlertManager: ObservableObject {
                 ScanOrchestrator.shared.addAgoraSnapshot(snapshot)
                 return
             }
+        } else {
+            ArgusLogger.warning(.autopilot, "AGORA: \(symbol) için Council kararı bulunamadı — governor atlandı")
         }
 
         // FIFO Close Logic

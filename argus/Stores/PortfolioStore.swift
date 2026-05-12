@@ -35,6 +35,14 @@ final class PortfolioStore: ObservableObject {
     @Published var bistBalance: Double = -1.0   // -1 denotes "Not Loaded"
     @Published var transactions: [Transaction] = []
 
+    // MARK: - Peak Equity Tracking (Drawdown Enforcement)
+    @Published var peakGlobalEquity: Double = 0 {
+        didSet { UserDefaults.standard.set(peakGlobalEquity, forKey: "argus_peak_global_equity") }
+    }
+    @Published var peakBistEquity: Double = 0 {
+        didSet { UserDefaults.standard.set(peakBistEquity, forKey: "argus_peak_bist_equity") }
+    }
+
     // MARK: - Cached Filtered Subsets (Performance)
     @Published private(set) var openTradesCache: [Trade] = []
     @Published private(set) var closedTradesCache: [Trade] = []
@@ -96,6 +104,10 @@ final class PortfolioStore: ObservableObject {
     private init() {
         print("🚀 PortfolioStore: Initializing (V6 FileManager)...")
         loadFromDisk()
+
+        // Peak equity — UserDefaults'tan geri yükle (drawdown hesabı için)
+        peakGlobalEquity = UserDefaults.standard.double(forKey: "argus_peak_global_equity")
+        peakBistEquity = UserDefaults.standard.double(forKey: "argus_peak_bist_equity")
     }
 
     // MARK: - Add (lightweight mutators)

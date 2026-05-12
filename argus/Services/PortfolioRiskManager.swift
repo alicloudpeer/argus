@@ -166,7 +166,19 @@ class PortfolioRiskManager {
                 return RiskCheckResult(canTrade: false, warnings: warnings, blockers: blockers, adjustedQuantity: nil, reason: "Cooldown")
             }
         }
-        
+
+        // 7. Portföy Drawdown Kontrolü
+        let peakEquity = isBist ? PortfolioStore.shared.peakBistEquity : PortfolioStore.shared.peakGlobalEquity
+        if peakEquity > 0 {
+            let drawdown = (peakEquity - totalEquity) / peakEquity
+            if drawdown >= limits.maxPortfolioDrawdown {
+                blockers.append("Portföy drawdown %\(Int(drawdown * 100)) — limit %\(Int(limits.maxPortfolioDrawdown * 100)) aşıldı")
+                return RiskCheckResult(canTrade: false, warnings: warnings, blockers: blockers, adjustedQuantity: nil, reason: "Drawdown limiti")
+            } else if drawdown >= limits.maxPortfolioDrawdown * 0.7 {
+                warnings.append("Drawdown uyarısı: %\(Int(drawdown * 100)) / %\(Int(limits.maxPortfolioDrawdown * 100))")
+            }
+        }
+
         // Tüm kontroller geçti
         let wasAdjusted = adjustedAmount != proposedAmount
         let finalQuantity = adjustedAmount / currentPrice

@@ -149,7 +149,8 @@ actor ExecutionGovernor {
                     stopLoss: finalSignal.stopLoss,
                     takeProfit: finalSignal.takeProfit,
                     strategy: finalSignal.strategy,
-                    trimPercentage: finalSignal.trimPercentage
+                    trimPercentage: finalSignal.trimPercentage,
+                    grandDecision: finalSignal.grandDecision
                 )
             }
         }

@@ -20,10 +20,10 @@ struct BistHoloPanelView: View {
                             .font(.headline)
                             .bold()
                             .tracking(2)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text(module.description)
                             .font(.caption2)
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                             .lineLimit(1)
                     }
                     
@@ -36,12 +36,12 @@ struct BistHoloPanelView: View {
                     
                     Button(action: onClose) {
                         Image(systemName: "xmark")
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .padding(8)
                             .background(Circle().fill(InstitutionalTheme.Colors.surface3))
                             .overlay(
                                 Circle()
-                                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
                             )
                     }
                 }
@@ -60,14 +60,14 @@ struct BistHoloPanelView: View {
                                 .padding(.top, 1)
                             Text(module.description)
                                 .font(.caption)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                         }
                         .padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(InstitutionalTheme.Colors.surface2)
+                        .background(DesignTokens.Colors.surfaceElevated)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         
@@ -215,6 +215,9 @@ struct BistHoloPanelView: View {
         // Hermes news: BIST cache'den al, yoksa nil (graceful degradation)
         let hermesNews = await HermesNewsSnapshot.fromBistCache(symbol: symbol)
 
+        let demeterScore = await DemeterEngine.shared.scoreForSymbol(symbol)
+        let athenaResult = await MainActor.run { SignalStateViewModel.shared.athenaResults[symbol] }
+
         let decision = await ArgusGrandCouncil.shared.convene(
             symbol: symbol,
             candles: candleList,
@@ -222,6 +225,8 @@ struct BistHoloPanelView: View {
             macro: macro,
             news: hermesNews,
             engine: .pulse,
+            athena: athenaResult,
+            demeter: demeterScore,
             sirkiyeInput: sirkiyeInput
         )
         
@@ -270,10 +275,10 @@ struct BistHoloPanelView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Kulis")
                             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text("Haber, analist ve duygu analizi")
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     Spacer()
                 }
@@ -298,7 +303,7 @@ struct BistHoloPanelView: View {
                         .foregroundColor(InstitutionalTheme.Colors.warning)
                     Text("Eğitim amaçlıdır, yatırım tavsiyesi değildir.")
                         .font(DesignTokens.Fonts.custom(size: 10))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 .padding(.vertical, 8)
             }
@@ -313,7 +318,7 @@ struct BistHoloPanelView: View {
              VStack {
                  Text("Modül taşındı.")
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
              }
         }
     }

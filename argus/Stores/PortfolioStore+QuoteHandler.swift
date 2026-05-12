@@ -45,6 +45,13 @@ extension PortfolioStore {
                 }
             }
         }
+
+        // Peak Equity Tracking — drawdown enforcement için zirve takibi
+        let simpleQuotes: [String: Quote] = quotes.compactMapValues { $0.value }
+        let currentGlobal = getGlobalEquity(quotes: simpleQuotes)
+        if currentGlobal > peakGlobalEquity { peakGlobalEquity = currentGlobal }
+        let currentBist = getBistEquity(quotes: simpleQuotes)
+        if currentBist > peakBistEquity { peakBistEquity = currentBist }
     }
 
     func checkStopLoss(for trade: Trade, at index: Int, currentPrice: Double) {

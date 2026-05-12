@@ -130,13 +130,18 @@ final class SignalStateViewModel: ObservableObject {
         news: HermesNewsSnapshot?,
         engine: AutoPilotEngine
     ) async -> ArgusGrandDecision {
+        let demeterScore = await DemeterEngine.shared.scoreForSymbol(symbol)
+        let athenaResult = athenaResults[symbol]
+
         let decision = await ArgusGrandCouncil.shared.convene(
             symbol: symbol,
             candles: candles,
             snapshot: snapshot,
             macro: macro,
             news: news,
-            engine: engine
+            engine: engine,
+            athena: athenaResult,
+            demeter: demeterScore
         )
         grandDecisions[symbol] = decision
         return decision

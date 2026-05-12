@@ -1,12 +1,6 @@
 import Foundation
 import Combine
 
-// MARK: - Notification Names
-extension Notification.Name {
-    static let tradeBrainBuyOrder = Notification.Name("tradeBrainBuyOrder")
-    static let tradeBrainSellOrder = Notification.Name("tradeBrainSellOrder")
-}
-
 // MARK: - Trade Brain Executor
 /// Council kararlarını alım/satım emirlerine çeviren uygulayıcı
 
@@ -200,16 +194,14 @@ class TradeBrainExecutor: ObservableObject {
                 guard let currentPrice = quotes[trade.symbol]?.currentPrice, currentPrice > 0 else { continue }
                 ArgusLogger.warn("📉 MomentumFade: \(trade.symbol) → %50 trim", category: "TRADEBRAIN")
                 log("📉 \(trade.symbol): Momentum soldu — %50 kısmi çıkış")
-                NotificationCenter.default.post(
-                    name: .tradeBrainSellOrder,
-                    object: nil,
-                    userInfo: [
-                        "tradeId": trade.id.uuidString,
-                        "price": currentPrice,
-                        "trimPercentage": 50.0,
-                        "reason": "MomentumFade: breadth düştü → %50 trim"
-                    ]
-                )
+                await MainActor.run {
+                    AlertManager.shared.executeSell(
+                        tradeId: trade.id,
+                        price: currentPrice,
+                        reason: "MomentumFade: breadth düştü → %50 trim",
+                        trimPercentage: 50.0
+                    )
+                }
             }
         }
         // Seviyeyi güncelle (bu döngü sonunda referans olur)
@@ -488,7 +480,7 @@ class TradeBrainExecutor: ObservableObject {
         }
 
         if policy.forceSafeOnlyBuys {
-            executeSafeAllocationOrders(
+            await executeSafeAllocationOrders(
                 policy: policy,
                 openSymbols: openSymbols,
                 quotes: quotes,
@@ -577,6 +569,65 @@ class TradeBrainExecutor: ObservableObject {
         let availableBalance = isBist ? bistBalance : balance
 
         ArgusLogger.info("executeBuy: Available Balance = \(availableBalance), isBist = \(isBist)", category: "TRADEBRAIN")
+
+        // 0. CASH FLOOR + SCARCITY MODE
+        let cashFloorEquity = isBist
+            ? await MainActor.run { PortfolioStore.shared.getBistEquity(quotes: quotes) }
+            : await MainActor.run { PortfolioStore.shared.getGlobalEquity(quotes: quotes) }
+        let cashRatio = cashFloorEquity > 0 ? availableBalance / cashFloorEquity : 1.0
+        let cashFloorRatio: Double = 0.20
+
+        if cashRatio < cashFloorRatio {
+            let requiredConfidence: Double = 0.65
+            if decision.confidence < requiredConfidence {
+                log("💰 \(symbol): Cash floor aktif (nakit %\(Int(cashRatio * 100)) < %20) — güven %\(Int(decision.confidence * 100)) < %65, atlandı")
+                await TradeBrainExecutionTracker.shared.recordSkip(
+                    symbol: symbol,
+                    reason: "Cash floor: nakit %\(Int(cashRatio * 100)), güven yetersiz"
+                )
+                return
+            }
+            log("💰 \(symbol): Cash floor aktif ama güven yüksek (%\(Int(decision.confidence * 100))) — scarcity mode")
+
+            // SWAP / ROTATION: Cash floor + yüksek güven — en zayıf pozisyonu çıkar
+            let openTrades = portfolio.filter { $0.isOpen }
+            let newScore = decision.confidence * 100
+
+            var worstTrade: Trade? = nil
+            var worstScore: Double = 200
+
+            for trade in openTrades {
+                let isSameMarket = SymbolResolver.shared.isBistSymbol(trade.symbol) == isBist
+                guard isSameMarket else { continue }
+                let td = await MainActor.run { SignalStateViewModel.shared.grandDecisions[trade.symbol] }
+                if let td = td {
+                    let score = td.confidence * 100
+                    if score < worstScore {
+                        worstScore = score
+                        worstTrade = trade
+                    }
+                }
+            }
+
+            let swapBuffer: Double = 15.0
+            if let worst = worstTrade, newScore > worstScore + swapBuffer {
+                let sellPrice = quotes[worst.symbol]?.currentPrice ?? worst.entryPrice
+                log("🔄 SWAP: \(symbol) (skor \(Int(newScore))) > \(worst.symbol) (skor \(Int(worstScore))) + buffer 15")
+                await MainActor.run {
+                    AlertManager.shared.executeSell(
+                        tradeId: worst.id,
+                        price: sellPrice,
+                        reason: "SWAP: \(symbol) daha güçlü (\(Int(newScore)) vs \(Int(worstScore)))"
+                    )
+                }
+                // Aynı döngüde alma — nakit serbest kaldı, sonraki tarama alacak
+                await TradeBrainExecutionTracker.shared.recordSkip(
+                    symbol: symbol,
+                    reason: "SWAP initiated: sold \(worst.symbol), will buy next scan"
+                )
+                return
+            }
+        }
 
         // 1. ALLOCATION HESAPLA
         // BIST sembolleri için SirkiyeAether kullan (Türkiye makrosu), globallar için MacroRegimeService
@@ -875,7 +926,8 @@ class TradeBrainExecutor: ObservableObject {
             stopLoss: computedStopLoss,
             takeProfit: computedTakeProfit,
             strategy: .pulse,
-            trimPercentage: nil
+            trimPercentage: nil,
+            grandDecision: decision
         )
         
         let governorDecision = await ExecutionGovernor.shared.review(
@@ -906,9 +958,8 @@ class TradeBrainExecutor: ObservableObject {
             return
         }
         
-        // 5. ALIM YAP - Notification ile TradingViewModel'e bildir
-        // Not: TradingViewModel.shared kullanılamıyor, NotificationCenter ile çözüyoruz
-        ArgusLogger.info("executeBuy: Notification gönderiliyor - Symbol: \(symbol), Qty: \(proposedQuantity), Price: \(currentPrice)", category: "TRADEBRAIN")
+        // 5. ALIM YAP - AlertManager.executeBuy() dogrudan cagiriliyor
+        ArgusLogger.info("executeBuy: AlertManager.executeBuy cagiriliyor - Symbol: \(symbol), Qty: \(proposedQuantity), Price: \(currentPrice)", category: "TRADEBRAIN")
         
         let rationale: String
         if isAddOn {
@@ -919,24 +970,31 @@ class TradeBrainExecutor: ObservableObject {
             rationale = decision.reasoning
         }
 
-        NotificationCenter.default.post(
-            name: .tradeBrainBuyOrder,
-            object: nil,
-            userInfo: [
-                "symbol": symbol,
-                "quantity": proposedQuantity,
-                "price": currentPrice,
-                "rationale": rationale,
-                "stopLoss": computedStopLoss,
-                "takeProfit": computedTakeProfit
-            ]
-        )
+        let trade = await MainActor.run {
+            AlertManager.shared.executeBuy(
+                symbol: symbol,
+                quantity: proposedQuantity,
+                price: currentPrice,
+                rationale: rationale,
+                stopLoss: computedStopLoss,
+                takeProfit: computedTakeProfit,
+                decision: decision
+            )
+        }
 
-        log("✅ \(symbol): \(isAddOn ? "EKLEME" : "ALIM") - \(String(format: "%.2f", proposedQuantity)) adet @ \(String(format: "%.2f", currentPrice))\(isAddOn ? " [EKLEME]" : momentumFloor > 0 ? " [MOMENTUM]" : "")")
-        log("   📋 Karar: \(decision.action.rawValue) (\(String(format: "%.0f", decision.confidence * 100))%)")
-        
-        ArgusLogger.info("executeBuy: ALIM EMRİ GÖNDERİLDİ - \(symbol): \(proposedQuantity) @ \(currentPrice)", category: "TRADEBRAIN")
-        
+        if let trade = trade {
+            log("✅ \(symbol): \(isAddOn ? "EKLEME" : "ALIM") - \(String(format: "%.2f", trade.quantity)) adet @ \(String(format: "%.2f", currentPrice))\(isAddOn ? " [EKLEME]" : momentumFloor > 0 ? " [MOMENTUM]" : "")")
+            log("   📋 Karar: \(decision.action.rawValue) (\(String(format: "%.0f", decision.confidence * 100))%)")
+            ArgusLogger.info("executeBuy: ALIM BAŞARILI - \(symbol): \(trade.quantity) @ \(currentPrice)", category: "TRADEBRAIN")
+        } else {
+            log("❌ \(symbol): Alım REDDEDİLDİ — \(ExecutionLogger.shared.lastTradeError ?? "?")")
+            ArgusLogger.error("executeBuy: ALIM REDDEDİLDİ - \(symbol): \(ExecutionLogger.shared.lastTradeError ?? "?")", category: "TRADEBRAIN")
+            await TradeBrainExecutionTracker.shared.recordSkip(
+                symbol: symbol,
+                reason: "Execution failed: \(ExecutionLogger.shared.lastTradeError ?? "?")"
+            )
+        }
+
         // Cooldown ayarla
         lastExecutionTime[symbol] = Date()
         ArgusLogger.info("executeBuy: Cooldown ayarlandı - \(symbol)", category: "TRADEBRAIN")
@@ -950,15 +1008,13 @@ class TradeBrainExecutor: ObservableObject {
         currentPrice: Double
     ) async {
         // Council LIQUIDATE dedi - acil çıkış
-        NotificationCenter.default.post(
-            name: .tradeBrainSellOrder,
-            object: nil,
-            userInfo: [
-                "tradeId": trade.id.uuidString,
-                "price": currentPrice,
-                "reason": "🚨 Council LIQUIDATE: \(decision.reasoning)"
-            ]
-        )
+        await MainActor.run {
+            AlertManager.shared.executeSell(
+                tradeId: trade.id,
+                price: currentPrice,
+                reason: "🚨 Council LIQUIDATE: \(decision.reasoning)"
+            )
+        }
         
         log("🚨 \(trade.symbol): ACİL SATIŞ - Council LIQUIDATE kararı")
         log("   📋 Sebep: \(decision.reasoning)")
@@ -977,27 +1033,23 @@ class TradeBrainExecutor: ObservableObject {
         policy: RiskEscapePolicy
     ) async {
         if trimPercent >= 100 {
-            NotificationCenter.default.post(
-                name: .tradeBrainSellOrder,
-                object: nil,
-                userInfo: [
-                    "tradeId": trade.id.uuidString,
-                    "price": currentPrice,
-                    "reason": "POLICY_\(policy.mode.rawValue)_LIQUIDATE"
-                ]
-            )
+            await MainActor.run {
+                AlertManager.shared.executeSell(
+                    tradeId: trade.id,
+                    price: currentPrice,
+                    reason: "POLICY_\(policy.mode.rawValue)_LIQUIDATE"
+                )
+            }
             log("🛡️ \(trade.symbol): Policy LIQUIDATE (\(policy.mode.rawValue))")
         } else {
-            NotificationCenter.default.post(
-                name: .tradeBrainSellOrder,
-                object: nil,
-                userInfo: [
-                    "tradeId": trade.id.uuidString,
-                    "price": currentPrice,
-                    "trimPercentage": trimPercent,
-                    "reason": "POLICY_\(policy.mode.rawValue)_TRIM_\(Int(trimPercent))"
-                ]
-            )
+            await MainActor.run {
+                AlertManager.shared.executeSell(
+                    tradeId: trade.id,
+                    price: currentPrice,
+                    reason: "POLICY_\(policy.mode.rawValue)_TRIM_\(Int(trimPercent))",
+                    trimPercentage: trimPercent
+                )
+            }
             log("🛡️ \(trade.symbol): Policy TRIM %\(Int(trimPercent)) (\(policy.mode.rawValue))")
         }
         lastExecutionTime[trade.symbol] = Date()
@@ -1030,7 +1082,7 @@ class TradeBrainExecutor: ObservableObject {
         quotes: [String: Quote],
         globalBalance: Double,
         bistBalance: Double
-    ) {
+    ) async {
         let safeUniverse = SafeUniverseService.shared
         let (_, target) = AetherAllocationEngine.shared.determineAllocation(aetherScore: policy.aetherScore)
 
@@ -1058,20 +1110,28 @@ class TradeBrainExecutor: ObservableObject {
             let qty = order.amount / quote.currentPrice
             if qty <= 0 { continue }
 
-            NotificationCenter.default.post(
-                name: .tradeBrainBuyOrder,
-                object: nil,
-                userInfo: [
-                    "symbol": order.symbol,
-                    "quantity": qty,
-                    "price": quote.currentPrice,
-                    "reason": order.reason
-                ]
-            )
-            ArgusLogger.info(
-                "TradeBrainSafeAllocation: BUY \(order.symbol) amount=\(String(format: "%.2f", order.amount)) policy=\(policy.mode.rawValue)",
-                category: "TRADEBRAIN"
-            )
+            let trade = await MainActor.run {
+                AlertManager.shared.executeBuy(
+                    symbol: order.symbol,
+                    quantity: qty,
+                    price: quote.currentPrice,
+                    rationale: order.reason,
+                    stopLoss: nil,
+                    takeProfit: nil,
+                    decision: nil
+                )
+            }
+            if trade != nil {
+                ArgusLogger.info(
+                    "TradeBrainSafeAllocation: BUY \(order.symbol) amount=\(String(format: "%.2f", order.amount)) policy=\(policy.mode.rawValue)",
+                    category: "TRADEBRAIN"
+                )
+            } else {
+                ArgusLogger.error(
+                    "TradeBrainSafeAllocation: BUY RED \(order.symbol) — \(ExecutionLogger.shared.lastTradeError ?? "?")",
+                    category: "TRADEBRAIN"
+                )
+            }
         }
 
         if bistBalance > 0, policy.mode != .normal {

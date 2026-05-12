@@ -39,6 +39,7 @@ struct TradeSignal {
     let stopLoss: Double?
     let takeProfit: Double?
     var trimPercentage: Double? = nil // Support for Partial Sells (Active Trim)
+    var grandDecision: ArgusGrandDecision? = nil // Council kararı — double convene önlenir
 }
 
 // MARK: - Schema V2 Structs

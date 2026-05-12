@@ -277,3 +277,11 @@ final class DemeterEngine: ObservableObject {
         return (priority, size, false)
     }
 }
+
+// MARK: - Symbol → Sector Score Lookup
+extension DemeterEngine {
+    func scoreForSymbol(_ symbol: String) -> DemeterScore? {
+        guard let sector = SectorMap.getSector(for: symbol) else { return nil }
+        return sectorScores.first(where: { $0.sector == sector })
+    }
+}

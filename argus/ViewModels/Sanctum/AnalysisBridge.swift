@@ -132,6 +132,9 @@ final class AnalysisBridge: ObservableObject {
             ? await HermesNewsSnapshot.fromBistCache(symbol: symbol)
             : HermesNewsSnapshot.fromCache(symbol: symbol)
 
+        let demeterScore = await DemeterEngine.shared.scoreForSymbol(symbol)
+        let athenaResult = SignalStateViewModel.shared.athenaResults[symbol]
+
         let decision = await ArgusGrandCouncil.shared.convene(
             symbol: symbol,
             candles: councilCandles,
@@ -139,6 +142,8 @@ final class AnalysisBridge: ObservableObject {
             macro: macro,
             news: news,
             engine: .pulse,
+            athena: athenaResult,
+            demeter: demeterScore,
             sirkiyeInput: sirkiyeInput,
             origin: "SANCTUM_VM"
         )
