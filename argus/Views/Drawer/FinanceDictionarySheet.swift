@@ -17,7 +17,7 @@ struct FinanceDictionarySheet: View {
             categoryFilter
             termsList
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .sheet(item: $selectedTerm) { term in
             TermDetailSheet(term: term)
         }
@@ -28,7 +28,7 @@ struct FinanceDictionarySheet: View {
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             TextField("Terim ara...", text: $repository.searchQuery)
                 .textFieldStyle(PlainTextFieldStyle())
@@ -39,12 +39,12 @@ struct FinanceDictionarySheet: View {
                     repository.searchQuery = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
         }
         .padding(12)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
     }
 
     // MARK: - Category Filter
@@ -61,7 +61,7 @@ struct FinanceDictionarySheet: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.5))
+        .background(DesignTokens.Colors.surface.opacity(0.5))
     }
 
     private func categoryChip(_ category: FinanceTermCategory?, title: String) -> some View {
@@ -73,7 +73,7 @@ struct FinanceDictionarySheet: View {
             Text(title)
                 .font(.caption)
                 .fontWeight(isSelected ? .semibold : .regular)
-                .foregroundColor(isSelected ? InstitutionalTheme.Colors.background : .white)
+                .foregroundColor(isSelected ? DesignTokens.Colors.background : .white)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(
@@ -116,13 +116,13 @@ struct FinanceDictionarySheet: View {
                         if let fullName = term.fullName {
                             Text("(\(fullName))")
                                 .font(.caption2)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                         }
                     }
 
                     Text(term.definition)
                         .font(.caption2)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(2)
                 }
 
@@ -130,11 +130,11 @@ struct FinanceDictionarySheet: View {
 
                 Image(systemName: "chevron.right")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary.opacity(0.5))
+                    .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.5))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -168,7 +168,7 @@ struct TermDetailSheet: View {
                         if let fullName = term.fullName {
                             Text(fullName)
                                 .font(.subheadline)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                         }
 
                         HStack {
@@ -196,14 +196,14 @@ struct TermDetailSheet: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Argus'ta kullanımı")
                                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
 
                             Text(argusUsage)
                                 .font(DesignTokens.Fonts.custom(size: 13))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .padding(12)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(InstitutionalTheme.Colors.surface2)
+                                .background(DesignTokens.Colors.surfaceElevated)
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                     }
@@ -213,7 +213,7 @@ struct TermDetailSheet: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("İlgili terimler")
                                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
 
                             FlowLayout(spacing: 8) {
                                 ForEach(term.relatedTerms, id: \.self) { related in
@@ -231,9 +231,9 @@ struct TermDetailSheet: View {
                 }
                 .padding(20)
             }
-            .background(InstitutionalTheme.Colors.background)
+            .background(DesignTokens.Colors.background)
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
     }
 
@@ -242,7 +242,7 @@ struct TermDetailSheet: View {
             Text(title)
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             Text(content)
                 .font(isCode ? .system(.subheadline, design: .monospaced) : .subheadline)

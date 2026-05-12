@@ -30,17 +30,17 @@ struct AetherDashboardHUD: View {
 
                 Text(regimeLabel)
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .lineLimit(1)
 
                 if let r = rating {
                     Text("·")
                         .font(DesignTokens.Fonts.custom(size: 13))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
 
                     Text("\(Int(r.numericScore))")
                         .font(DesignTokens.Fonts.custom(size: 13, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .monospacedDigit()
                 }
 
@@ -48,20 +48,20 @@ struct AetherDashboardHUD: View {
 
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
-            .background(InstitutionalTheme.Colors.background)
+            .background(DesignTokens.Colors.background)
             .overlay(alignment: .top) {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
             }
             .overlay(alignment: .bottom) {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
             }
             .contentShape(Rectangle())
@@ -83,7 +83,7 @@ struct AetherDashboardHUD: View {
     }
 
     private var statusDotColor: Color {
-        guard let r = rating else { return InstitutionalTheme.Colors.textTertiary }
+        guard let r = rating else { return DesignTokens.Colors.textTertiary }
         switch r.regime {
         case .riskOn:  return InstitutionalTheme.Colors.aurora
         case .neutral: return InstitutionalTheme.Colors.titan

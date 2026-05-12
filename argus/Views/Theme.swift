@@ -2,8 +2,8 @@ import SwiftUI
 
 // DEPRECATED: Theme kalıp olarak tutuluyor, aktif çağrılar derlenmeye devam etsin diye.
 // Yeni kod `InstitutionalTheme` + `DesignTokens` kullansın.
-// InstitutionalTheme.Colors.holo ↔ InstitutionalTheme.Colors.primary: aynı hex (#3B82F6)
-// InstitutionalTheme.Colors.background (#050505) ↔ InstitutionalTheme.Colors.background (#07090C):
+// InstitutionalTheme.Colors.holo ↔ DesignTokens.Colors.primary: aynı hex (#3B82F6)
+// DesignTokens.Colors.background (#050505) ↔ DesignTokens.Colors.background (#07090C):
 //   farklı — yeni ekranlarda InstitutionalTheme kullan, mevcut görsel değişmesin.
 @available(*, deprecated, message: "Yeni kod InstitutionalTheme + DesignTokens kullansın. Theme.swift sadece geriye dönük uyumluluk için tutuluyor.")
 struct Theme {
@@ -25,7 +25,7 @@ struct Theme {
     // MARK: - Typography Colors
     static let textPrimary = Color.white
     static let textSecondary = Color(hex: "8A8F98") // Stardust Gray
-    static let textTertiary = Color(hex: "5B6782")  // InstitutionalTheme.Colors.textTertiary ile uyumlu
+    static let textTertiary = Color(hex: "5B6782")  // DesignTokens.Colors.textTertiary ile uyumlu
     
     // MARK: - Signal Colors
     static let positive = Color(hex: "16A34A")  // Yeşil

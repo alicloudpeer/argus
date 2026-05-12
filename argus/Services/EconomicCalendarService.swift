@@ -143,8 +143,15 @@ class EconomicCalendarService {
     }
     
     // MARK: - Public API
-    
-    /// Yaklaşan ekonomik olayları döndürür
+
+    /// Yaklaşan ekonomik olayları döndürür.
+    ///
+    /// 2026-05-11 (Faz 5 notu): Bu API HARDCODED tahmini takvim kullanıyor
+    /// (`getCalendarEvents` — CPI ayın 12'si, NFP ilk Cuma vb.). Gerçek
+    /// tarihler için `fetchUpcomingCalendarEvents(days:)` async API'sini
+    /// tercih edin — FMP economic-calendar endpoint'i kullanır. Bildirim
+    /// akışı (`checkAndNotifyMissingExpectations`) zaten async API'yi
+    /// çağırıyor; UI caller'ları henüz dönüştürülmedi.
     func getUpcomingEvents(withinDays days: Int = 7) -> [EconomicEvent] {
         return getCalendarEvents().filter { event in
             event.daysUntilRelease >= 0 && event.daysUntilRelease <= days

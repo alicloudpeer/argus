@@ -7,7 +7,7 @@ struct BacktestValidationView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 16) {
                     headerSection
@@ -37,12 +37,12 @@ struct BacktestValidationView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Sprint A · V2 Motor Alpha Doğrulama")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
                 .textCase(.uppercase)
 
             Text("10 sembol · Son 6 ay · Walk-forward %70/%30")
                 .font(InstitutionalTheme.Typography.dataSmall)
-                .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+                .foregroundStyle(DesignTokens.Colors.textTertiary)
 
             Button(action: { runner.run() }) {
                 HStack(spacing: 8) {
@@ -51,13 +51,13 @@ struct BacktestValidationView: View {
                     Text(runner.isRunning ? "Çalışıyor…" : "Validasyonu Başlat")
                         .font(InstitutionalTheme.Typography.body)
                 }
-                .foregroundStyle(runner.isRunning ? InstitutionalTheme.Colors.textSecondary : InstitutionalTheme.Colors.aurora)
+                .foregroundStyle(runner.isRunning ? DesignTokens.Colors.textSecondary : InstitutionalTheme.Colors.aurora)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                        .stroke(runner.isRunning ? InstitutionalTheme.Colors.border : InstitutionalTheme.Colors.aurora.opacity(0.4), lineWidth: 1)
+                        .stroke(runner.isRunning ? DesignTokens.Colors.border : InstitutionalTheme.Colors.aurora.opacity(0.4), lineWidth: 1)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
             }
@@ -74,21 +74,21 @@ struct BacktestValidationView: View {
             HStack {
                 Text(runner.currentSymbol.isEmpty ? "Başlatılıyor…" : runner.currentSymbol)
                     .font(InstitutionalTheme.Typography.body)
-                    .foregroundStyle(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Text("\(Int(runner.progress * 100))%")
                     .font(InstitutionalTheme.Typography.dataSmall)
-                    .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundStyle(DesignTokens.Colors.textSecondary)
             }
             ProgressView(value: runner.progress)
                 .tint(InstitutionalTheme.Colors.aurora)
         }
         .padding(16)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.border, lineWidth: 1)
+                .stroke(DesignTokens.Colors.border, lineWidth: 1)
         )
     }
 
@@ -111,31 +111,31 @@ struct BacktestValidationView: View {
                     summaryChip(
                         label: "Ort. Alpha",
                         value: String(format: "%+.1f%%", avgAlpha),
-                        color: alphaPositive ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+                        color: alphaPositive ? DesignTokens.Colors.success : DesignTokens.Colors.error
                     )
                     summaryChip(
                         label: "Ort. Sharpe",
                         value: String(format: "%.2f", avgSharpe),
-                        color: avgSharpe > 0.5 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.textSecondary
+                        color: avgSharpe > 0.5 ? DesignTokens.Colors.success : DesignTokens.Colors.textSecondary
                     )
                     summaryChip(
                         label: "Win Rate",
                         value: String(format: "%.0f%%", avgWin),
-                        color: avgWin >= 50 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+                        color: avgWin >= 50 ? DesignTokens.Colors.success : DesignTokens.Colors.error
                     )
                     summaryChip(
                         label: "Overfitting",
                         value: "\(overfitCount)/\(valid.count)",
-                        color: overfitCount > 0 ? InstitutionalTheme.Colors.warning : InstitutionalTheme.Colors.positive
+                        color: overfitCount > 0 ? InstitutionalTheme.Colors.warning : DesignTokens.Colors.success
                     )
                 }
             }
             .padding(16)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.border, lineWidth: 1)
+                    .stroke(DesignTokens.Colors.border, lineWidth: 1)
             )
         )
     }
@@ -147,7 +147,7 @@ struct BacktestValidationView: View {
                 .foregroundStyle(color)
             Text(label)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+                .foregroundStyle(DesignTokens.Colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -166,21 +166,21 @@ struct BacktestValidationView: View {
             VStack(spacing: 0) {
                 resultHeaderRow
                 Divider()
-                    .background(InstitutionalTheme.Colors.border)
+                    .background(DesignTokens.Colors.border)
                 ForEach(runner.results) { r in
                     resultRow(r)
                     if r.id != runner.results.last?.id {
                         Divider()
-                            .background(InstitutionalTheme.Colors.border.opacity(0.5))
+                            .background(DesignTokens.Colors.border.opacity(0.5))
                     }
                 }
             }
             .padding(16)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.border, lineWidth: 1)
+                    .stroke(DesignTokens.Colors.border, lineWidth: 1)
             )
         }
     }
@@ -196,7 +196,7 @@ struct BacktestValidationView: View {
             Text("WFD").frame(width: 52, alignment: .trailing)
         }
         .font(InstitutionalTheme.Typography.micro)
-        .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+        .foregroundStyle(DesignTokens.Colors.textTertiary)
         .padding(.bottom, 8)
     }
 
@@ -207,10 +207,10 @@ struct BacktestValidationView: View {
                 Text(r.symbol)
                     .frame(width: 80, alignment: .leading)
                     .font(InstitutionalTheme.Typography.dataSmall.bold())
-                    .foregroundStyle(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
                 Text(err)
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundStyle(DesignTokens.Colors.textTertiary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.vertical, 10)
@@ -219,29 +219,29 @@ struct BacktestValidationView: View {
                 Text(r.symbol)
                     .frame(width: 80, alignment: .leading)
                     .font(InstitutionalTheme.Typography.dataSmall.bold())
-                    .foregroundStyle(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
                 Text(String(format: "%+.1f%%", r.totalReturn))
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .foregroundStyle(r.returnColor)
                 Text(String(format: "%+.1f%%", r.benchmarkReturn))
                     .frame(maxWidth: .infinity, alignment: .trailing)
-                    .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundStyle(DesignTokens.Colors.textSecondary)
                 Text(String(format: "%+.1f%%", r.alpha))
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .foregroundStyle(r.alphaColor)
                 Text(String(format: "%.0f%%", r.winRate))
                     .frame(maxWidth: .infinity, alignment: .trailing)
-                    .foregroundStyle(r.winRate >= 50 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative)
+                    .foregroundStyle(r.winRate >= 50 ? DesignTokens.Colors.success : DesignTokens.Colors.error)
                 Text(String(format: "%.2f", r.sharpeRatio))
                     .frame(maxWidth: .infinity, alignment: .trailing)
-                    .foregroundStyle(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
                 Group {
                     if let wfd = r.walkForwardDegradation {
                         Text(String(format: "%.0f", wfd))
-                            .foregroundStyle(r.isOverfit ? InstitutionalTheme.Colors.warning : InstitutionalTheme.Colors.positive)
+                            .foregroundStyle(r.isOverfit ? InstitutionalTheme.Colors.warning : DesignTokens.Colors.success)
                     } else {
                         Text("—")
-                            .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundStyle(DesignTokens.Colors.textTertiary)
                     }
                 }
                 .frame(width: 52, alignment: .trailing)
@@ -271,44 +271,44 @@ struct BacktestValidationView: View {
                         Text("İşlem").frame(width: 52, alignment: .trailing)
                     }
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundStyle(DesignTokens.Colors.textTertiary)
                     .padding(.bottom, 8)
 
-                    Divider().background(InstitutionalTheme.Colors.border)
+                    Divider().background(DesignTokens.Colors.border)
 
                     ForEach(valid) { r in
                         HStack(spacing: 0) {
                             Text(r.symbol)
                                 .frame(width: 80, alignment: .leading)
                                 .font(InstitutionalTheme.Typography.dataSmall.bold())
-                                .foregroundStyle(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundStyle(DesignTokens.Colors.textPrimary)
                             Text(String(format: "%.0f%%", r.buyRatio * 100))
                                 .frame(maxWidth: .infinity, alignment: .trailing)
-                                .foregroundStyle(InstitutionalTheme.Colors.positive)
+                                .foregroundStyle(DesignTokens.Colors.success)
                             Text(String(format: "%.0f%%", r.sellRatio * 100))
                                 .frame(maxWidth: .infinity, alignment: .trailing)
-                                .foregroundStyle(InstitutionalTheme.Colors.negative)
+                                .foregroundStyle(DesignTokens.Colors.error)
                             Text(String(format: "%.0f%%", r.holdRatio * 100))
                                 .frame(maxWidth: .infinity, alignment: .trailing)
-                                .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundStyle(DesignTokens.Colors.textSecondary)
                             Text("\(r.totalTrades)")
                                 .frame(width: 52, alignment: .trailing)
-                                .foregroundStyle(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundStyle(DesignTokens.Colors.textPrimary)
                         }
                         .font(InstitutionalTheme.Typography.dataSmall)
                         .padding(.vertical, 10)
 
                         if r.id != valid.last?.id {
-                            Divider().background(InstitutionalTheme.Colors.border.opacity(0.5))
+                            Divider().background(DesignTokens.Colors.border.opacity(0.5))
                         }
                     }
                 }
                 .padding(16)
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                        .stroke(InstitutionalTheme.Colors.border, lineWidth: 1)
+                        .stroke(DesignTokens.Colors.border, lineWidth: 1)
                 )
             }
         )
@@ -320,13 +320,13 @@ struct BacktestValidationView: View {
         VStack(spacing: 12) {
             Image(systemName: "chart.bar.xaxis.ascending")
                 .font(DesignTokens.Fonts.custom(size: 32))
-                .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+                .foregroundStyle(DesignTokens.Colors.textTertiary)
             Text("10 sembol, son 6 ay, V2 motorlar")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
             Text("BIST: THYAO · ASELS · GARAN · EREGL · TUPRS\nUS: AAPL · MSFT · NVDA · GOOGL · AMZN")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+                .foregroundStyle(DesignTokens.Colors.textTertiary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)

@@ -65,7 +65,11 @@ struct ArgusGrandDecision: Sendable, Equatable, Codable {
     // Rich Data for Voice/UI
     let orionDetails: OrionScoreResult?
     let financialDetails: FinancialSnapshot?
-    
+
+    // OrionV2/BistV2 toplam skoru (0-100). netSupport dönüşümü kayıplı olduğu
+    // için UI'da doğrudan bu skor gösterilir.
+    let orionV2TotalScore: Double?
+
     // NEW: BIST V2 Result
     let bistDetails: BistDecisionResult?
     
@@ -159,18 +163,17 @@ actor ArgusGrandCouncil {
         
         // 2. Gather all council decisions (Parallel execution could be optimized here)
         let orionDecision: CouncilDecision
-        
+        let orionV2Score: Double
+
         if isBist {
             let bistOrionV2 = await OrionBistV2Engine.shared.analyze(symbol: symbol, candles: candles, forceRefresh: forceRefresh)
             orionDecision = OrionV2DecisionAdapter.adapt(bistOrionV2)
+            orionV2Score = bistOrionV2.totalScore
             ArgusLogger.info(.orion, "BistV2 → \(bistOrionV2.summary)")
         } else {
-            // 2026-05-05 (Round 7B) MIMARI YENİLEME: Eski "5 Ustası" pattern (OrionCouncil)
-            // production'dan kaldırıldı, modern section-based OrionV2Engine devreye alındı.
-            // 6 bölüm: Trend / Momentum / Hacim / Formasyon / Destek-Direnç / Volatilite
-            // OrionV2DecisionAdapter çıktıyı eski CouncilDecision struct'ına çevirir.
             let v2Result = await OrionV2Engine.shared.analyze(symbol: symbol, candles: candles)
             orionDecision = OrionV2DecisionAdapter.adapt(v2Result)
+            orionV2Score = v2Result.totalScore
             ArgusLogger.info(.orion, "V2 → \(v2Result.summary)")
         }
         
@@ -293,10 +296,13 @@ actor ArgusGrandCouncil {
                 print("🎯 Council: Analist konsensüsü alındı - \(ac.recommendation) (\(ac.totalAnalysts) analist)")
             }
 
+            let bistSektorScore = try? await BistSektorEngine.shared.analyze(symbol: symbol).score
+
             let bistRes = await BistGrandCouncil.shared.convene(
                 symbol: symbol,
                 faktorScore: athena,
                 sektorScore: demeter,
+                bistSektorScore: bistSektorScore,
                 akisResult: flowDecision,
                 kulisData: hermesDecision,
                 grafikData: orionDecision,
@@ -334,6 +340,11 @@ actor ArgusGrandCouncil {
                 }
             }
 
+            var bistPhoenix: PhoenixAdvice? = nil
+            if candles.count >= 60 {
+                bistPhoenix = PhoenixLogic.analyze(candles: candles, symbol: symbol, timeframe: .d1, config: PhoenixConfig())
+            }
+
             let finalDecision = ArgusGrandDecision(
                 id: bistRes.id,
                 symbol: symbol,
@@ -348,10 +359,11 @@ actor ArgusGrandCouncil {
                 atlasDecision: atlasDecision,
                 aetherDecision: trueMacroDecision,
                 hermesDecision: hermesDecision,
-                phoenixAdvice: nil, // BIST Phoenix is handled inside BistGrandCouncil separately
+                phoenixAdvice: bistPhoenix,
                 // Pass rich details
                 orionDetails: OrionAnalysisService.shared.calculateOrionScore(symbol: symbol, candles: candles, spyCandles: nil),
                 financialDetails: snapshot, // Direct Use
+                orionV2TotalScore: orionV2Score,
                 bistDetails: bistRes,
                 patterns: detectedPatterns,
                 kellyMultiplier: kellyMult,
@@ -450,6 +462,7 @@ actor ArgusGrandCouncil {
             // Rich Data context
             orionDetails: OrionAnalysisService.shared.calculateOrionScore(symbol: symbol, candles: candles, spyCandles: nil),
             financialDetails: snapshot,
+            orionV2TotalScore: orionV2Score,
             // Advisors
             athena: athena,
             demeter: demeter,
@@ -565,6 +578,7 @@ actor ArgusGrandCouncil {
         // Details
         orionDetails: OrionScoreResult?,
         financialDetails: FinancialSnapshot?,
+        orionV2TotalScore: Double? = nil,
         // Advisors
         athena: AthenaFactorResult?,
         demeter: DemeterScore?,
@@ -1266,6 +1280,7 @@ actor ArgusGrandCouncil {
             phoenixAdvice: phoenix,
             orionDetails: orionDetails,
             financialDetails: financialDetails,
+            orionV2TotalScore: orionV2TotalScore,
             bistDetails: nil,
             patterns: patterns,
             kellyMultiplier: kellyMultiplier,
@@ -1441,6 +1456,7 @@ actor BistGrandCouncil {
         // Engines Inputs
         faktorScore: AthenaFactorResult? = nil,
         sektorScore: DemeterScore? = nil,
+        bistSektorScore: Double? = nil,
         akisResult: AetherDecision? = nil, // MoneyFlow (SirkiyeEngine returns AetherDecision for now)
         kulisData: HermesDecision? = nil, // News/Analyst
         grafikData: CouncilDecision, // Orion
@@ -1465,8 +1481,8 @@ actor BistGrandCouncil {
         // --- FAKTÖR (Athena) ---
         let faktorRes = analyzeFaktor(faktorScore)
         
-        // --- SEKTÖR (Demeter) ---
-        let sektorRes = analyzeSektor(sektorScore)
+        // --- SEKTÖR (Demeter / BistSektör) ---
+        let sektorRes = analyzeSektor(sektorScore, bistScore: bistSektorScore)
         
         // --- AKIŞ (MoneyFlow/Sirkiye) ---
         let akisRes = analyzeAkis(akisResult)
@@ -1475,48 +1491,55 @@ actor BistGrandCouncil {
         let kulisRes = analyzeKulis(kulisData, analystConsensus: analystConsensus)
         
         // 2. Final Verdict Logic (The "Brain")
-        
+
         var totalSupport: Double = 0
         var vetoCount = 0
         var reasons: [String] = []
-        
+
         let modules = [grafikRes, bilancoRes, rejimRes, faktorRes, sektorRes, akisRes, kulisRes]
-        
+        let activeModuleCount = modules.filter { $0.commentary != "Veri yetersiz." }.count
+
         for mod in modules {
             totalSupport += mod.supportLevel
-            if mod.supportLevel < -0.5 { // Soft Veto
+            if mod.supportLevel < -0.5 {
                 reasons.append("\(mod.name): \(mod.commentary)")
             }
             if mod.action == .sell && mod.supportLevel < -0.8 {
                 vetoCount += 1
             }
         }
-        
-        // Decision Matrix
+
+        // Eşikleri aktif modül sayısına göre ölçekle.
+        // 7 modül aktifken: accumulate > 1.5, aggressiveBuy > 3.0
+        // 3 modül aktifken: accumulate > 0.64, aggressiveBuy > 1.29
+        let scale = Double(activeModuleCount) / 7.0
+        let accumulateThreshold = 1.5 * scale
+        let aggressiveBuyThreshold = 3.0 * scale
+        let trimThreshold = -2.0 * scale
+
         var finalAction: ArgusAction = .neutral
         var confidence: Double = 50.0
         var mainReason = "Veriler nötr."
-        
+
         if vetoCount > 0 {
-            finalAction = .neutral // Or trim?
+            finalAction = .neutral
             confidence = 20.0
             mainReason = "Konseyde \(vetoCount) üye veto etti. (Riskli)"
-            if grafikRes.action == .sell { finalAction = .liquidate } // Teknik sat ise çık
-        } else if totalSupport > 3.0 { // High Conviction
+            if grafikRes.action == .sell { finalAction = .liquidate }
+        } else if totalSupport > aggressiveBuyThreshold {
             finalAction = .aggressiveBuy
             confidence = 90.0
-            mainReason = "Tam saha pres! Tüm modüller destekliyor."
-        } else if totalSupport > 1.5 {
+            mainReason = "Tam saha pres! Aktif modüller (\(activeModuleCount)/7) güçlü destekliyor."
+        } else if totalSupport > accumulateThreshold {
             finalAction = .accumulate
             confidence = 75.0
-            mainReason = "Pozitif görünüm, kademeli alım uygun."
-        } else if totalSupport < -2.0 {
+            mainReason = "Pozitif görünüm, kademeli alım uygun. (\(activeModuleCount)/7 modül aktif)"
+        } else if totalSupport < trimThreshold {
             finalAction = .trim
             confidence = 70.0
             mainReason = "Görünüm negatife döndü, azaltım önerilir."
         } else {
-            // Neutral / Hold
-            finalAction = .neutral // Gözle
+            finalAction = .neutral
             confidence = 50.0
             mainReason = "Yön net değil, izlemede kalın."
         }
@@ -1612,9 +1635,15 @@ actor BistGrandCouncil {
         return BistModuleResult(name: "Faktör", score: score, action: action, commentary: comm, supportLevel: support)
     }
     
-    private func analyzeSektor(_ data: DemeterScore?) -> BistModuleResult {
-        guard let data = data else { return .neutral(name: "Sektör") }
-        let score = data.totalScore
+    private func analyzeSektor(_ data: DemeterScore?, bistScore: Double? = nil) -> BistModuleResult {
+        let score: Double
+        if let data = data {
+            score = data.totalScore
+        } else if let bs = bistScore {
+            score = bs
+        } else {
+            return .neutral(name: "Sektör")
+        }
         let commentary: String
         if score > 60 {
              commentary = "Sektör endekse göre pozitif ayrışıyor. Para girişi sektör geneline yayılmış durumda."

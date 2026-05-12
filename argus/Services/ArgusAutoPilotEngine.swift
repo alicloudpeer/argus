@@ -421,16 +421,20 @@ final class ArgusAutoPilotEngine: Sendable {
             let demeterScore = await DemeterEngine.shared.scoreForSymbol(symbol)
             let athenaResult = await MainActor.run { SignalStateViewModel.shared.athenaResults[symbol] }
 
-            // Use .pulse engine - Async Call
+            let sirkiyeInput: SirkiyeEngine.SirkiyeInput? = isBistSymbol
+                ? await AutoPilotStore.shared.prepareSirkiyeInput(macro: macro)
+                : nil
+
             let decision = await ArgusGrandCouncil.shared.convene(
                 symbol: symbol,
                 candles: candleData,
-                snapshot: snapshot, // CHANGED: Pass Snapshot
+                snapshot: snapshot,
                 macro: macro,
                 news: news,
                 engine: .pulse,
                 athena: athenaResult,
                 demeter: demeterScore,
+                sirkiyeInput: sirkiyeInput,
                 origin: "AUTOPILOT"
             )
             

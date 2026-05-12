@@ -18,10 +18,10 @@ struct BistAnalystCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Analist konsensüsü")
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text("Hedef fiyat ve tavsiyeler")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 Spacer()
                 Button(action: { withAnimation(.snappy) { showEducation.toggle() } }) {
@@ -36,7 +36,7 @@ struct BistAnalystCard: View {
                 educationNote
             }
             
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
             
             if isLoading {
                 ProgressView()
@@ -45,40 +45,40 @@ struct BistAnalystCard: View {
                 // Hedef Fiyat Bölümü
                 targetPriceSection(c)
                 
-                Divider().background(InstitutionalTheme.Colors.borderSubtle)
+                Divider().background(DesignTokens.Colors.borderSubtle)
                 
                 // AL/TUT/SAT Gauge
                 recommendationGauge(c)
                 
                 // Potansiyel Getiri
                 if let price = currentPrice, let target = c.averageTargetPrice, price > 0 {
-                    Divider().background(InstitutionalTheme.Colors.borderSubtle)
+                    Divider().background(DesignTokens.Colors.borderSubtle)
                     potentialReturnSection(current: price, target: target)
                 }
             } else {
                 VStack(spacing: 8) {
                     Image(systemName: "person.3.fill")
                         .font(.title3)
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text("Analist verisi bulunamadı")
                         .font(.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     if let err = errorMessage {
                         Text(err)
                             .font(.caption2)
-                            .foregroundColor(InstitutionalTheme.Colors.negative)
+                            .foregroundColor(DesignTokens.Colors.error)
                     }
                 }
                 .padding(24)
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .shadow(color: InstitutionalTheme.Colors.background.opacity(0.35), radius: 8, x: 0, y: 4)
+        .shadow(color: DesignTokens.Colors.background.opacity(0.35), radius: 8, x: 0, y: 4)
         .onAppear { loadData() }
     }
     
@@ -93,10 +93,10 @@ struct BistAnalystCard: View {
                     VStack(spacing: 2) {
                         Text("Düşük")
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Text(formatPrice(c.lowTargetPrice))
                             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.negative)
+                            .foregroundColor(DesignTokens.Colors.error)
                             .monospacedDigit()
                     }
 
@@ -106,10 +106,10 @@ struct BistAnalystCard: View {
                     VStack(spacing: 2) {
                         Text("Ortalama hedef")
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Text(formatPrice(avg))
                             .font(DesignTokens.Fonts.custom(size: 20, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .monospacedDigit()
                     }
 
@@ -119,17 +119,17 @@ struct BistAnalystCard: View {
                     VStack(spacing: 2) {
                         Text("Yüksek")
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Text(formatPrice(c.highTargetPrice))
                             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.positive)
+                            .foregroundColor(DesignTokens.Colors.success)
                             .monospacedDigit()
                     }
                 }
             } else {
                 Text("Hedef fiyat belirtilmemiş")
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
         .padding(16)
@@ -143,11 +143,11 @@ struct BistAnalystCard: View {
             HStack {
                 Text("Tavsiye dağılımı")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 Text("\(c.totalAnalysts) analist")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             
             if c.totalAnalysts > 0 {
@@ -161,7 +161,7 @@ struct BistAnalystCard: View {
                     HStack(spacing: 2) {
                         if c.buyCount > 0 {
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(InstitutionalTheme.Colors.positive)
+                                .fill(DesignTokens.Colors.success)
                                 .frame(width: buyW)
                         }
                         if c.holdCount > 0 {
@@ -171,7 +171,7 @@ struct BistAnalystCard: View {
                         }
                         if c.sellCount > 0 {
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(InstitutionalTheme.Colors.negative)
+                                .fill(DesignTokens.Colors.error)
                                 .frame(width: sellW)
                         }
                     }
@@ -182,7 +182,7 @@ struct BistAnalystCard: View {
                 HStack {
                     Label("\(c.buyCount) AL", systemImage: "arrow.up.circle.fill")
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .semibold))
-                        .foregroundColor(InstitutionalTheme.Colors.positive)
+                        .foregroundColor(DesignTokens.Colors.success)
                     Spacer()
                     Label("\(c.holdCount) TUT", systemImage: "equal.circle.fill")
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .semibold))
@@ -190,14 +190,14 @@ struct BistAnalystCard: View {
                     Spacer()
                     Label("\(c.sellCount) SAT", systemImage: "arrow.down.circle.fill")
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .semibold))
-                        .foregroundColor(InstitutionalTheme.Colors.negative)
+                        .foregroundColor(DesignTokens.Colors.error)
                 }
                 
                 // Konsensüs badge
                 HStack {
                     Text("Konsensüs:")
                         .font(DesignTokens.Fonts.custom(size: 10))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text(c.recommendation.uppercased())
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .bold))
                         .foregroundColor(consensusColor(c.recommendation))
@@ -223,10 +223,10 @@ struct BistAnalystCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Potansiyel getiri")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text("Mevcut fiyat: \(formatPrice(current))")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             Spacer()
             HStack(spacing: 4) {
@@ -234,7 +234,7 @@ struct BistAnalystCard: View {
                 Text(String(format: "%+.1f%%", returnPct))
                     .font(DesignTokens.Fonts.custom(size: 16, weight: .bold, design: .monospaced))
             }
-            .foregroundColor(isPositive ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative)
+            .foregroundColor(isPositive ? DesignTokens.Colors.success : DesignTokens.Colors.error)
         }
         .padding(16)
     }
@@ -281,8 +281,8 @@ struct BistAnalystCard: View {
     
     private func consensusColor(_ rec: String) -> Color {
         let lower = rec.lowercased()
-        if lower.contains("buy") || lower.contains("al") { return InstitutionalTheme.Colors.positive }
-        if lower.contains("sell") || lower.contains("sat") { return InstitutionalTheme.Colors.negative }
+        if lower.contains("buy") || lower.contains("al") { return DesignTokens.Colors.success }
+        if lower.contains("sell") || lower.contains("sat") { return DesignTokens.Colors.error }
         return InstitutionalTheme.Colors.warning
     }
     
@@ -296,7 +296,7 @@ struct BistAnalystCard: View {
                     .foregroundColor(.cyan)
                 Text("Analist Konsensüsü Nasıl Okunur?")
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .bold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -307,7 +307,7 @@ struct BistAnalystCard: View {
             
             Text("⚠️ Analist tahminleri geçmiş performansı garanti etmez. Eğitim amaçlıdır.")
                 .font(DesignTokens.Fonts.custom(size: 9))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(12)
         .background(Color.cyan.opacity(0.08))
@@ -321,7 +321,7 @@ struct BistAnalystCard: View {
                 .foregroundColor(.cyan)
             Text(text)
                 .font(DesignTokens.Fonts.custom(size: 10))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 }

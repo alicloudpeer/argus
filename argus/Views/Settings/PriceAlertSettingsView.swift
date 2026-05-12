@@ -162,7 +162,7 @@ struct PriceAlertSettingsView: View {
             .listStyle(InsetGroupedListStyle())
         }
         .navigationBarHidden(true)
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .alert("Bilgi", isPresented: Binding(get: { infoMessage != nil }, set: { _ in infoMessage = nil })) {
             Button("Tamam") { }
         } message: {

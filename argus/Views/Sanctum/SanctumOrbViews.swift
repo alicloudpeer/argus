@@ -35,7 +35,7 @@ struct OrbView: View {
             ZStack {
                 // Ana orb
                 Circle()
-                    .fill(InstitutionalTheme.Colors.surface2)
+                    .fill(DesignTokens.Colors.surfaceElevated)
                     .frame(width: 48, height: 48)
 
                 Circle()
@@ -50,7 +50,7 @@ struct OrbView: View {
             // Caption — motor adı + state-aware değer
             Text(captionText)
                 .font(DesignTokens.Fonts.custom(size: 10, weight: .medium))
-                .foregroundStyle(InstitutionalTheme.Colors.textSecondary.opacity(orbState.captionOpacity))
+                .foregroundStyle(DesignTokens.Colors.textSecondary.opacity(orbState.captionOpacity))
                 .lineLimit(1)
         }
         .accessibilityLabel(Text("\(displayName). \(orbState.accessibilityValue)"))
@@ -242,7 +242,7 @@ struct BistOrbView: View {
         VStack(spacing: 6) {
             ZStack {
                 Circle()
-                    .fill(InstitutionalTheme.Colors.surface2)
+                    .fill(DesignTokens.Colors.surfaceElevated)
                     .frame(width: 48, height: 48)
 
                 Circle()
@@ -254,7 +254,7 @@ struct BistOrbView: View {
 
             Text(module.rawValue.capitalized)
                 .font(DesignTokens.Fonts.custom(size: 10, weight: .medium))
-                .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
                 .lineLimit(1)
         }
     }

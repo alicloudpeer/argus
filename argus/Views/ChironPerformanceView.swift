@@ -34,7 +34,7 @@ struct ChironPerformanceView: View {
                 .padding(.top, 14)
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .task {
             await loadData()
@@ -48,7 +48,7 @@ struct ChironPerformanceView: View {
             Button(action: popBack) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -57,17 +57,17 @@ struct ChironPerformanceView: View {
 
             Text("Performans")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .accessibilityAddTraits(.isHeader)
 
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -89,26 +89,26 @@ struct ChironPerformanceView: View {
             HStack {
                 Text("Öğrenme günlüğü")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Text("\(learningEvents.count)")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .monospacedDigit()
             }
 
             Text("Modül ağırlıklarındaki son değişimler.")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
 
             if learningEvents.isEmpty {
                 Text("Henüz kaydedilmiş ağırlık değişimi yok.")
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .padding(.vertical, 6)
             } else {
                 ForEach(learningEvents.prefix(3)) { event in
@@ -118,10 +118,10 @@ struct ChironPerformanceView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -133,22 +133,22 @@ struct ChironPerformanceView: View {
             HStack {
                 Text("İşlem geçmişi")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 if !tradeHistory.isEmpty {
                     Text("\(tradeHistory.count)")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .monospacedDigit()
                 }
             }
 
             Text("Argus Ledger · kapanmış pozisyonlar.")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
 
             if isLoading {
@@ -156,14 +156,14 @@ struct ChironPerformanceView: View {
                     ProgressView().scaleEffect(0.7)
                     Text("Yükleniyor…")
                         .font(DesignTokens.Fonts.custom(size: 13))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Spacer()
                 }
                 .padding(.vertical, 6)
             } else if tradeHistory.isEmpty {
                 Text("Henüz kapanmış işlem kaydı yok.")
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .padding(.vertical, 6)
             } else {
                 ForEach(tradeHistory) { trade in
@@ -173,10 +173,10 @@ struct ChironPerformanceView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }

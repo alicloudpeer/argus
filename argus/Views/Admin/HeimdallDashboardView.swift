@@ -26,9 +26,9 @@ struct HeimdallDashboardView: View {
                 footerSection
             }
             .scrollContentBackground(.hidden)
-            .background(InstitutionalTheme.Colors.background)
+            .background(DesignTokens.Colors.background)
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .onAppear {
             Task { await loadData() }
@@ -63,7 +63,7 @@ struct HeimdallDashboardView: View {
                     HStack {
                         Text(key)
                             .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Spacer()
                         Text(state)
                             .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
@@ -104,19 +104,19 @@ struct HeimdallDashboardView: View {
         } footer: {
             Text("Argus Data Core 2.0 · Scheduler Active · Dedup On")
                 .font(DesignTokens.Fonts.custom(size: 10, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
     }
 
     private func healthRow(name: String, score: Double) -> some View {
         HStack {
             Text(name)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             ArgusDot(color: color(for: score), size: 6)
             Text(score >= 0.8 ? "OK" : "Degraded")
                 .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -144,7 +144,7 @@ struct HeimdallTraceRow: View {
                     .foregroundColor(InstitutionalTheme.Colors.holo)
                 Text(trace.provider.rawValue)
                     .font(DesignTokens.Fonts.custom(size: 10, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 Text(String(format: "%.0fms", trace.durationMs))
                     .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
@@ -154,7 +154,7 @@ struct HeimdallTraceRow: View {
             }
             Text("\(trace.symbol) @ \(trace.endpoint)")
                 .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             if let error = trace.errorMessage {
                 Text("Error: \(error)")

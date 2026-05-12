@@ -196,7 +196,7 @@ struct CompanyLogoView: View {
         .frame(width: size, height: size)
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.border, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.border, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }
@@ -204,19 +204,19 @@ struct CompanyLogoView: View {
     static func gradientColors(for symbol: String) -> [Color] {
         let hash = symbol.unicodeScalars.reduce(0) { $0 + Int($1.value) }
         switch hash % 6 {
-        case 0: return [Color(hex: "1A365D"), Color(hex: "3B82F6")]
-        case 1: return [Color(hex: "3B0A0A"), Color(hex: "EF4444")]
-        case 2: return [Color(hex: "112437"), Color(hex: "60A5FA")]
-        case 3: return [Color(hex: "0B1426"), Color(hex: "22D3EE")]
-        case 4: return [Color(hex: "2A1F0A"), Color(hex: "C8A971")] // warm tan (eski: A78BFA mor — AI-tell)
-        default: return [Color(hex: "1F2A0A"), Color(hex: "22C55E")]
+        case 0: return [Color(hex: "1A365D"), DesignTokens.Colors.primary]
+        case 1: return [Color(hex: "3B0A0A"), DesignTokens.Colors.error]
+        case 2: return [Color(hex: "112437"), InstitutionalTheme.Colors.Motors.orion]
+        case 3: return [DesignTokens.Colors.surface, InstitutionalTheme.Colors.Motors.aether]
+        case 4: return [Color(hex: "2A1F0A"), InstitutionalTheme.Colors.Motors.chiron] // warm tan (eski: A78BFA mor — AI-tell)
+        default: return [Color(hex: "1F2A0A"), DesignTokens.Colors.success]
         }
     }
 }
 
 #Preview {
     ZStack {
-        InstitutionalTheme.Colors.background.ignoresSafeArea()
+        DesignTokens.Colors.background.ignoresSafeArea()
         VStack(spacing: 12) {
             HStack {
                 CompanyLogoView(symbol: "AAPL", size: 56)

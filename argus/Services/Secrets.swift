@@ -48,7 +48,6 @@ enum Secrets {
     /// Boşsa PineconeService `.notConfigured` döner, RAG engine graceful degrade eder.
     static var pineconeBaseURL: String { value(for: "PINECONE_BASE_URL") }
 
-    static var dovizComKey: String { value(for: "DOVIZCOM_KEY") }
     static var borsaPyKey: String { value(for: "BORSAPY_KEY") }
     static var borsaPyURL: String { value(for: "BORSAPY_URL") }
 
@@ -68,7 +67,6 @@ enum Secrets {
         var groq: String { Secrets.groqKey }
         var deepSeek: String { Secrets.deepSeekKey }
         var fred: String { Secrets.fredKey }
-        var dovizCom: String { Secrets.dovizComKey }
         var borsaPy: String { Secrets.borsaPyKey }
         var borsaPyURL: String { Secrets.borsaPyURL }
     }

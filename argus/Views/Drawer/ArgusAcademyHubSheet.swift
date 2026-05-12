@@ -65,9 +65,9 @@ struct ArgusAcademyHubSheet: View {
                 }
                 .padding(20)
             }
-            .background(InstitutionalTheme.Colors.background)
+            .background(DesignTokens.Colors.background)
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .sheet(item: $selectedSheet) { sheet in
             academyContent(for: sheet)
@@ -78,16 +78,16 @@ struct ArgusAcademyHubSheet: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Sıfırdan Öğrenme Programı")
                 .font(InstitutionalTheme.Typography.title)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             Text("Argus’u doğru kullanmak için tek bir yol: önce karar mantığı, sonra motorlar, sonra rejim, en son doğal dil pratiği.")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text("Öneri: Dersi aç -> aynı sembolde Sanctum’a dön -> tekrar yorumla.")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -112,29 +112,29 @@ struct ArgusAcademyHubSheet: View {
             HStack(spacing: 10) {
                 Text(String(format: "%02d", order))
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.primary)
+                    .foregroundColor(DesignTokens.Colors.primary)
                     .frame(width: 26, alignment: .leading)
                 Text(lesson.title)
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Image(systemName: "arrow.up.right")
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             Text(lesson.subtitle)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             Text("Hedef: \(lesson.purpose) · Tahmini süre: \(lesson.durationMinutes) dk")
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .regular))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(.vertical, 6)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 1)
         }
     }
@@ -152,11 +152,11 @@ struct ArgusAcademyHubSheet: View {
         HStack(alignment: .top, spacing: 10) {
             Text(index)
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .bold, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
                 .frame(width: 12, alignment: .leading)
             Text(text)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -179,11 +179,11 @@ struct ArgusAcademyHubSheet: View {
                 HStack(spacing: 8) {
                     Text("Makro Takvim (opsiyonel)")
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
             }
             .buttonStyle(.plain)
@@ -195,21 +195,21 @@ struct ArgusAcademyHubSheet: View {
         HStack(spacing: 10) {
             Image(systemName: "book.closed")
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
                 .frame(width: 16)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(resource.title)
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(resource.subtitle)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             Spacer()
             Image(systemName: "chevron.right")
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(.vertical, 4)
     }
@@ -218,7 +218,7 @@ struct ArgusAcademyHubSheet: View {
     private func sectionTitle(_ text: String) -> some View {
         Text(text.capitalized)
             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 
     @ViewBuilder

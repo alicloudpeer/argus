@@ -46,7 +46,7 @@ struct PortfolioView: View {
     var body: some View {
         // 2026-05-03 H-59: nested NavigationStack kaldırıldı.
         ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
 
                 if showDrawer {
                     ArgusDrawerView(isPresented: $showDrawer) { openSheet in
@@ -99,9 +99,9 @@ struct PortfolioView: View {
                                 .fontWeight(.bold)
                                 .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .frame(width: 56, height: 56)
-                                .background(InstitutionalTheme.Colors.primary)
+                                .background(DesignTokens.Colors.primary)
                                 .clipShape(Circle())
-                                .shadow(color: InstitutionalTheme.Colors.primary.opacity(0.35),
+                                .shadow(color: DesignTokens.Colors.primary.opacity(0.35),
                                         radius: 10, x: 0, y: 5)
                         }
                         .buttonStyle(.plain)
@@ -149,7 +149,7 @@ struct PortfolioView: View {
                     .preferredColorScheme(.dark)
                 } else {
                     Text("Plan yüklenemedi.")
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .preferredColorScheme(.dark)
                 }
             }
@@ -282,14 +282,14 @@ struct PortfolioView: View {
                         .resizable()
                         .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .frame(width: 22, height: 22)
                     if hasHighPriorityAlert(alerts) {
                         Circle()
                             .fill(InstitutionalTheme.Colors.crimson)
                             .frame(width: 7, height: 7)
                             .overlay(
-                                Circle().stroke(InstitutionalTheme.Colors.surface1, lineWidth: 1.5)
+                                Circle().stroke(DesignTokens.Colors.surface, lineWidth: 1.5)
                             )
                             .offset(x: 1, y: -1)
                     }
@@ -299,18 +299,18 @@ struct PortfolioView: View {
                     HStack(spacing: 6) {
                         Text("Trade Brain")
                             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         if !alerts.isEmpty {
                             Text("\(alerts.count) bildirim")
                                 .font(DesignTokens.Fonts.custom(size: 11))
                                 .foregroundColor(hasHighPriorityAlert(alerts)
                                                  ? InstitutionalTheme.Colors.crimson
-                                                 : InstitutionalTheme.Colors.textSecondary)
+                                                 : DesignTokens.Colors.textSecondary)
                         }
                     }
                     Text(tradeBrainSummary(alerts))
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
 
@@ -318,12 +318,12 @@ struct PortfolioView: View {
 
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .contentShape(Rectangle())
         }
@@ -444,8 +444,8 @@ struct TransactionConsoleCard: View {
     }
 
     var statusColor: Color {
-        if txn.type == .buy { return InstitutionalTheme.Colors.primary }
-        return isProfitable ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+        if txn.type == .buy { return DesignTokens.Colors.primary }
+        return isProfitable ? DesignTokens.Colors.success : DesignTokens.Colors.error
     }
 
     var body: some View {
@@ -455,18 +455,18 @@ struct TransactionConsoleCard: View {
                     Text(txn.symbol)
                         .font(.system(.callout, design: .monospaced))
                         .fontWeight(.bold)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
 
                     Spacer()
 
                     Text(txn.date.formatted(date: .abbreviated, time: .shortened))
                         .font(.caption2)
                         .monospacedDigit()
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
 
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
 
                 HStack(alignment: .top, spacing: 16) {
@@ -493,7 +493,7 @@ struct TransactionConsoleCard: View {
                         Text("Vol: \(currencySymbol)\(String(format: "%.2f", txn.amount))")
                             .font(.system(.caption, design: .monospaced))
                             .monospacedDigit()
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
 
                     Spacer()
@@ -504,7 +504,7 @@ struct TransactionConsoleCard: View {
                             .font(.system(.caption, design: .monospaced))
                             .fontWeight(.bold)
                             .monospacedDigit()
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
 
                         if txn.type == .sell {
                             if let pnl = txn.pnl, let pct = txn.pnlPercent {
@@ -521,12 +521,12 @@ struct TransactionConsoleCard: View {
                             } else {
                                 Text("—")
                                     .font(.caption)
-                                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                    .foregroundColor(DesignTokens.Colors.textTertiary)
                             }
                         } else {
                             Image(systemName: "arrow.down.to.line")
                                 .font(.caption)
-                                .foregroundColor(InstitutionalTheme.Colors.primary.opacity(0.85))
+                                .foregroundColor(DesignTokens.Colors.primary.opacity(0.85))
                         }
                     }
                 }
@@ -556,14 +556,14 @@ struct EngineSelector: View {
                             .foregroundColor(
                                 selected == filter
                                     ? engineColor(filter)
-                                    : InstitutionalTheme.Colors.textSecondary
+                                    : DesignTokens.Colors.textSecondary
                             )
                         Text(engineLabel(filter))
                             .font(DesignTokens.Fonts.custom(size: 13, weight: selected == filter ? .medium : .regular))
                             .foregroundColor(
                                 selected == filter
-                                    ? InstitutionalTheme.Colors.textPrimary
-                                    : InstitutionalTheme.Colors.textSecondary
+                                    ? DesignTokens.Colors.textPrimary
+                                    : DesignTokens.Colors.textSecondary
                             )
                     }
                     .padding(.horizontal, 10)
@@ -586,11 +586,11 @@ struct EngineSelector: View {
             }
         }
         .padding(4)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.6))
+        .background(DesignTokens.Colors.surface.opacity(0.6))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
         )
     }
 
@@ -615,9 +615,9 @@ struct EngineSelector: View {
 
     func engineColor(_ filter: PortfolioView.AutoPilotEngineFilter) -> Color {
         switch filter {
-        case .all:      return InstitutionalTheme.Colors.primary
-        case .corse:    return InstitutionalTheme.Colors.primary
-        case .pulse:    return InstitutionalTheme.Colors.positive
+        case .all:      return DesignTokens.Colors.primary
+        case .corse:    return DesignTokens.Colors.primary
+        case .pulse:    return DesignTokens.Colors.success
         case .scouting: return InstitutionalTheme.Colors.neutral
         }
     }
@@ -702,223 +702,6 @@ struct EmptyPortfolioState: View {
     }
 }
 
-// MARK: - NewTradeSheet
-
-struct NewTradeSheet: View {
-    @ObservedObject private var market = MarketViewModel.shared
-    @Environment(\.presentationMode) var presentationMode
-    @State private var symbol: String = ""
-    @State private var quantity: Double = 1.0
-
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
-
-                VStack(spacing: 20) {
-                    // Symbol Input
-                    // 2026-05-05 H-67: caps mono "HİSSE SEMBOLÜ" tracking 1.2
-                    // → sentence "Hisse" iOS form label dilinde.
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Hisse")
-                            .font(DesignTokens.Fonts.custom(size: 13))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
-
-                        HStack(spacing: 8) {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
-                            TextField("Örn: AAPL", text: $symbol)
-                                .font(.system(.callout, design: .monospaced))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
-                                .onChange(of: symbol) { _, newValue in
-                                    if newValue.isEmpty {
-                                        market.searchResults = []
-                                    } else {
-                                        market.search(query: newValue) { results in
-                                            MarketViewModel.shared.searchResults = results
-                                        }
-                                    }
-                                }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                                .fill(InstitutionalTheme.Colors.surface1)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
-                        )
-
-                        if !market.searchResults.isEmpty {
-                            ScrollView {
-                                LazyVStack(spacing: 0) {
-                                    ForEach(market.searchResults, id: \.symbol) { result in
-                                        Button(action: {
-                                            self.symbol = result.symbol
-                                            market.searchResults = []
-                                        }) {
-                                            HStack {
-                                                Text(result.symbol)
-                                                    .font(.system(.callout, design: .monospaced))
-                                                    .fontWeight(.bold)
-                                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
-                                                Spacer()
-                                                Text(result.description)
-                                                    .font(.caption)
-                                                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
-                                                    .lineLimit(1)
-                                            }
-                                            .padding(12)
-                                            .frame(minHeight: 44)
-                                            .background(InstitutionalTheme.Colors.surface1)
-                                        }
-                                        Rectangle()
-                                            .fill(InstitutionalTheme.Colors.borderSubtle)
-                                            .frame(height: 0.5)
-                                    }
-                                }
-                            }
-                            .frame(maxHeight: 220)
-                            .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
-                        }
-                    }
-
-                    // Quantity Input
-                    // 2026-05-05 H-67: caps mono "ADET" tracking 1.2
-                    // → sentence "Adet".
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Adet")
-                            .font(DesignTokens.Fonts.custom(size: 13))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
-
-                        HStack {
-                            Button(action: { if quantity > 1.0 { quantity -= 1.0 } }) {
-                                Image(systemName: "minus.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
-                                    .frame(width: 44, height: 44)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Adet azalt")
-
-                            Spacer()
-                            Text(String(format: "%.2f", quantity))
-                                .font(.title)
-                                .fontWeight(.bold)
-                                .monospacedDigit()
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
-                            Spacer()
-
-                            Button(action: { quantity += 1.0 }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(InstitutionalTheme.Colors.primary)
-                                    .frame(width: 44, height: 44)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Adet artır")
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                                .fill(InstitutionalTheme.Colors.surface1)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
-                        )
-                    }
-
-                    // Summary
-                    if let quote = market.quotes[symbol.uppercased()] {
-                        VStack(spacing: 10) {
-                            HStack {
-                                Text("Birim Fiyat")
-                                    .font(.callout)
-                                Spacer()
-                                let currencySymbol = symbol.uppercased().hasSuffix(".IS") ? "₺" : "$"
-                                Text("\(currencySymbol)\(String(format: "%.2f", quote.currentPrice))")
-                                    .font(.system(.callout, design: .monospaced))
-                                    .monospacedDigit()
-                            }
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
-
-                            Rectangle()
-                                .fill(InstitutionalTheme.Colors.borderSubtle)
-                                .frame(height: 0.5)
-
-                            HStack {
-                                Text("Toplam")
-                                    .font(.callout)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
-                                Spacer()
-                                let currencySymbol = symbol.uppercased().hasSuffix(".IS") ? "₺" : "$"
-                                Text("\(currencySymbol)\(String(format: "%.2f", quote.currentPrice * quantity))")
-                                    .font(.system(.title3, design: .monospaced))
-                                    .fontWeight(.bold)
-                                    .monospacedDigit()
-                                    .foregroundColor(InstitutionalTheme.Colors.primary)
-                            }
-                        }
-                        .padding(14)
-                        .background(
-                            RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                                .fill(InstitutionalTheme.Colors.surface1)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
-                        )
-                    }
-
-                    Spacer()
-
-                    // Action Button
-                    // 2026-05-05 H-67: caps "SATIN AL" tracking 1 → sentence
-                    // "Satın al", iOS primary button dilinde.
-                    Button(action: executeTrade) {
-                        Text("Satın al")
-                            .font(DesignTokens.Fonts.custom(size: 15, weight: .semibold))
-                            .foregroundColor(DesignTokens.Colors.textPrimary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .frame(minHeight: 48)
-                            .background(
-                                symbol.isEmpty
-                                    ? InstitutionalTheme.Colors.neutral
-                                    : InstitutionalTheme.Colors.positive
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(symbol.isEmpty)
-                    .accessibilityLabel("Satın al")
-                }
-                .padding(16)
-            }
-            .navigationTitle("Yeni İşlem")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("İptal") { presentationMode.wrappedValue.dismiss() }
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
-                }
-            }
-        }
-    }
-
-    func executeTrade() {
-        guard !symbol.isEmpty else { return }
-        ExecutionStateViewModel.shared.buy(symbol: symbol.uppercased(), quantity: quantity)
-        presentationMode.wrappedValue.dismiss()
-    }
-}
 
 // MARK: - ScoutHistoryRow
 
@@ -927,12 +710,12 @@ struct ScoutHistoryRow: View {
 
     var statusColor: Color {
         switch log.status {
-        case "ONAYLI": return InstitutionalTheme.Colors.positive
-        case "RED":    return InstitutionalTheme.Colors.negative
+        case "ONAYLI": return DesignTokens.Colors.success
+        case "RED":    return DesignTokens.Colors.error
         case "BEKLE":  return InstitutionalTheme.Colors.neutral
-        case "SATIŞ":  return InstitutionalTheme.Colors.primary
-        case "TUT":    return InstitutionalTheme.Colors.textSecondary
-        default:       return InstitutionalTheme.Colors.textSecondary
+        case "SATIŞ":  return DesignTokens.Colors.primary
+        case "TUT":    return DesignTokens.Colors.textSecondary
+        default:       return DesignTokens.Colors.textSecondary
         }
     }
 
@@ -946,7 +729,7 @@ struct ScoutHistoryRow: View {
             Text(log.symbol)
                 .font(.system(.callout, design: .monospaced))
                 .fontWeight(.bold)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .frame(width: 72, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 3) {
@@ -966,12 +749,12 @@ struct ScoutHistoryRow: View {
                     Text("Puan: \(Int(log.score))")
                         .font(.system(.caption2, design: .monospaced))
                         .monospacedDigit()
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
 
                 Text(log.reason)
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
             }
         }
@@ -979,11 +762,11 @@ struct ScoutHistoryRow: View {
         .frame(minHeight: 52)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(InstitutionalTheme.Colors.surface1)
+                .fill(DesignTokens.Colors.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
         )
     }
 }

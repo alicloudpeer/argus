@@ -59,7 +59,7 @@ struct TradeDetailSheet: View {
     }
 
     private var pnlColor: Color {
-        pnlValue >= 0 ? InstitutionalTheme.Colors.aurora : InstitutionalTheme.Colors.crimson
+        pnlValue >= 0 ? DesignTokens.Colors.success : DesignTokens.Colors.error
     }
 
     private var holdingDays: Int {
@@ -112,7 +112,7 @@ struct TradeDetailSheet: View {
         VStack(spacing: 0) {
             topNav
             ScrollView {
-                VStack(spacing: 12) {
+                VStack(spacing: DesignTokens.Spacing.md) {
                     identityCard
                     pnlCard
                     if plan != nil { planCard }
@@ -121,13 +121,13 @@ struct TradeDetailSheet: View {
                     if let plan, !plan.orderedScenarios.isEmpty { scenarioCard(plan) }
                     if let eventRisk, hasEventWarning(eventRisk) { riskWarningCard(eventRisk) }
                     actionButtons
-                    Color.clear.frame(height: 32)
+                    Color.clear.frame(height: DesignTokens.Spacing.xxl)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
+                .padding(.horizontal, DesignTokens.Spacing.lg)
+                .padding(.top, DesignTokens.Spacing.md)
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onAppear(perform: loadContext)
         .sheet(isPresented: $showPlanEditor) {
@@ -142,71 +142,67 @@ struct TradeDetailSheet: View {
         }
     }
 
-    // MARK: - 1. Top nav
+    // MARK: - 1. Top nav (sade — sembol solda, xmark sağda)
+    //
+    // 2026-05-11: Geri (chevron.left) butonu kaldırıldı; sheet zaten swipe-to-dismiss
+    // ile kapanır, çift kapatma yolu kafa karıştırıyordu. Sembol artık başlık
+    // hizasında, xmark diğer sheet'lerle tutarlı 40×40 circular.
 
     private var topNav: some View {
-        HStack {
-            Button(action: { dismiss() }) {
-                Image(systemName: "chevron.left")
-                    .font(DesignTokens.Fonts.custom(size: 16, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
-                    .frame(width: 36, height: 36)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
+        HStack(spacing: DesignTokens.Spacing.s10) {
             Text(cleanedSymbol)
-                .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold, design: .monospaced))
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             Spacer()
 
             Button(action: { dismiss() }) {
                 Image(systemName: "xmark")
-                    .font(DesignTokens.Fonts.custom(size: 14))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
-                    .frame(width: 36, height: 36)
+                    .font(DesignTokens.Fonts.custom(size: 16, weight: .medium))
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
+                    .frame(width: 40, height: 40)
+                    .background(DesignTokens.Colors.Overlay.l05)
+                    .clipShape(Circle())
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Kapat")
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 8)
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .padding(.vertical, DesignTokens.Spacing.sm)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
-                .frame(height: 0.5)
+                .fill(DesignTokens.Colors.borderSubtle)
+                .frame(height: DesignTokens.BorderWidth.hairline)
         }
     }
 
     // MARK: - 2. Künye
 
     private var identityCard: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DesignTokens.Spacing.md) {
             CompanyLogoView(symbol: trade.symbol, size: 40)
             VStack(alignment: .leading, spacing: 2) {
                 Text(displayName)
                     .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .lineLimit(1)
                 Text(subtitleText)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(formatCurrency(currentPrice))
                     .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .monospacedDigit()
                 if let q = quote {
                     Text(String(format: "%+.2f%% bugün", q.percentChange))
                         .font(DesignTokens.Fonts.custom(size: 11))
                         .foregroundColor(q.percentChange >= 0
-                                         ? InstitutionalTheme.Colors.aurora
-                                         : InstitutionalTheme.Colors.crimson)
+                                         ? DesignTokens.Colors.success
+                                         : DesignTokens.Colors.error)
                         .monospacedDigit()
                 }
             }
@@ -222,7 +218,7 @@ struct TradeDetailSheet: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Net K/Z")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text((pnlValue >= 0 ? "+" : "") + formatCurrency(pnlValue))
                         .font(DesignTokens.Fonts.custom(size: 28, weight: .medium))
                         .foregroundColor(pnlColor)
@@ -236,17 +232,17 @@ struct TradeDetailSheet: View {
             }
 
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
                 .padding(.vertical, 12)
 
-            HStack(spacing: 14) {
+            HStack(spacing: DesignTokens.Spacing.s14) {
                 detailColumn(title: "Giriş", value: formatCurrency(trade.entryPrice))
                 detailColumn(title: "Adet", value: formatQuantity(trade.quantity))
                 detailColumn(title: "Değer", value: formatCurrency(currentPrice * trade.quantity))
             }
         }
-        .padding(14)
+        .padding(DesignTokens.Spacing.s14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(cardBackground)
     }
@@ -255,10 +251,10 @@ struct TradeDetailSheet: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -276,24 +272,24 @@ struct TradeDetailSheet: View {
                 HStack {
                     Text("Plan")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Spacer()
                     Text("\(plan.completedStepCount) / \(plan.totalStepCount) adım")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .monospacedDigit()
                 }
 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.surface2)
+                            .fill(DesignTokens.Colors.surfaceElevated)
                             .frame(height: 4)
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.holo)
+                            .fill(DesignTokens.Colors.primary)
                             .frame(width: geo.size.width * plan.completionRatio, height: 4)
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.xs, style: .continuous))
                 }
                 .frame(height: 4)
 
@@ -301,10 +297,10 @@ struct TradeDetailSheet: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Sıradaki adım")
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Text("\(nextStep.trigger.displayText) → \(nextStep.action.displayText)")
                             .font(DesignTokens.Fonts.custom(size: 13))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
                             .lineSpacing(2)
                     }
@@ -313,16 +309,16 @@ struct TradeDetailSheet: View {
                 HStack(spacing: 8) {
                     metricTile(title: "Stop",
                                value: suggestedStop.map(formatCurrency) ?? "—",
-                               color: InstitutionalTheme.Colors.crimson)
+                               color: DesignTokens.Colors.error)
                     metricTile(title: "Hedef",
                                value: suggestedTarget.map(formatCurrency) ?? "—",
-                               color: InstitutionalTheme.Colors.aurora)
+                               color: DesignTokens.Colors.success)
                     metricTile(title: "R/R",
                                value: riskRewardText ?? "—",
-                               color: InstitutionalTheme.Colors.titan)
+                               color: DesignTokens.Colors.accent)
                 }
             }
-            .padding(14)
+            .padding(DesignTokens.Spacing.s14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(cardBackground)
         )
@@ -332,7 +328,7 @@ struct TradeDetailSheet: View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
                 .foregroundColor(color)
@@ -341,9 +337,9 @@ struct TradeDetailSheet: View {
                 .minimumScaleFactor(0.8)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(InstitutionalTheme.Colors.surface2)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(DesignTokens.Spacing.s10)
+        .background(DesignTokens.Colors.surfaceElevated)
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.sm, style: .continuous))
     }
 
     // MARK: - 5. Tez kartı
@@ -352,29 +348,29 @@ struct TradeDetailSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Tez")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text(plan.thesis)
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
 
             if !plan.invalidation.isEmpty {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
                     .padding(.vertical, 4)
                 Text("Geçersizlik")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(plan.invalidation)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(2)
             }
         }
-        .padding(14)
+        .padding(DesignTokens.Spacing.s14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(cardBackground)
     }
@@ -389,7 +385,7 @@ struct TradeDetailSheet: View {
                 HStack {
                     Text("Konsey kararı")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Spacer()
                     Text("\(councilLabel(snap.councilAction)) · güven %\(Int(snap.councilConfidence * 100))")
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
@@ -398,7 +394,7 @@ struct TradeDetailSheet: View {
                 }
 
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
 
                 VStack(spacing: 8) {
@@ -416,17 +412,17 @@ struct TradeDetailSheet: View {
 
                 if !snap.councilReasoning.isEmpty {
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 0.5)
                         .padding(.top, 2)
                     Text(snap.councilReasoning)
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .lineSpacing(2)
                 }
             }
-            .padding(14)
+            .padding(DesignTokens.Spacing.s14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(cardBackground)
         )
@@ -440,17 +436,17 @@ struct TradeDetailSheet: View {
                 HStack(spacing: 10) {
                     Text(name)
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .frame(width: 76, alignment: .leading)
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             Rectangle()
-                                .fill(InstitutionalTheme.Colors.surface2)
+                                .fill(DesignTokens.Colors.surfaceElevated)
                             Rectangle()
                                 .fill(color)
                                 .frame(width: geo.size.width * normalized)
                         }
-                        .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.xs, style: .continuous))
                     }
                     .frame(height: 4)
                     Text("\(Int(s))")
@@ -469,7 +465,7 @@ struct TradeDetailSheet: View {
         HStack(spacing: 10) {
             Text("Makro")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 76, alignment: .leading)
             Spacer()
             Text(stanceLabel(stance))
@@ -484,14 +480,14 @@ struct TradeDetailSheet: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Senaryolar")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             HStack(spacing: 6) {
                 ForEach(plan.orderedScenarios) { scenario in
                     let isActive = scenario.isActive
                     Text("\(isActive ? "Aktif: " : "")\(scenarioLabel(scenario.type))")
                         .font(DesignTokens.Fonts.custom(size: 11, weight: isActive ? .medium : .regular))
-                        .foregroundColor(isActive ? scenarioColor(scenario.type) : InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(isActive ? scenarioColor(scenario.type) : DesignTokens.Colors.textTertiary)
                         .padding(.horizontal, isActive ? 8 : 4)
                         .padding(.vertical, 3)
                         .background(
@@ -507,11 +503,11 @@ struct TradeDetailSheet: View {
                 let done = active.steps.filter { plan.executedSteps.contains($0.id) }.count
                 Text("\(scenarioLabel(active.type)) senaryosunda \(total) adımdan \(done) tamamlandı.")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(14)
+        .padding(DesignTokens.Spacing.s14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(cardBackground)
     }
@@ -538,29 +534,29 @@ struct TradeDetailSheet: View {
             HStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle")
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.titan)
+                    .foregroundColor(DesignTokens.Colors.accent)
                 Text("Risk uyarısı")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.titan)
+                    .foregroundColor(DesignTokens.Colors.accent)
                 Spacer()
             }
 
             ForEach(messages, id: \.self) { msg in
                 Text(msg)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.titan)
+                    .foregroundColor(DesignTokens.Colors.accent)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding(11)
-        .background(InstitutionalTheme.Colors.titan.opacity(0.08))
+        .padding(DesignTokens.Spacing.s11)
+        .background(DesignTokens.Colors.accent.opacity(0.08))
         .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.titan.opacity(0.3), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.r10, style: .continuous)
+                .stroke(DesignTokens.Colors.accent.opacity(0.3), lineWidth: DesignTokens.BorderWidth.hairline)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.r10, style: .continuous))
     }
 
     // MARK: - 9. Aksiyon butonları
@@ -570,15 +566,15 @@ struct TradeDetailSheet: View {
             Button(action: { showPlanEditor = true }) {
                 Text("Planı düzenle")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(InstitutionalTheme.Colors.surface1)
+                    .background(DesignTokens.Colors.surface)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                        RoundedRectangle(cornerRadius: DesignTokens.Radius.r10, style: .continuous)
+                            .stroke(DesignTokens.Colors.borderSubtle, lineWidth: DesignTokens.BorderWidth.hairline)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.r10, style: .continuous))
             }
             .buttonStyle(.plain)
             .disabled(plan == nil)
@@ -587,15 +583,15 @@ struct TradeDetailSheet: View {
             Button(action: closePosition) {
                 Text("Pozisyonu kapat")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.crimson)
+                    .foregroundColor(DesignTokens.Colors.error)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(InstitutionalTheme.Colors.surface1)
+                    .background(DesignTokens.Colors.surface)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(InstitutionalTheme.Colors.crimson.opacity(0.4), lineWidth: 0.5)
+                        RoundedRectangle(cornerRadius: DesignTokens.Radius.r10, style: .continuous)
+                            .stroke(DesignTokens.Colors.error.opacity(0.4), lineWidth: DesignTokens.BorderWidth.hairline)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.r10, style: .continuous))
             }
             .buttonStyle(.plain)
         }
@@ -605,11 +601,11 @@ struct TradeDetailSheet: View {
     // MARK: - Helpers
 
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 12, style: .continuous)
-            .fill(InstitutionalTheme.Colors.surface1)
+        RoundedRectangle(cornerRadius: DesignTokens.Radius.md, style: .continuous)
+            .fill(DesignTokens.Colors.surface)
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.md, style: .continuous)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: DesignTokens.BorderWidth.hairline)
             )
     }
 
@@ -655,9 +651,9 @@ struct TradeDetailSheet: View {
     }
 
     private func scoreColorForRate(_ rate: Double) -> Color {
-        if rate >= 0.6 { return InstitutionalTheme.Colors.aurora }
-        if rate >= 0.45 { return InstitutionalTheme.Colors.titan }
-        return InstitutionalTheme.Colors.crimson
+        if rate >= 0.6 { return DesignTokens.Colors.success }
+        if rate >= 0.45 { return DesignTokens.Colors.accent }
+        return DesignTokens.Colors.error
     }
 
     private func councilLabel(_ action: ArgusAction) -> String {
@@ -672,11 +668,11 @@ struct TradeDetailSheet: View {
 
     private func councilColor(_ action: ArgusAction) -> Color {
         switch action {
-        case .aggressiveBuy: return InstitutionalTheme.Colors.aurora
-        case .accumulate:    return InstitutionalTheme.Colors.aurora
-        case .neutral:       return InstitutionalTheme.Colors.textSecondary
-        case .trim:          return InstitutionalTheme.Colors.titan
-        case .liquidate:     return InstitutionalTheme.Colors.crimson
+        case .aggressiveBuy: return DesignTokens.Colors.success
+        case .accumulate:    return DesignTokens.Colors.success
+        case .neutral:       return DesignTokens.Colors.textSecondary
+        case .trim:          return DesignTokens.Colors.accent
+        case .liquidate:     return DesignTokens.Colors.error
         }
     }
 
@@ -691,10 +687,10 @@ struct TradeDetailSheet: View {
 
     private func stanceColor(_ stance: MacroStance) -> Color {
         switch stance {
-        case .riskOn:    return InstitutionalTheme.Colors.aurora
-        case .cautious:  return InstitutionalTheme.Colors.textPrimary
-        case .defensive: return InstitutionalTheme.Colors.titan
-        case .riskOff:   return InstitutionalTheme.Colors.crimson
+        case .riskOn:    return DesignTokens.Colors.success
+        case .cautious:  return DesignTokens.Colors.textPrimary
+        case .defensive: return DesignTokens.Colors.accent
+        case .riskOff:   return DesignTokens.Colors.error
         }
     }
 
@@ -708,9 +704,9 @@ struct TradeDetailSheet: View {
 
     private func scenarioColor(_ type: ScenarioType) -> Color {
         switch type {
-        case .bullish: return InstitutionalTheme.Colors.aurora
-        case .neutral: return InstitutionalTheme.Colors.textSecondary
-        case .bearish: return InstitutionalTheme.Colors.crimson
+        case .bullish: return DesignTokens.Colors.success
+        case .neutral: return DesignTokens.Colors.textSecondary
+        case .bearish: return DesignTokens.Colors.error
         }
     }
 

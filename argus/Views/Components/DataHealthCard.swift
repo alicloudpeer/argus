@@ -23,7 +23,7 @@ struct DataHealthCard: View {
                     .foregroundColor(Theme.colorForScore(confidence))
             }
             
-            Divider().background(InstitutionalTheme.Colors.border)
+            Divider().background(DesignTokens.Colors.border)
             
             // Details
             HStack(spacing: 16) {
@@ -32,7 +32,7 @@ struct DataHealthCard: View {
                     Text("KAYNAK")
                         .font(.caption)
                         .bold()
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text(provider)
                         .font(.subheadline)
                         .foregroundColor(DesignTokens.Colors.textPrimary)
@@ -43,7 +43,7 @@ struct DataHealthCard: View {
                     Text("DURUM")
                         .font(.caption)
                         .bold()
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     HStack(spacing: 4) {
                         Circle()
                             .fill(isLive ? Color.green : Color.orange)
@@ -72,11 +72,11 @@ struct DataHealthCard: View {
             }
         }
         .padding()
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(InstitutionalTheme.Colors.border, lineWidth: 1)
+                .stroke(DesignTokens.Colors.border, lineWidth: 1)
         )
     }
 }

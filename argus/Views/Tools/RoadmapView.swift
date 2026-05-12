@@ -42,7 +42,7 @@ struct RoadmapView: View {
                 leadingDeco: .back(onTap: { dismiss() })
             )
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
@@ -51,7 +51,7 @@ struct RoadmapView: View {
                             ArgusSectionCaption("ARGUS · EVRİM")
                             Text("Argus Sisteminin Gelişim Yol Haritası")
                                 .font(.body)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                         }
                         .padding(.horizontal)
                         .padding(.top, 20)
@@ -68,12 +68,12 @@ struct RoadmapView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Not")
                                 .font(.headline)
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                             Text("Bu yol haritası piyasa koşullarına ve teknik gereksinimlere göre güncellenebilir. 'AI Öğrenme Günlüğü' üzerinden sistemin bu hedeflere doğru nasıl evrildiğini takip edebilirsiniz.")
                                 .font(.caption)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                                 .padding()
-                                .background(InstitutionalTheme.Colors.surface1)
+                                .background(DesignTokens.Colors.surface)
                                 .cornerRadius(12)
                         }
                         .padding(.horizontal)
@@ -130,12 +130,12 @@ struct RoadmapRow: View {
             VStack(spacing: 0) {
                 Image(systemName: item.status.icon)
                     .foregroundColor(item.status.color)
-                    .background(InstitutionalTheme.Colors.background) // Hide line behind icon
+                    .background(DesignTokens.Colors.background) // Hide line behind icon
                     .zIndex(1)
                 
                 if !isLast {
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.border)
+                        .fill(DesignTokens.Colors.border)
                         .frame(width: 2)
                         .frame(minHeight: 60)
                 }
@@ -146,7 +146,7 @@ struct RoadmapRow: View {
                 HStack {
                     Text(item.title)
                         .font(.headline)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Spacer()
                     Text(item.quarter)
                         .font(.caption)
@@ -160,7 +160,7 @@ struct RoadmapRow: View {
                 
                 Text(item.description)
                     .font(.subheadline)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true) // Wrap text
                     .padding(.bottom, 24)
             }

@@ -10,11 +10,11 @@ struct MarketMemoryBar: View {
     
     private var riskColor: Color {
         if overallRiskScore > 0.6 {
-            return InstitutionalTheme.Colors.negative
+            return DesignTokens.Colors.error
         } else if overallRiskScore > 0.3 {
             return InstitutionalTheme.Colors.warning
         }
-        return InstitutionalTheme.Colors.positive
+        return DesignTokens.Colors.success
     }
     
     private var regimeIcon: String {
@@ -30,10 +30,10 @@ struct MarketMemoryBar: View {
             HStack {
                 Image(systemName: "brain.head.profile")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.primary)
+                    .foregroundColor(DesignTokens.Colors.primary)
                 Text("Pazar Hafizasi")
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Text("%\(Int(overallRiskScore * 100)) Risk")
                     .font(InstitutionalTheme.Typography.caption)
@@ -58,7 +58,7 @@ struct MarketMemoryBar: View {
             
             Text(regimeContext.recommendation)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             if !eventContext.warnings.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
@@ -69,7 +69,7 @@ struct MarketMemoryBar: View {
                                 .foregroundColor(InstitutionalTheme.Colors.warning)
                             Text(warning)
                                 .font(InstitutionalTheme.Typography.micro)
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                         }
                     }
                 }
@@ -85,8 +85,8 @@ struct RegimeBadge: View {
     
     private var regimeColor: Color {
         switch context.regime {
-        case "Risk On": return InstitutionalTheme.Colors.positive
-        case "Risk Off": return InstitutionalTheme.Colors.negative
+        case "Risk On": return DesignTokens.Colors.success
+        case "Risk Off": return DesignTokens.Colors.error
         default: return InstitutionalTheme.Colors.neutral
         }
     }
@@ -104,15 +104,15 @@ struct RegimeBadge: View {
             HStack(spacing: 4) {
                 Text("VIX")
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(String(format: "%.1f", context.vix))
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             
             Text("Gecmis: %\(Int(context.historicalWinRate * 100))")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
@@ -132,11 +132,11 @@ struct EventBadge: View {
     
     private var eventColor: Color {
         if context.hasHighImpactEvent {
-            return InstitutionalTheme.Colors.negative
+            return DesignTokens.Colors.error
         } else if context.eventCount > 0 {
             return InstitutionalTheme.Colors.warning
         }
-        return InstitutionalTheme.Colors.positive
+        return DesignTokens.Colors.success
     }
     
     var body: some View {
@@ -151,11 +151,11 @@ struct EventBadge: View {
             
             Text(context.hasHighImpactEvent ? "Yuksek Etkili" : "Normal")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(context.hasHighImpactEvent ? InstitutionalTheme.Colors.negative : InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(context.hasHighImpactEvent ? DesignTokens.Colors.error : DesignTokens.Colors.textTertiary)
             
             Text("Risk: %\(Int(context.riskScore * 100))")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
@@ -187,10 +187,10 @@ struct MemoryInsightCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(value)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
             }
             
             Spacer()
@@ -228,5 +228,5 @@ struct MemoryInsightCard: View {
         )
     }
     .padding()
-    .background(InstitutionalTheme.Colors.background)
+    .background(DesignTokens.Colors.background)
 }

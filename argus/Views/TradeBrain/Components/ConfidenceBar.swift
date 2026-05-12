@@ -21,9 +21,9 @@ struct ConfidenceBar: View {
     
     private var adjustmentColor: Color {
         if adjustment > 0.05 {
-            return InstitutionalTheme.Colors.positive
+            return DesignTokens.Colors.success
         } else if adjustment < -0.05 {
-            return InstitutionalTheme.Colors.negative
+            return DesignTokens.Colors.error
         }
         return InstitutionalTheme.Colors.neutral
     }
@@ -44,7 +44,7 @@ struct ConfidenceBar: View {
                 HStack {
                     Text("Guven Kalibrasyonu")
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Spacer()
                     Text(statusText)
                         .font(InstitutionalTheme.Typography.micro)
@@ -58,7 +58,7 @@ struct ConfidenceBar: View {
                         .fill(InstitutionalTheme.Colors.surface3)
                     
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(InstitutionalTheme.Colors.primary.opacity(0.4))
+                        .fill(DesignTokens.Colors.primary.opacity(0.4))
                         .frame(width: geo.size.width * rawConfidence)
                     
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
@@ -71,11 +71,11 @@ struct ConfidenceBar: View {
             HStack {
                 Text("Ham: %\(Int(rawConfidence * 100))")
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Spacer()
                 Text("Kalibre: %\(Int(calibratedConfidence * 100))")
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
     }
@@ -94,12 +94,12 @@ struct ConfidenceBucketView: View {
     
     private var statusColor: Color {
         if bucket.totalDecisions < 10 {
-            return InstitutionalTheme.Colors.textTertiary
+            return DesignTokens.Colors.textTertiary
         }
         if deviation > 0.05 {
-            return InstitutionalTheme.Colors.positive
+            return DesignTokens.Colors.success
         } else if deviation < -0.05 {
-            return InstitutionalTheme.Colors.negative
+            return DesignTokens.Colors.error
         }
         return InstitutionalTheme.Colors.neutral
     }
@@ -108,7 +108,7 @@ struct ConfidenceBucketView: View {
         HStack(spacing: 12) {
             Text(bucket.displayRange)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 60, alignment: .leading)
             
             GeometryReader { geo in
@@ -130,7 +130,7 @@ struct ConfidenceBucketView: View {
             
             Text("(\(bucket.totalDecisions))")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .frame(width: 40, alignment: .trailing)
         }
     }
@@ -144,10 +144,10 @@ struct CalibrationSummaryCard: View {
             HStack {
                 Image(systemName: "chart.bar.xaxis")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.primary)
+                    .foregroundColor(DesignTokens.Colors.primary)
                 Text("Guven Kalibrasyon Ozeti")
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
             }
             
@@ -155,34 +155,34 @@ struct CalibrationSummaryCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Toplam Karar")
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text("\(stats.totalDecisions)")
                         .font(InstitutionalTheme.Typography.headline)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Basari Orani")
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text("%\(Int(stats.overallWinRate * 100))")
                         .font(InstitutionalTheme.Typography.headline)
-                        .foregroundColor(stats.overallWinRate > 0.5 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative)
+                        .foregroundColor(stats.overallWinRate > 0.5 ? DesignTokens.Colors.success : DesignTokens.Colors.error)
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Ort. PnL")
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text("%\(String(format: "%.1f", stats.avgPnL))")
                         .font(InstitutionalTheme.Typography.headline)
-                        .foregroundColor(stats.avgPnL >= 0 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative)
+                        .foregroundColor(stats.avgPnL >= 0 ? DesignTokens.Colors.success : DesignTokens.Colors.error)
                 }
             }
             
             Text(stats.summary)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .padding(InstitutionalCardScale.insight.padding)
         .institutionalCard(scale: .insight)
@@ -195,5 +195,5 @@ struct CalibrationSummaryCard: View {
         ConfidenceBar(rawConfidence: 0.45, calibratedConfidence: 0.52)
     }
     .padding()
-    .background(InstitutionalTheme.Colors.background)
+    .background(DesignTokens.Colors.background)
 }

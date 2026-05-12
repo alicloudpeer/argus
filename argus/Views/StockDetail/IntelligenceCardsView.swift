@@ -104,10 +104,10 @@ struct IntelligenceCardsView: View {
                 if netSentiment > 0 {
                     HStack {
                         Image(systemName: "arrow.up.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(DesignTokens.Colors.success)
                         Text("Yönetim Alımda (Güven Yüksek)")
                             .font(.callout)
-                            .foregroundColor(.green)
+                            .foregroundColor(DesignTokens.Colors.success)
                     }
                 } else if netSentiment < 0 {
                     HStack {

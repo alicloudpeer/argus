@@ -28,11 +28,11 @@ struct SignalDetailView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Label("Basitleştirilmiş Anlatım", systemImage: "brain.head.profile")
                             .font(InstitutionalTheme.Typography.bodyStrong)
-                            .foregroundColor(InstitutionalTheme.Colors.primary)
+                            .foregroundColor(DesignTokens.Colors.primary)
                         
                         Text(signal.simplifiedExplanation)
                             .font(InstitutionalTheme.Typography.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .lineSpacing(4)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -45,12 +45,12 @@ struct SignalDetailView: View {
                         
                         Text("Mevcut Değerler:")
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         
                         HStack(spacing: 20) {
                             ForEach(signal.indicatorValues.sorted(by: >), id: \.key) { key, value in
                                 VStack {
-                                    Text(key).font(InstitutionalTheme.Typography.caption).foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                    Text(key).font(InstitutionalTheme.Typography.caption).foregroundColor(DesignTokens.Colors.textSecondary)
                                     Text(value).font(InstitutionalTheme.Typography.bodyStrong).fontDesign(.monospaced)
                                 }
                                 .padding(10)
@@ -61,7 +61,7 @@ struct SignalDetailView: View {
                         Text("Sinyal Nedeni: \(signal.reason)")
                             .font(InstitutionalTheme.Typography.caption)
                             .italic()
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                             .padding(.top, 5)
                     }
                     
@@ -69,7 +69,7 @@ struct SignalDetailView: View {
                 }
                 .padding()
             }
-            .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+            .background(DesignTokens.Colors.background.ignoresSafeArea())
             .navigationTitle("İndikatör Rehberi")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -84,11 +84,11 @@ struct SignalDetailView: View {
     
     private func colorForAction(_ action: SignalAction) -> Color {
         switch action {
-        case .buy: return InstitutionalTheme.Colors.positive
-        case .sell: return InstitutionalTheme.Colors.negative
-        case .hold: return InstitutionalTheme.Colors.textSecondary
-        case .wait: return InstitutionalTheme.Colors.textSecondary
-        case .skip: return InstitutionalTheme.Colors.textSecondary
+        case .buy: return DesignTokens.Colors.success
+        case .sell: return DesignTokens.Colors.error
+        case .hold: return DesignTokens.Colors.textSecondary
+        case .wait: return DesignTokens.Colors.textSecondary
+        case .skip: return DesignTokens.Colors.textSecondary
         }
     }
 }

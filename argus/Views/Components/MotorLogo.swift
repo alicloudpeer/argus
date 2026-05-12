@@ -88,7 +88,7 @@ struct MotorLogo: View {
 
 #Preview {
     ZStack {
-        InstitutionalTheme.Colors.backgroundDeep.ignoresSafeArea()
+        DesignTokens.Colors.backgroundDeep.ignoresSafeArea()
 
         VStack(spacing: 20) {
             HStack(spacing: 16) {

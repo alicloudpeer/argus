@@ -40,6 +40,6 @@ struct PrometheusBadge: View {
     private func color(_ pct: Double) -> Color {
         if pct >= 2 { return InstitutionalTheme.Colors.aurora }
         if pct <= -2 { return InstitutionalTheme.Colors.crimson }
-        return InstitutionalTheme.Colors.textTertiary
+        return DesignTokens.Colors.textTertiary
     }
 }

@@ -134,7 +134,7 @@ struct StoryRingButton: View {
                     
                     // Inner circle with symbol
                     Circle()
-                        .fill(InstitutionalTheme.Colors.surface1)
+                        .fill(DesignTokens.Colors.surface)
                         .frame(width: 56, height: 56)
                     
                     // Symbol text
@@ -187,5 +187,5 @@ struct ScaleButtonStyle: ButtonStyle {
         ScoutStoriesBar()
         Spacer()
     }
-    .background(InstitutionalTheme.Colors.background)
+    .background(DesignTokens.Colors.background)
 }

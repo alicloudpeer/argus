@@ -32,7 +32,7 @@ struct SanctumContributionCard: View {
                 HStack {
                     Text("Konsey katkı dağılımı")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
 
                     Spacer()
 
@@ -53,7 +53,7 @@ struct SanctumContributionCard: View {
                     
                     Text(education.title.uppercased())
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     
                     Spacer(minLength: 0)
                 }
@@ -72,11 +72,11 @@ struct SanctumContributionCard: View {
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(InstitutionalTheme.Colors.surface1.opacity(0.92))
+                    .fill(DesignTokens.Colors.surface.opacity(0.92))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
             )
         }
     }
@@ -112,7 +112,7 @@ struct SanctumContributionCard: View {
                 action: action.rawValue,
                 confidence: confidence,
                 impactPoints: impactPoints,
-                color: colors[module] ?? InstitutionalTheme.Colors.textSecondary,
+                color: colors[module] ?? DesignTokens.Colors.textSecondary,
                 reasoning: contribution?.reasoning ?? "Veri bekleniyor."
             )
         }
@@ -161,7 +161,7 @@ private struct ContributionImpactRow: View {
     private var impactColor: Color {
         if row.impactPoints > 0 { return SanctumTheme.auroraGreen }
         if row.impactPoints < 0 { return SanctumTheme.crimsonRed }
-        return InstitutionalTheme.Colors.textSecondary
+        return DesignTokens.Colors.textSecondary
     }
     
     var body: some View {
@@ -200,15 +200,15 @@ private struct ContributionImpactRow: View {
             HStack(spacing: 6) {
                 Text("Guven %\(Int(row.confidence * 100))")
                     .font(DesignTokens.Fonts.custom(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 
                 Text("|")
                     .font(DesignTokens.Fonts.custom(size: 8, weight: .medium, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 
                 Text(row.reasoning)
                     .font(DesignTokens.Fonts.custom(size: 10, weight: .regular, design: .default))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .lineLimit(1)
             }
         }

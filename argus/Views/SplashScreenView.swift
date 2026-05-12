@@ -78,7 +78,7 @@ struct SplashScreenView: View {
 
             ZStack {
                 // Derin siyah zemin
-                InstitutionalTheme.Colors.backgroundDeep
+                DesignTokens.Colors.backgroundDeep
                     .ignoresSafeArea()
 
                 // Merkezi nefes alan glow (tüm fazlarda arkada)
@@ -209,10 +209,10 @@ struct SplashScreenView: View {
                     VStack(spacing: 4) {
                         Text("Yatırım kararları için kurumsal motor")
                             .font(DesignTokens.Fonts.custom(size: 12))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         Text("100 göz · 8 motor · 1 karar")
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                     }
                     .opacity(subtitleOpacity)
 
@@ -456,7 +456,7 @@ private struct ArgusLetterReveal: View {
         Text(displayChar)
             .font(DesignTokens.Fonts.custom(size: 40, weight: .black, design: .monospaced))
             .tracking(4)
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
             .shadow(
                 color: InstitutionalTheme.Colors.Motors.argus.opacity(revealed ? 0.4 : 0),
                 radius: 8

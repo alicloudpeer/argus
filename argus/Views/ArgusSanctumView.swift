@@ -73,7 +73,7 @@ struct ArgusSanctumView: View {
     var body: some View {
         ZStack {
             // 1. Background
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             SanctumTheme.bg.ignoresSafeArea()
             
             // 2. Main Content
@@ -83,7 +83,7 @@ struct ArgusSanctumView: View {
                     VStack(spacing: 20) {
                         ProgressView()
                             .scaleEffect(1.5)
-                            .progressViewStyle(CircularProgressViewStyle(tint: InstitutionalTheme.Colors.textPrimary))
+                            .progressViewStyle(CircularProgressViewStyle(tint: DesignTokens.Colors.textPrimary))
                         
                         LoadingQuoteView()
                     }
@@ -379,7 +379,7 @@ struct ArgusSanctumView: View {
             Button(action: handleBackAction) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -389,10 +389,10 @@ struct ArgusSanctumView: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(symbol)
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .semibold, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(exchangeMeta)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .padding(.leading, 2)
 
@@ -418,7 +418,7 @@ struct ArgusSanctumView: View {
             }) {
                 Image(systemName: "line.3.horizontal")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -427,10 +427,10 @@ struct ArgusSanctumView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.border)
+                .fill(DesignTokens.Colors.border)
                 .frame(height: 0.5)
         }
     }
@@ -560,11 +560,11 @@ private struct SanctumCommandButton: View {
             .frame(minHeight: 44)
             .background(
                 RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm, style: .continuous)
-                    .fill(InstitutionalTheme.Colors.surface2.opacity(isPrimary ? 0.95 : 0.82))
+                    .fill(DesignTokens.Colors.surfaceElevated.opacity(isPrimary ? 0.95 : 0.82))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm, style: .continuous)
-                    .stroke(isPrimary ? tint.opacity(0.30) : InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                    .stroke(isPrimary ? tint.opacity(0.30) : DesignTokens.Colors.borderSubtle, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)

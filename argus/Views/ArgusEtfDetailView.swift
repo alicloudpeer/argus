@@ -13,7 +13,7 @@ struct ArgusEtfDetailView: View {
     
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 24) {
@@ -24,7 +24,7 @@ struct ArgusEtfDetailView: View {
                                 .font(.title2)
                                 .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .padding(10)
-                                .background(Circle().fill(InstitutionalTheme.Colors.surface1))
+                                .background(Circle().fill(DesignTokens.Colors.surface))
                         }
                         
                         Text(symbol)
@@ -78,7 +78,7 @@ struct ArgusEtfDetailView: View {
                         if let candles = marketVM.candles[symbol], !candles.isEmpty {
                             // Using standard chart but wrapped
                             ZStack {
-                                InstitutionalTheme.Colors.surface1.cornerRadius(16)
+                                DesignTokens.Colors.surface.cornerRadius(16)
                                 InteractiveCandleChart(
                                     candles: candles,
                                     trades: nil,

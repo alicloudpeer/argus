@@ -18,16 +18,16 @@ struct TransactionHistorySheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
                 
                 if filteredTransactions.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "terminal")
                             .font(DesignTokens.Fonts.custom(size: 48))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary.opacity(0.3))
+                            .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.3))
                         Text(marketMode == .bist ? "BIST Geçmişi Boş" : "Global Geçmiş Boş")
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                 } else {
                     List {

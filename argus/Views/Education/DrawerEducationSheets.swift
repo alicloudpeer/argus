@@ -23,9 +23,9 @@ struct AlkindusEducationSheet: View {
                 }
                 .padding(20)
             }
-            .background(InstitutionalTheme.Colors.background)
+            .background(DesignTokens.Colors.background)
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
     }
 
@@ -33,13 +33,13 @@ struct AlkindusEducationSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Argus Asistanı Ne İşe Yarar?")
                 .font(InstitutionalTheme.Typography.title)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text("Argus Asistanı emir veren bir bot değil; sistem çıktısını doğal dilde anlaşılır hale getiren karar asistanıdır.")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("Doğru kullanım: önce veri ekranını oku, sonra Asistana sorarak neden-sonuç ilişkisini netleştir.")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
                 .tracking(0.3)
         }
     }
@@ -82,14 +82,14 @@ struct AlkindusEducationSheet: View {
                 .padding(.top, 2)
             Text("Asistan hızlı cevap verir ama kesinlik vadetmez. Kesin karar için her zaman rejim + motor + fiyat davranışı üçlüsünü birlikte değerlendir.")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(12)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm, style: .continuous))
     }
@@ -98,11 +98,11 @@ struct AlkindusEducationSheet: View {
         HStack(alignment: .top, spacing: 10) {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .bold, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
                 .frame(width: 56, alignment: .leading)
             Text(text)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -111,14 +111,14 @@ struct AlkindusEducationSheet: View {
             HStack(spacing: 8) {
                 Text(index)
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.primary)
+                    .foregroundColor(DesignTokens.Colors.primary)
                     .frame(width: 14, alignment: .leading)
                 Text(text)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
             }
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 1)
         }
     }
@@ -126,10 +126,10 @@ struct AlkindusEducationSheet: View {
     private func bullet(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text("•")
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
             Text(text)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -137,7 +137,7 @@ struct AlkindusEducationSheet: View {
     private func sectionTitle(_ text: String) -> some View {
         Text(text)
             .font(InstitutionalTheme.Typography.micro)
-            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+            .foregroundColor(DesignTokens.Colors.textTertiary)
             .tracking(0.8)
     }
 }

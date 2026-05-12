@@ -104,7 +104,7 @@ struct AtlasBistScoreCard: View {
                             Text("Analiz Hatası")
                                 .font(.caption)
                                 .bold()
-                                .foregroundColor(.red)
+                                .foregroundColor(DesignTokens.Colors.error)
                             Text(error)
                                 .font(.caption2)
                                 .foregroundColor(DesignTokens.Colors.textTertiary)
@@ -112,12 +112,12 @@ struct AtlasBistScoreCard: View {
                     } else {
                         Text("Mali veri bulunamadı")
                             .font(.caption)
-                            .foregroundColor(.red)
+                            .foregroundColor(DesignTokens.Colors.error)
                     }
                 }
             }
             .padding(16)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .cornerRadius(16)
             .onAppear { loadData() }
         }
@@ -344,5 +344,5 @@ struct MetricDetailRow: View {
         AtlasBistScoreCard(symbol: "THYAO.IS")
             .padding()
     }
-    .background(InstitutionalTheme.Colors.background)
+    .background(DesignTokens.Colors.background)
 }

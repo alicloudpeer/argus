@@ -91,7 +91,7 @@ struct HermesInfoRow: View {
             
             Text(text)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 }
@@ -131,19 +131,19 @@ struct OrionMotherboardErrorView: View {
 
             Text(title)
                 .font(.headline)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             Text(symbol)
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .semibold, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(InstitutionalTheme.Colors.surface2)
+                .background(DesignTokens.Colors.surfaceElevated)
                 .cornerRadius(4)
 
             Text(detail)
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
@@ -184,7 +184,7 @@ struct OrionMotherboardErrorView: View {
         }
         .padding(.vertical, 24)
         .frame(maxWidth: .infinity, minHeight: 300)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

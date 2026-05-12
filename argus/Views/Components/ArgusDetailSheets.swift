@@ -82,7 +82,7 @@ struct ArgusAetherSheet: View {
                     ProgressView()
                         .scaleEffect(1.5)
                     Text("Makro veriler yükleniyor…")
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 .frame(maxWidth: .infinity, minHeight: 200)
             }
@@ -217,7 +217,7 @@ struct HermesSheetView: View {
                 .padding(.vertical)
             }
             .navigationTitle(isBist ? "🇹🇷 Hermes BIST" : "Hermes Haberleri")
-            .background(InstitutionalTheme.Colors.background)
+            .background(DesignTokens.Colors.background)
         }
     }
 }
@@ -254,7 +254,7 @@ private struct HermesEventRow: View {
             HermesWhyScoreView(event: event)
         }
         .padding()
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.6))
+        .background(DesignTokens.Colors.surface.opacity(0.6))
         .cornerRadius(12)
         .padding(.horizontal)
     }
@@ -275,7 +275,7 @@ struct NewsInsightRow: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(insight.headline)
                 .font(.headline)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             
             Text(insight.summaryTRLong)
                 .font(.caption)
@@ -297,7 +297,7 @@ struct NewsInsightRow: View {
             }
         }
         .padding()
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .shadow(color: DesignTokens.Colors.Scrim.s10, radius: 2, y: 1)
     }
@@ -328,15 +328,15 @@ struct KAPDisclosureRow: View {
             Text(news.title)
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             
             Text(news.summary)
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .lineLimit(3)
         }
         .padding()
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .padding(.horizontal)
     }

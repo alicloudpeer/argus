@@ -36,7 +36,7 @@ struct OrionMotherboardView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -81,10 +81,10 @@ struct OrionMotherboardView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Teknik analiz")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text(symbol.uppercased())
                 .font(DesignTokens.Fonts.custom(size: 22, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .tracking(-0.2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,7 +99,7 @@ struct OrionMotherboardView: View {
             }
         }
         .padding(2)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
@@ -114,13 +114,13 @@ struct OrionMotherboardView: View {
             Text(timeframeLabel(mode))
                 .font(DesignTokens.Fonts.custom(size: 13, weight: isSelected ? .medium : .regular))
                 .foregroundColor(isSelected
-                                 ? InstitutionalTheme.Colors.textPrimary
-                                 : InstitutionalTheme.Colors.textSecondary)
+                                 ? DesignTokens.Colors.textPrimary
+                                 : DesignTokens.Colors.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 7)
                 .background(
                     isSelected
-                        ? InstitutionalTheme.Colors.surface1
+                        ? DesignTokens.Colors.surface
                         : Color.clear
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -154,7 +154,7 @@ struct OrionMotherboardView: View {
                         .monospacedDigit()
                     Text("/ 100")
                         .font(DesignTokens.Fonts.custom(size: 13))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
@@ -163,19 +163,19 @@ struct OrionMotherboardView: View {
                         .foregroundColor(scoreColor(currentOrion.score))
                     Text(confidenceText)
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .padding(.leading, 2)
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
@@ -202,10 +202,10 @@ struct OrionMotherboardView: View {
             HStack(spacing: 6) {
                 Image(systemName: "info.circle")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text("\(timeframeLabel(selectedTimeframe).lowercased()) skoru \(source.displayLabel) verisinden türetildi.")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Spacer()
             }
             .padding(.horizontal, 12)
@@ -237,10 +237,10 @@ struct OrionMotherboardView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(DesignTokens.Fonts.custom(size: 22))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text("Grafik verisi yükleniyor")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 .frame(height: 280)
             }
@@ -250,22 +250,22 @@ struct OrionMotherboardView: View {
                     ProgressView()
                     Text("\(timeframeLabel(selectedTimeframe).lowercased()) yükleniyor")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 .padding(14)
-                .background(InstitutionalTheme.Colors.surface1.opacity(0.92))
+                .background(DesignTokens.Colors.surface.opacity(0.92))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                        .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
         .padding(8)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -282,17 +282,17 @@ struct OrionMotherboardView: View {
             divider
             patternRow
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private var divider: some View {
         Rectangle()
-            .fill(InstitutionalTheme.Colors.borderSubtle)
+            .fill(DesignTokens.Colors.borderSubtle)
             .frame(height: 0.5)
             .padding(.leading, 14)
     }
@@ -304,7 +304,7 @@ struct OrionMotherboardView: View {
             if rsi < 30 { return ("aşırı satım", InstitutionalTheme.Colors.crimson) }
             if rsi > 55 { return ("güçlü", InstitutionalTheme.Colors.aurora) }
             if rsi < 45 { return ("zayıf", InstitutionalTheme.Colors.titan) }
-            return ("nötr", InstitutionalTheme.Colors.textSecondary)
+            return ("nötr", DesignTokens.Colors.textSecondary)
         }()
 
         return componentRow(
@@ -322,7 +322,7 @@ struct OrionMotherboardView: View {
         let (status, color): (String, Color) = {
             if adx >= 25 { return ("yerleşik", InstitutionalTheme.Colors.aurora) }
             if adx >= 15 { return ("zayıf trend", InstitutionalTheme.Colors.titan) }
-            return ("yatay", InstitutionalTheme.Colors.textSecondary)
+            return ("yatay", DesignTokens.Colors.textSecondary)
         }()
 
         return componentRow(
@@ -342,7 +342,7 @@ struct OrionMotherboardView: View {
             if pos > 0.8 { return ("dirence yakın", InstitutionalTheme.Colors.crimson) }
             if pos < 0.2 { return ("desteğe yakın", InstitutionalTheme.Colors.aurora) }
             if pos >= 0.55 { return ("sağlam", InstitutionalTheme.Colors.aurora) }
-            return ("kanal içi", InstitutionalTheme.Colors.textSecondary)
+            return ("kanal içi", DesignTokens.Colors.textSecondary)
         }()
 
         return componentRow(
@@ -360,7 +360,7 @@ struct OrionMotherboardView: View {
         let isEmpty = desc.isEmpty || desc == "Yok"
         let status = isEmpty ? "tespit yok" : desc.lowercased()
         let color: Color = isEmpty
-            ? InstitutionalTheme.Colors.textSecondary
+            ? DesignTokens.Colors.textSecondary
             : InstitutionalTheme.Colors.aurora
 
         return componentRow(
@@ -387,7 +387,7 @@ struct OrionMotherboardView: View {
             HStack(spacing: 10) {
                 Text(label)
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(width: 84, alignment: .leading)
 
                 ArgusBar(value: barRatio, color: color, height: 4)
@@ -395,7 +395,7 @@ struct OrionMotherboardView: View {
                 if !valueText.isEmpty {
                     Text(valueText)
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .monospacedDigit()
                         .frame(width: 28, alignment: .trailing)
                 }
@@ -421,19 +421,19 @@ struct OrionMotherboardView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Yorum")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(analysis.strategicAdvice)
                 .font(DesignTokens.Fonts.custom(size: 14))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -442,7 +442,7 @@ struct OrionMotherboardView: View {
 
     private func scoreColor(_ score: Double) -> Color {
         if score >= 55 { return InstitutionalTheme.Colors.aurora }
-        if score >= 45 { return InstitutionalTheme.Colors.textPrimary }
+        if score >= 45 { return DesignTokens.Colors.textPrimary }
         return InstitutionalTheme.Colors.crimson
     }
 }

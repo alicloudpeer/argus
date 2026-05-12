@@ -23,7 +23,7 @@ struct ExpectationsEntryView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 topNav
@@ -50,7 +50,7 @@ struct ExpectationsEntryView: View {
             Button(action: popBack) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -59,17 +59,17 @@ struct ExpectationsEntryView: View {
 
             Text("Yaklaşan veriler")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .accessibilityAddTraits(.isHeader)
 
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -79,7 +79,7 @@ struct ExpectationsEntryView: View {
     private var introParagraph: some View {
         Text("Veri açıklanmadan önce beklediğin değeri kaydet. Sonra gerçekleşen değerle karşılaştırılır.")
             .font(DesignTokens.Fonts.custom(size: 13))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .lineSpacing(3)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.bottom, 22)
@@ -97,13 +97,13 @@ struct ExpectationsEntryView: View {
                 .buttonStyle(.plain)
                 if idx < indicators.count - 1 {
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 0.5)
                         .padding(.leading, 14)
                 }
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .padding(.bottom, 14)
     }
@@ -115,10 +115,10 @@ struct ExpectationsEntryView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(indicator.shortName)
                     .font(DesignTokens.Fonts.custom(size: 15))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(indicator.scheduleHint)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             Spacer()
             if let entry, isPending {
@@ -129,11 +129,11 @@ struct ExpectationsEntryView: View {
             } else {
                 Text("—")
                     .font(DesignTokens.Fonts.custom(size: 14))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             Image(systemName: "chevron.right")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 13)
@@ -146,7 +146,7 @@ struct ExpectationsEntryView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Veriler genellikle 15:30 ya da 16:00 TSİ'de açıklanır. Beklentinden saparsa Makro skoruna ±10 puan etki eder.")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -177,7 +177,7 @@ struct IndicatorExpectationFormView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 topNav
@@ -220,7 +220,7 @@ struct IndicatorExpectationFormView: View {
             Button(action: popBack) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -229,7 +229,7 @@ struct IndicatorExpectationFormView: View {
 
             Text(indicator.shortName)
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .accessibilityAddTraits(.isHeader)
 
             Spacer()
@@ -237,7 +237,7 @@ struct IndicatorExpectationFormView: View {
             Button(action: save) {
                 Text("Kaydet")
                     .font(DesignTokens.Fonts.custom(size: 15, weight: .medium))
-                    .foregroundColor(canSave ? InstitutionalTheme.Colors.holo : InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(canSave ? InstitutionalTheme.Colors.holo : DesignTokens.Colors.textTertiary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .contentShape(Rectangle())
@@ -247,10 +247,10 @@ struct IndicatorExpectationFormView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -268,10 +268,10 @@ struct IndicatorExpectationFormView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(indicator.fullDisplayName)
                 .font(DesignTokens.Fonts.custom(size: 14))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text(indicator.scheduleHint)
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(.bottom, 22)
     }
@@ -282,29 +282,29 @@ struct IndicatorExpectationFormView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Tahminim")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 2)
 
             HStack(spacing: 0) {
                 Text("Beklenen değer")
                     .font(DesignTokens.Fonts.custom(size: 15))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 TextField(indicator.placeholder, text: $inputText)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .font(DesignTokens.Fonts.custom(size: 15, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 80)
                     .focused($inputFocused)
                 Text(indicator.unit)
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .padding(.leading, 4)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 13)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .padding(.bottom, existing == nil ? 22 : 12)
@@ -322,7 +322,7 @@ struct IndicatorExpectationFormView: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 13)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .contentShape(Rectangle())
         }
@@ -355,7 +355,7 @@ struct IndicatorExpectationFormView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Geçmiş açıklamalar")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 2)
 
             VStack(spacing: 0) {
@@ -363,24 +363,24 @@ struct IndicatorExpectationFormView: View {
                     HStack {
                         Text(monthLabel(item.when))
                             .font(DesignTokens.Fonts.custom(size: 14))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Spacer()
                         Text(String(format: "%.1f%@", item.actual, indicator.unit))
                             .font(DesignTokens.Fonts.custom(size: 14, design: .monospaced))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                             .monospacedDigit()
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 11)
                     if idx < pastReleases.count - 1 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
                             .padding(.leading, 14)
                     }
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .padding(.bottom, 14)
@@ -398,7 +398,7 @@ struct IndicatorExpectationFormView: View {
     private var footerNote: some View {
         Text("\(indicator.helpText). Beklentin gerçekleşen değerle karşılaştırılır; sapma Makro skorunu etkiler.")
             .font(DesignTokens.Fonts.custom(size: 12))
-            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+            .foregroundColor(DesignTokens.Colors.textTertiary)
             .lineSpacing(2)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 4)

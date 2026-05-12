@@ -26,7 +26,7 @@ struct MetricInsightRow: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(metric.label)
                             .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text(metric.context)
                             .font(.caption2)
                             .foregroundColor(impactColor)
@@ -37,13 +37,13 @@ struct MetricInsightRow: View {
                     // Value
                     Text(metric.value)
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .bold, design: .monospaced))
-                        .foregroundColor(metric.scoreImpact > 0 ? InstitutionalTheme.Colors.positive : (metric.scoreImpact < 0 ? InstitutionalTheme.Colors.negative : InstitutionalTheme.Colors.textPrimary))
+                        .foregroundColor(metric.scoreImpact > 0 ? DesignTokens.Colors.success : (metric.scoreImpact < 0 ? DesignTokens.Colors.error : DesignTokens.Colors.textPrimary))
                     
                     // Expand Icon
                     Image(systemName: "chevron.right")
                         .font(.caption2)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 .padding(.vertical, 8)
                 .contentShape(Rectangle()) // Make full row tappable
@@ -54,29 +54,29 @@ struct MetricInsightRow: View {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "info.circle.fill")
                         .font(.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.primary.opacity(0.85))
+                        .foregroundColor(DesignTokens.Colors.primary.opacity(0.85))
                         .offset(y: 2)
                     
                     Text(metric.education)
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(nil)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(10)
-                .background(InstitutionalTheme.Colors.primary.opacity(0.12))
+                .background(DesignTokens.Colors.primary.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
             
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
         }
     }
 
     private var impactColor: Color {
-        if metric.scoreImpact > 0 { return InstitutionalTheme.Colors.positive }
-        if metric.scoreImpact < 0 { return InstitutionalTheme.Colors.negative }
-        return InstitutionalTheme.Colors.textSecondary
+        if metric.scoreImpact > 0 { return DesignTokens.Colors.success }
+        if metric.scoreImpact < 0 { return DesignTokens.Colors.error }
+        return DesignTokens.Colors.textSecondary
     }
 }
 
@@ -99,10 +99,10 @@ struct BistFaktorCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Temel analiz")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text(symbol)
                         .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                 }
 
                 Spacer()
@@ -115,7 +115,7 @@ struct BistFaktorCard: View {
                             .monospacedDigit()
                         Text("/ 100")
                             .font(DesignTokens.Fonts.custom(size: 12))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                     }
                 } else if isLoading {
                     ProgressView()
@@ -127,7 +127,7 @@ struct BistFaktorCard: View {
             }
             .padding(16)
             
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
             
             // Factor Summary Grid (Interactive)
             if let r = result {
@@ -142,7 +142,7 @@ struct BistFaktorCard: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Detaylı analiz")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .padding(.top, 8)
 
                     ForEach(r.factors) { factor in
@@ -167,11 +167,11 @@ struct BistFaktorCard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Faktör analizi şu an yüklenemedi.")
                         .font(.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     if let errorMessage, !errorMessage.isEmpty {
                         Text(errorMessage)
                             .font(.caption2)
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                             .lineLimit(2)
                     }
                 }
@@ -179,10 +179,10 @@ struct BistFaktorCard: View {
                 .padding(16)
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .onAppear { loadData() }
@@ -216,21 +216,21 @@ struct BistFaktorCard: View {
     }
     
     private func scoreColor(_ score: Double) -> Color {
-        if score >= 70 { return InstitutionalTheme.Colors.positive }
+        if score >= 70 { return DesignTokens.Colors.success }
         if score >= 50 { return InstitutionalTheme.Colors.warning }
-        return InstitutionalTheme.Colors.negative
+        return DesignTokens.Colors.error
     }
     
     private func factorColor(_ name: String) -> Color {
         switch name {
-        case "blue": return InstitutionalTheme.Colors.primary
-        case "green": return InstitutionalTheme.Colors.positive
-        case "purple": return InstitutionalTheme.Colors.primary
+        case "blue": return DesignTokens.Colors.primary
+        case "green": return DesignTokens.Colors.success
+        case "purple": return DesignTokens.Colors.primary
         case "yellow": return InstitutionalTheme.Colors.warning
         case "orange": return InstitutionalTheme.Colors.warning
-        case "red": return InstitutionalTheme.Colors.negative
-        case "mint": return InstitutionalTheme.Colors.positive
-        default: return InstitutionalTheme.Colors.textSecondary
+        case "red": return DesignTokens.Colors.error
+        case "mint": return DesignTokens.Colors.success
+        default: return DesignTokens.Colors.textSecondary
         }
     }
 }
@@ -246,31 +246,31 @@ struct FactorSummaryCell: View {
 
             Text(factor.name.components(separatedBy: " ").first ?? "")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .lineLimit(1)
 
             Text("\(Int(factor.score))")
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .monospacedDigit()
         }
         .padding(.vertical, 10)
         .padding(.horizontal, 8)
         .frame(maxWidth: .infinity)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
     
     func factorColor(_ name: String) -> Color {
         switch name {
-        case "blue": return InstitutionalTheme.Colors.primary
-        case "green": return InstitutionalTheme.Colors.positive
-        case "purple": return InstitutionalTheme.Colors.primary
+        case "blue": return DesignTokens.Colors.primary
+        case "green": return DesignTokens.Colors.success
+        case "purple": return DesignTokens.Colors.primary
         case "yellow": return InstitutionalTheme.Colors.warning
         case "orange": return InstitutionalTheme.Colors.warning
-        case "red": return InstitutionalTheme.Colors.negative
-        case "mint": return InstitutionalTheme.Colors.positive
-        default: return InstitutionalTheme.Colors.textSecondary
+        case "red": return DesignTokens.Colors.error
+        case "mint": return DesignTokens.Colors.success
+        default: return DesignTokens.Colors.textSecondary
         }
     }
 }
@@ -290,7 +290,7 @@ struct BistSektorCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Sektör rotasyonu")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     if let r = result {
                         Text(r.rotation.rawValue)
                             .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
@@ -298,7 +298,7 @@ struct BistSektorCard: View {
                     } else {
                         Text("Yükleniyor")
                             .font(DesignTokens.Fonts.custom(size: 14))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                 }
                 Spacer()
@@ -306,7 +306,7 @@ struct BistSektorCard: View {
             .padding(16)
 
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
 
             if let r = result {
@@ -318,10 +318,10 @@ struct BistSektorCard: View {
                                 HStack(spacing: 5) {
                                     Image(systemName: sector.icon)
                                         .font(DesignTokens.Fonts.custom(size: 11))
-                                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                        .foregroundColor(DesignTokens.Colors.textSecondary)
                                     Text(sector.name)
                                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                        .foregroundColor(DesignTokens.Colors.textPrimary)
                                         .lineLimit(1)
                                 }
 
@@ -333,7 +333,7 @@ struct BistSektorCard: View {
                                     .monospacedDigit()
                             }
                             .padding(10)
-                            .background(InstitutionalTheme.Colors.surface2)
+                            .background(DesignTokens.Colors.surfaceElevated)
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                     }
@@ -342,14 +342,14 @@ struct BistSektorCard: View {
                 }
 
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
 
                 // Educational Insights
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Neden bu hareket")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .padding(.vertical, 8)
 
                     ForEach(r.rotationMetrics) { metric in
@@ -359,10 +359,10 @@ struct BistSektorCard: View {
                 .padding(16)
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .onAppear { loadData() }
@@ -403,7 +403,7 @@ struct BistMoneyFlowCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Para akışı")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     if let r = result {
                         Text(r.flowStatus.rawValue)
                             .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
@@ -411,7 +411,7 @@ struct BistMoneyFlowCard: View {
                     } else {
                         Text("Analiz ediliyor")
                             .font(DesignTokens.Fonts.custom(size: 14))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                 }
                 Spacer()
@@ -419,7 +419,7 @@ struct BistMoneyFlowCard: View {
             .padding(16)
 
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
 
             if let r = result {
@@ -446,7 +446,7 @@ struct BistMoneyFlowCard: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Akıllı para")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .padding(.vertical, 8)
 
                     ForEach(r.metrics) { metric in
@@ -457,10 +457,10 @@ struct BistMoneyFlowCard: View {
                 .padding(.bottom, 16)
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .onAppear { loadData() }

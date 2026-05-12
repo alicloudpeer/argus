@@ -10,14 +10,51 @@ struct NewsArticle: Identifiable, Codable, @unchecked Sendable {
     let url: String?
     let publishedAt: Date
     let fetchedAt: Date?
-    
+
+    /// GDELT tone field (range −10..+10). Yalnız `GDELTNewsProvider`
+    /// doldurur; diğer providerlarda `nil`. HermesLLMService bunu
+    /// "cold-start polarity hint" olarak kullanır — articles için
+    /// LLM henüz yorumlamadıysa GDELT tone bir önyargı sinyali sağlar.
+    /// Negatif (-10..-1) → negatif haber, pozitif (+1..+10) → pozitif.
+    let gdeltTone: Double?
+
     enum CodingKeys: String, CodingKey {
-        case id, symbol, source, headline, summary, url, publishedAt, fetchedAt
+        case id, symbol, source, headline, summary, url, publishedAt, fetchedAt, gdeltTone
     }
-    
+
+    init(id: String, symbol: String, source: String, headline: String,
+         summary: String? = nil, url: String? = nil,
+         publishedAt: Date, fetchedAt: Date? = nil,
+         gdeltTone: Double? = nil) {
+        self.id = id
+        self.symbol = symbol
+        self.source = source
+        self.headline = headline
+        self.summary = summary
+        self.url = url
+        self.publishedAt = publishedAt
+        self.fetchedAt = fetchedAt
+        self.gdeltTone = gdeltTone
+    }
+
     // Hermes v2.0: Source Reliability Score (0.0 - 1.0)
     var sourceReliability: Double {
         return NewsArticle.calculateReliability(for: source)
+    }
+
+    /// GDELT tone'u sentiment hint'ine çevirir. Nil tone → nil hint.
+    /// Pozitif tone (>=1) → .weakPositive, çok pozitif (>=4) → .strongPositive
+    /// Negatif tone (<=-1) → .weakNegative, çok negatif (<=-4) → .strongNegative
+    /// Aralarda nötr.
+    var gdeltSentimentHint: NewsSentiment? {
+        guard let t = gdeltTone else { return nil }
+        switch t {
+        case ...(-4):  return .strongNegative
+        case (-4)..<(-1): return .weakNegative
+        case (-1)...1:    return .neutral
+        case 1..<4:    return .weakPositive
+        default:       return .strongPositive
+        }
     }
     
     static func calculateReliability(for source: String) -> Double {

@@ -44,7 +44,7 @@ struct TransactionDetailView: View {
                                  .font(.body)
                                  .foregroundColor(DesignTokens.Colors.textTertiary)
                                  .padding()
-                                 .background(InstitutionalTheme.Colors.surface1)
+                                 .background(DesignTokens.Colors.surface)
                                  .cornerRadius(8)
                              
                              // Optional: Show what the system THOUGHT at that time
@@ -57,7 +57,7 @@ struct TransactionDetailView: View {
                                       )
                                       .padding(.top, 8)
                                   }
-                                  .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                  .foregroundColor(DesignTokens.Colors.textSecondary)
                              }
                          }
                          .padding(.horizontal)
@@ -91,7 +91,7 @@ struct TransactionDetailView: View {
                                     .font(.body)
                                     .foregroundColor(DesignTokens.Colors.textTertiary)
                                     .padding()
-                                    .background(InstitutionalTheme.Colors.surface1)
+                                    .background(DesignTokens.Colors.surface)
                                     .cornerRadius(8)
                             } else {
                                 Text("Bu işlem için detaylı karar kaydı bulunamadı.")
@@ -116,13 +116,13 @@ struct TransactionDetailView: View {
                         VStack(spacing: 0) {
                             let currencySymbol = transaction.symbol.hasSuffix(".IS") ? "₺" : "$"
                             DetailRow(text: "Fiyat: \(currencySymbol)\(String(format: "%.2f", transaction.price))")
-                            Divider().background(InstitutionalTheme.Colors.surface1)
+                            Divider().background(DesignTokens.Colors.surface)
                             
                             // Highlighted Amount
                             HStack {
                                 Text("Toplam Tutar")
                                     .font(.subheadline)
-                                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                    .foregroundColor(DesignTokens.Colors.textSecondary)
                                 Spacer()
                                 let currencySymbol = transaction.symbol.hasSuffix(".IS") ? "₺" : "$"
                                 Text("\(currencySymbol)\(String(format: "%.2f", transaction.amount))")
@@ -131,15 +131,15 @@ struct TransactionDetailView: View {
                             }
                             .padding()
                             
-                            Divider().background(InstitutionalTheme.Colors.surface1)
+                            Divider().background(DesignTokens.Colors.surface)
                             DetailRow(text: "Kaynak: \(transaction.source ?? "N/A")")
                             if let fee = transaction.fee {
-                                Divider().background(InstitutionalTheme.Colors.surface1)
+                                Divider().background(DesignTokens.Colors.surface)
                                 let currencySymbol = transaction.symbol.hasSuffix(".IS") ? "₺" : "$"
                                 DetailRow(text: "Komisyon: \(currencySymbol)\(String(format: "%.2f", fee))")
                             }
                         }
-                        .background(InstitutionalTheme.Colors.surface1.opacity(0.5))
+                        .background(DesignTokens.Colors.surface.opacity(0.5))
                         .cornerRadius(12)
                     }
                     .padding(.horizontal)
@@ -147,7 +147,7 @@ struct TransactionDetailView: View {
                 }
                 .padding(.bottom, 20)
             }
-            .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+            .background(DesignTokens.Colors.background.ignoresSafeArea())
             .navigationTitle("İşlem Detayı")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

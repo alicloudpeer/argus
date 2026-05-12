@@ -66,7 +66,7 @@ struct ArgusGuideView: View {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
     }
     
     private func guidePage(mode: ArgusMode, title: String, subtitle: String, description: String) -> some View {
@@ -74,7 +74,7 @@ struct ArgusGuideView: View {
             // Background Animation
             GeometryReader { proxy in
                 ZStack {
-                    InstitutionalTheme.Colors.background.edgesIgnoringSafeArea(.all)
+                    DesignTokens.Colors.background.edgesIgnoringSafeArea(.all)
                     
                     // The Eye - Centered and Large
                     ArgusEyeView(

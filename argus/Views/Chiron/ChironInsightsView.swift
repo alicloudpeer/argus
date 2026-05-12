@@ -67,7 +67,7 @@ struct ChironInsightsView: View {
                 .padding(.top, 16)
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .onAppear { loadData() }
     }
@@ -88,7 +88,7 @@ struct ChironInsightsView: View {
             Button(action: popBack) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -97,17 +97,17 @@ struct ChironInsightsView: View {
 
             Text("Rejim öğrenme")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .accessibilityAddTraits(.isHeader)
 
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -119,7 +119,7 @@ struct ChironInsightsView: View {
     private var headerSection: some View {
         Text(symbol != nil ? "Sembol: \(symbol!)" : "Tüm portföy")
             .font(DesignTokens.Fonts.custom(size: 13))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 4)
     }
@@ -131,7 +131,7 @@ struct ChironInsightsView: View {
             HStack {
                 Text("Öğrenme durumu")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
 
                 Spacer()
 
@@ -143,19 +143,19 @@ struct ChironInsightsView: View {
                 } else {
                     Text("Bekliyor")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
             }
 
             Text(status.note)
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             if status.hasLearning {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.surface2)
+                            .fill(DesignTokens.Colors.surfaceElevated)
                             .frame(height: 4)
                             .cornerRadius(2)
 
@@ -170,10 +170,10 @@ struct ChironInsightsView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -184,7 +184,7 @@ struct ChironInsightsView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Öğrenilmiş ağırlıklar")
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             VStack(spacing: 10) {
                 weightBar(name: "Yapı",      value: weights.structure)
@@ -196,10 +196,10 @@ struct ChironInsightsView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -208,18 +208,18 @@ struct ChironInsightsView: View {
         HStack(spacing: 10) {
             Text(name)
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 88, alignment: .leading)
 
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.surface2)
+                        .fill(DesignTokens.Colors.surfaceElevated)
                         .frame(height: 4)
                         .cornerRadius(2)
 
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.textPrimary)
+                        .fill(DesignTokens.Colors.textPrimary)
                         .frame(width: geo.size.width * min(1.0, value * 2.5), height: 4)
                         .cornerRadius(2)
                 }
@@ -228,7 +228,7 @@ struct ChironInsightsView: View {
 
             Text("%\(Int(value * 100))")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .monospacedDigit()
                 .frame(width: 44, alignment: .trailing)
         }
@@ -241,7 +241,7 @@ struct ChironInsightsView: View {
             HStack {
                 Text("Bileşen performansı")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
             }
             .padding(.horizontal, 14)
@@ -255,7 +255,7 @@ struct ChironInsightsView: View {
                 ForEach(Array(sorted.enumerated()), id: \.element.component) { idx, stat in
                     if idx > 0 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
                             .padding(.leading, 14)
                     }
@@ -264,10 +264,10 @@ struct ChironInsightsView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -280,7 +280,7 @@ struct ChironInsightsView: View {
 
             Text(componentLabel(stat.component))
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             Spacer()
 
@@ -293,7 +293,7 @@ struct ChironInsightsView: View {
                     .monospacedDigit()
                 Text("\(stat.signalCount) sinyal")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .monospacedDigit()
             }
 
@@ -334,7 +334,7 @@ struct ChironInsightsView: View {
             HStack {
                 Text("Aksiyon")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 if let flash = actionFlash {
                     Text(flash)
@@ -344,7 +344,7 @@ struct ChironInsightsView: View {
                 } else if let last = lastLearningAt {
                     Text("son · \(timeAgo(last))")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
             }
 
@@ -364,12 +364,12 @@ struct ChironInsightsView: View {
                     Spacer()
                     Text(symbol != nil ? "Sembol" : "Tüm portföy")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 11)
-                .background(InstitutionalTheme.Colors.surface2)
+                .background(DesignTokens.Colors.surfaceElevated)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .opacity(isLearning ? 0.6 : 1)
             }
@@ -378,15 +378,15 @@ struct ChironInsightsView: View {
 
             Text(learningHint)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }

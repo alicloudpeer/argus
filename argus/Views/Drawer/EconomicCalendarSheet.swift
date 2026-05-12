@@ -25,7 +25,7 @@ struct EconomicCalendarSheet: View {
                 .padding(20)
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .task {
             await loadEvents()
         }
@@ -37,11 +37,11 @@ struct EconomicCalendarSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Makro takvim")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             Text("Önemli ekonomik olaylar piyasaları doğrudan etkiler. Bu olayların öncesinde ve sonrasında volatilite artar.")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineSpacing(2)
         }
     }
@@ -57,7 +57,7 @@ struct EconomicCalendarSheet: View {
                     ProgressView()
                     Text("Takvim yükleniyor")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             } else if let errorMessage {
                 Text(errorMessage)
@@ -66,7 +66,7 @@ struct EconomicCalendarSheet: View {
             } else if events.isEmpty {
                 Text("Seçilen aralıkta kayıtlı olay yok.")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             } else {
                 VStack(spacing: 8) {
                     ForEach(events) { event in
@@ -81,7 +81,7 @@ struct EconomicCalendarSheet: View {
         HStack(spacing: 12) {
             Text(event.date.formatted(date: .abbreviated, time: .omitted))
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 90, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -92,7 +92,7 @@ struct EconomicCalendarSheet: View {
                 if let country = event.country, !country.isEmpty {
                     Text(country)
                         .font(.caption2)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
 
@@ -112,7 +112,7 @@ struct EconomicCalendarSheet: View {
             switch self {
             case .high: return InstitutionalTheme.Colors.crimson
             case .medium: return InstitutionalTheme.Colors.titan
-            case .low: return InstitutionalTheme.Colors.textSecondary
+            case .low: return DesignTokens.Colors.textSecondary
             }
         }
 
@@ -175,7 +175,7 @@ struct EconomicCalendarSheet: View {
                 .foregroundColor(InstitutionalTheme.Colors.holo)
             Text(text)
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -188,7 +188,7 @@ struct EconomicCalendarSheet: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("TCMB Para Politikası Kurulu (PPK) her ay toplanır ve politika faizini belirler.")
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .lineSpacing(2)
 
                 HStack(spacing: 20) {
@@ -198,7 +198,7 @@ struct EconomicCalendarSheet: View {
 
                 Text("Ancak beklentiler önemli: beklenen faiz artışı zaten fiyatlanmış olabilir.")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.top, 4)
             }
         }
@@ -234,7 +234,7 @@ struct EconomicCalendarSheet: View {
 
             Text(impact)
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -257,7 +257,7 @@ struct EconomicCalendarSheet: View {
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
     }
 
     // MARK: - Data Load

@@ -17,7 +17,7 @@ struct DemeterBadgeView: View {
                 if !score.activeShocks.isEmpty && score.shockImpactScore < 50 {
                     Text("!")
                         .font(.caption2.bold())
-                        .foregroundStyle(.red)
+                        .foregroundStyle(DesignTokens.Colors.error)
                 }
             }
             .padding(.horizontal, 4)
@@ -65,7 +65,7 @@ struct DemeterPanel: View {
                         
                         Text(shock.title)
                             .font(.subheadline.bold())
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                     } else {
                         // Neutral State
                         Text("Dengeli")
@@ -73,12 +73,12 @@ struct DemeterPanel: View {
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(Color.green.opacity(DesignTokens.Opacity.glassCard))
-                            .foregroundColor(.green)
+                            .foregroundColor(DesignTokens.Colors.success)
                             .cornerRadius(4)
                         
                         Text("Sektör Nötr")
                             .font(.subheadline.bold())
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                     }
                     
                     Spacer()
@@ -123,11 +123,11 @@ struct DemeterPanel: View {
                 }
             }
             .padding()
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(InstitutionalTheme.Colors.border, lineWidth: 1)
+                    .stroke(DesignTokens.Colors.border, lineWidth: 1)
             )
         }
         .sheet(isPresented: $showingDetail) {
@@ -169,7 +169,7 @@ struct MetricCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(8)
     }
 }

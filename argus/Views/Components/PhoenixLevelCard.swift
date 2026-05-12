@@ -9,12 +9,12 @@ struct PhoenixLevelCard: View {
             HStack {
                 Text("Risk seviyeleri")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
 
                 Text(advice.timeframe.localizedName)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             
             if advice.status == .active {
@@ -24,7 +24,7 @@ struct PhoenixLevelCard: View {
             }
         }
         .padding(16)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(16)
     }
     
@@ -35,7 +35,7 @@ struct PhoenixLevelCard: View {
             HStack {
                 Text("Senaryo Güveni")
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 Text("\(Int(advice.confidence))%")
                     .font(.caption)
@@ -74,10 +74,10 @@ struct PhoenixLevelCard: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "info.circle")
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Text(advice.reasonShort)
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
@@ -98,7 +98,7 @@ struct PhoenixLevelCard: View {
                     Text("Aktif Tetikleyici Yok")
                         .font(.caption2)
                         .italic()
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary.opacity(0.5))
+                        .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.5))
                 }
                 Spacer()
             }
@@ -112,7 +112,7 @@ struct PhoenixLevelCard: View {
                 .foregroundColor(.yellow)
             Text(advice.reasonShort.isEmpty ? "Yetersiz Veri" : advice.reasonShort)
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Spacer()
         }
         .padding(.vertical, 8)
@@ -133,7 +133,7 @@ struct PhoenixLevelCard: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 9, weight: .bold))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .textCase(.uppercase)
             Text(value)
                 .font(.subheadline)

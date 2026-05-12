@@ -27,11 +27,11 @@ struct PhoenixSystemRow: View {
                 Text("Phoenix Sistemi")
                     .font(.subheadline)
                     .bold()
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 
                 Text(advice.reasonShort)
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             
             Spacer()
@@ -44,11 +44,11 @@ struct PhoenixSystemRow: View {
                 
                 Image(systemName: "chevron.right")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
         .padding(12)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

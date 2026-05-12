@@ -74,7 +74,7 @@ struct PulsingFABView: View {
 
 #Preview {
     ZStack {
-        InstitutionalTheme.Colors.backgroundDeep.ignoresSafeArea()
+        DesignTokens.Colors.backgroundDeep.ignoresSafeArea()
         VStack(spacing: 40) {
             PulsingFABView()
             PulsingFABView(size: 80)

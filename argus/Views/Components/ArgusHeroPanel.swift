@@ -203,7 +203,7 @@ struct ArgusDetailSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 20) {
                         if let d = decision {
@@ -248,10 +248,10 @@ struct SystemScoreCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(name)
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(String(format: "%.0f / 100", score))
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
 
             Spacer()
@@ -268,7 +268,7 @@ struct SystemScoreCard: View {
             .frame(width: 70, height: 4)
         }
         .padding(12)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(10)
     }
 }

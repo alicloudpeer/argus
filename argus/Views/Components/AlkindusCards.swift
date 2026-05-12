@@ -24,7 +24,7 @@ struct AlkindusSymbolCard: View {
             HStack {
                 Text("Modül öğrenmeleri")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
             }
             
@@ -127,7 +127,7 @@ struct AlkindusTimeCard: View {
             HStack {
                 Text("Zaman bazlı içgörüler")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             
             if let advice = timeAdvice {

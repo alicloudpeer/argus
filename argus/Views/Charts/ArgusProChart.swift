@@ -42,7 +42,7 @@ struct ArgusProChart: View {
                         if x < -zoomLevel { continue }
                         
                         let isUp = candle.close >= candle.open
-                        let color = isUp ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+                        let color = isUp ? DesignTokens.Colors.success : DesignTokens.Colors.error
                         
                         // Draw Wick
                         let wickPath = Path { p in
@@ -71,17 +71,17 @@ struct ArgusProChart: View {
                             p.move(to: CGPoint(x: 0, y: loc.y))
                             p.addLine(to: CGPoint(x: drawingWidth, y: loc.y))
                         }
-                        context.stroke(hPath, with: .color(InstitutionalTheme.Colors.textPrimary.opacity(0.4)), style: StrokeStyle(lineWidth: 1, dash: [4]))
+                        context.stroke(hPath, with: .color(DesignTokens.Colors.textPrimary.opacity(0.4)), style: StrokeStyle(lineWidth: 1, dash: [4]))
                         
                         let vPath = Path { p in
                             p.move(to: CGPoint(x: loc.x, y: 0))
                             p.addLine(to: CGPoint(x: loc.x, y: drawingHeight))
                         }
-                        context.stroke(vPath, with: .color(InstitutionalTheme.Colors.textPrimary.opacity(0.4)), style: StrokeStyle(lineWidth: 1, dash: [4]))
+                        context.stroke(vPath, with: .color(DesignTokens.Colors.textPrimary.opacity(0.4)), style: StrokeStyle(lineWidth: 1, dash: [4]))
                         
                         // Calculate price at Y
                         let priceAtY = lowest + ((drawingHeight - loc.y) / yScale)
-                        let text = Text(String(format: "%.2f", priceAtY)).font(InstitutionalTheme.Typography.caption).foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        let text = Text(String(format: "%.2f", priceAtY)).font(InstitutionalTheme.Typography.caption).foregroundColor(DesignTokens.Colors.textPrimary)
                         context.draw(text, at: CGPoint(x: drawingWidth - 30, y: loc.y))
                     }
                 }
@@ -111,7 +111,7 @@ struct ArgusProChart: View {
                         Text("Pro Mode Active")
                             .font(InstitutionalTheme.Typography.caption)
                             .padding(4)
-                            .background(InstitutionalTheme.Colors.surface1)
+                            .background(DesignTokens.Colors.surface)
                             .cornerRadius(4)
                         Spacer()
                     }
@@ -119,7 +119,7 @@ struct ArgusProChart: View {
                 }
             }
         }
-        .background(InstitutionalTheme.Colors.background)
+        .background(DesignTokens.Colors.background)
         .cornerRadius(12)
         .drawingGroup()
     }

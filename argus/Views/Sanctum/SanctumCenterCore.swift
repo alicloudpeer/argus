@@ -61,8 +61,8 @@ struct CenterCoreView: View {
                     RadialGradient(
                         gradient: Gradient(stops: [
                             .init(color: InstitutionalTheme.Colors.holo.opacity(0.35), location: 0),
-                            .init(color: InstitutionalTheme.Colors.backgroundDeep.opacity(0.9), location: 0.6),
-                            .init(color: InstitutionalTheme.Colors.backgroundDeep, location: 1.0)
+                            .init(color: DesignTokens.Colors.backgroundDeep.opacity(0.9), location: 0.6),
+                            .init(color: DesignTokens.Colors.backgroundDeep, location: 1.0)
                         ]),
                         center: .center,
                         startRadius: 0,
@@ -95,7 +95,7 @@ struct CenterCoreView: View {
             .padding(.vertical, 5)
             .background(
                 Capsule()
-                    .fill(InstitutionalTheme.Colors.backgroundDeep.opacity(0.55))
+                    .fill(DesignTokens.Colors.backgroundDeep.opacity(0.55))
             )
         }
         .onTapGesture {
@@ -129,7 +129,7 @@ struct CenterCoreView: View {
         } else {
             Text("Bekleniyor")
                 .font(DesignTokens.Fonts.custom(size: 10, weight: .medium))
-                .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+                .foregroundStyle(DesignTokens.Colors.textTertiary)
         }
     }
 
@@ -138,7 +138,7 @@ struct CenterCoreView: View {
         if let d = decision {
             Text("Güven %\(Int(d.confidence * 100))")
                 .font(DesignTokens.Fonts.custom(size: 10, design: .monospaced))
-                .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
         } else {
             EmptyView()
         }

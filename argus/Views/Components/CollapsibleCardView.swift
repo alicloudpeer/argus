@@ -65,7 +65,7 @@ struct CollapsibleCardView<Content: View>: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(title)
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         
                         if let sub = subtitle, !isExpanded {
                             Text(sub)
@@ -83,7 +83,7 @@ struct CollapsibleCardView<Content: View>: View {
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
                 .padding()
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
             }
             .buttonStyle(PlainButtonStyle())
             
@@ -92,7 +92,7 @@ struct CollapsibleCardView<Content: View>: View {
                 Divider()
                 content
                     .padding()
-                    .background(InstitutionalTheme.Colors.surface1)
+                    .background(DesignTokens.Colors.surface)
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }

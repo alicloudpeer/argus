@@ -124,7 +124,7 @@ private struct AtlasContent: View {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(result.highlights.prefix(4), id: \.self) { highlight in
                             HStack(alignment: .top) {
-                                Image(systemName: "checkmark.circle.fill").foregroundColor(.green).font(.caption)
+                                Image(systemName: "checkmark.circle.fill").foregroundColor(DesignTokens.Colors.success).font(.caption)
                                 Text(highlight).font(.caption).foregroundColor(DesignTokens.Colors.textPrimary)
                             }
                         }

@@ -36,7 +36,7 @@ struct ArgusIntroView: View {
     var body: some View {
         ZStack {
             // 1. Deep Void Background
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             // 2. Cyber Grid (Subtle)
             CyberGridBackground()
@@ -54,7 +54,7 @@ struct ArgusIntroView: View {
                                 colors: [
                                     InstitutionalTheme.Colors.holo,
                                     InstitutionalTheme.Colors.titan,
-                                    InstitutionalTheme.Colors.primary,
+                                    DesignTokens.Colors.primary,
                                     InstitutionalTheme.Colors.holo
                                 ],
                                 center: .center
@@ -70,7 +70,7 @@ struct ArgusIntroView: View {
                     // Inner Data Ring (dashed, counter-rotating)
                     Circle()
                         .stroke(style: StrokeStyle(lineWidth: 2, dash: [5, 10]))
-                        .foregroundColor(InstitutionalTheme.Colors.primary.opacity(0.8))
+                        .foregroundColor(DesignTokens.Colors.primary.opacity(0.8))
                         .frame(width: 90, height: 90)
                         .rotationEffect(.degrees(-ringRotation * 1.5))
                         .scaleEffect(showLogo ? 1.0 : 0.1)
@@ -79,7 +79,7 @@ struct ArgusIntroView: View {
                     Image(systemName: "eye.circle.fill")
                         .font(DesignTokens.Fonts.custom(size: 50))
                         .foregroundColor(InstitutionalTheme.Colors.holo)
-                        .shadow(color: InstitutionalTheme.Colors.textPrimary,
+                        .shadow(color: DesignTokens.Colors.textPrimary,
                                 radius: glitchEffect ? 20 : 5)
                         .scaleEffect(showLogo ? 1.0 : 0.01)
                         .offset(x: glitchEffect ? 5 : 0, y: glitchEffect ? -2 : 0)
@@ -93,7 +93,7 @@ struct ArgusIntroView: View {
                     Text("ARGUS TERMINAL")
                         .font(DesignTokens.Fonts.custom(size: 24, weight: .heavy, design: .monospaced))
                         .tracking(8)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .shadow(color: InstitutionalTheme.Colors.holo.opacity(0.75), radius: 10)
                         .offset(x: glitchEffect ? -3 : 0)
                         .opacity(glitchEffect ? 0.7 : 1.0)

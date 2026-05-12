@@ -33,7 +33,7 @@ struct HeimdallPulseView: View {
             // Core Shield
             ZStack {
                 Circle()
-                    .fill(InstitutionalTheme.Colors.background)
+                    .fill(DesignTokens.Colors.background)
                     .frame(width: 80, height: 80)
                     .shadow(color: color.opacity(0.5), radius: 10, x: 0, y: 0)
                 
@@ -43,7 +43,7 @@ struct HeimdallPulseView: View {
                 
                 Image(systemName: "eye.fill")
                     .font(DesignTokens.Fonts.custom(size: 16))
-                    .foregroundColor(InstitutionalTheme.Colors.background)
+                    .foregroundColor(DesignTokens.Colors.background)
                     .offset(y: -4)
             }
         }

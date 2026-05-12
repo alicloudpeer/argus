@@ -27,13 +27,13 @@ struct FinanceWisdomSheet: View {
                 filterBar
                 quotesList
             }
-            .background(InstitutionalTheme.Colors.background)
+            .background(DesignTokens.Colors.background)
             .onAppear {
                 loadQuotes()
                 applyFilter()
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
     }
 
@@ -43,7 +43,7 @@ struct FinanceWisdomSheet: View {
         VStack(spacing: 12) {
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
 
                 TextField("Söz ara...", text: $pendingSearchText)
                     .textFieldStyle(PlainTextFieldStyle())
@@ -59,12 +59,12 @@ struct FinanceWisdomSheet: View {
                 .background(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm).fill(InstitutionalTheme.Colors.holo))
             }
             .padding(12)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
 
             HStack(spacing: 10) {
                 Text("Kategori")
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
 
                 Picker("Kategori", selection: $pendingCategory) {
                     ForEach(availableCategories, id: \.self) { category in
@@ -82,13 +82,13 @@ struct FinanceWisdomSheet: View {
                         applyFilter()
                     }
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 10)
         }
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.6))
+        .background(DesignTokens.Colors.surface.opacity(0.6))
     }
 
     // MARK: - List
@@ -99,7 +99,7 @@ struct FinanceWisdomSheet: View {
                 if filteredQuotes.isEmpty {
                     Text("Sonuç bulunamadı")
                         .font(.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .padding(.top, 20)
                 } else {
                     ForEach(filteredQuotes) { quote in
@@ -123,7 +123,7 @@ struct FinanceWisdomSheet: View {
             HStack(spacing: 8) {
                 Text("- \(quote.author)")
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
 
                 Spacer()
 
@@ -136,7 +136,7 @@ struct FinanceWisdomSheet: View {
             }
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm).fill(InstitutionalTheme.Colors.surface1))
+        .background(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm).fill(DesignTokens.Colors.surface))
     }
 
     // MARK: - Data

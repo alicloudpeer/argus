@@ -16,7 +16,7 @@ struct FundListView: View {
     // listesi (per-row hairline). Tinted holo pill ve daire ikon kalktı.
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 controlSection
@@ -61,7 +61,7 @@ struct FundListView: View {
         HStack(spacing: 10) {
             Text("\(filteredFunds.count) fon")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .monospacedDigit()
 
             Spacer(minLength: 6)
@@ -76,10 +76,10 @@ struct FundListView: View {
                 HStack(spacing: 4) {
                     Text(sortOption.rawValue)
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Image(systemName: "chevron.down")
                         .font(DesignTokens.Fonts.custom(size: 9))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 .padding(.horizontal, 4)
                 .padding(.vertical, 6)
@@ -89,7 +89,7 @@ struct FundListView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.background)
+        .background(DesignTokens.Colors.background)
     }
     
     // MARK: - Category Filter Section (2026-04-30 H-52)
@@ -143,7 +143,7 @@ struct FundListView: View {
                 if filteredFunds.isEmpty {
                     Text("Kriterlere uygun fon bulunamadı")
                         .font(DesignTokens.Fonts.custom(size: 13))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .padding(.top, 32)
                 }
             }
@@ -163,7 +163,7 @@ struct FundListView: View {
             
             Text("Fonlar yükleniyor...")
                 .font(.subheadline)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -207,14 +207,14 @@ struct CategoryChip: View {
             .padding(.horizontal, 11)
             .padding(.vertical, 7)
             .foregroundColor(isSelected
-                             ? InstitutionalTheme.Colors.textPrimary
-                             : InstitutionalTheme.Colors.textSecondary)
-            .background(InstitutionalTheme.Colors.surface1)
+                             ? DesignTokens.Colors.textPrimary
+                             : DesignTokens.Colors.textSecondary)
+            .background(DesignTokens.Colors.surface)
             .clipShape(Capsule())
             .overlay(
                 Capsule().stroke(
                     isSelected
-                        ? InstitutionalTheme.Colors.borderSubtle
+                        ? DesignTokens.Colors.borderSubtle
                         : Color.clear,
                     lineWidth: 0.5
                 )
@@ -240,10 +240,10 @@ struct FundRowView: View {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(fund.code)
                     .font(DesignTokens.Fonts.custom(size: 15, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(fund.category.rawValue)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer(minLength: 6)
                 if let priceData, let return1W = priceData.return1Week {
                     Text(String(format: "%+.1f%%", return1W))
@@ -261,20 +261,20 @@ struct FundRowView: View {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(fund.shortName)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(1)
                 Text("·")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(fund.founder.rawValue)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .lineLimit(1)
                 Spacer(minLength: 6)
                 if let priceData {
                     Text(String(format: "₺%.2f", priceData.currentPrice))
                         .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .monospacedDigit()
                 }
             }
@@ -284,7 +284,7 @@ struct FundRowView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5),
             alignment: .bottom
         )

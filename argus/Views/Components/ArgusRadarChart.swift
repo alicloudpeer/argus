@@ -88,7 +88,7 @@ struct ArgusRadarChart: View {
         .padding(.top, 10)
         .padding(.bottom, 16)  // Alt boşluk artırıldı
         .padding(.horizontal, 8)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(16)
         .onAppear {
             withAnimation(.easeOut(duration: 0.8)) {

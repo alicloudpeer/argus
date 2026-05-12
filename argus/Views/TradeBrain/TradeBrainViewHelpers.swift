@@ -14,7 +14,7 @@ struct SectionHeader: View {
                 .foregroundColor(color)
             Text(title)
                 .font(InstitutionalTheme.Typography.bodyStrong)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
         }
     }
@@ -33,10 +33,10 @@ struct QuickStatBadge: View {
                 .foregroundColor(color)
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .bold, design: .rounded))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text(label)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
@@ -61,10 +61,10 @@ struct DecisionStatPill: View {
         VStack(spacing: 4) {
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 16, weight: .bold, design: .rounded))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text(title)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
@@ -85,11 +85,11 @@ struct DecisionPulseCard: View {
 
     private var actionColor: Color {
         switch decision.action {
-        case .aggressiveBuy: return InstitutionalTheme.Colors.positive
-        case .accumulate: return InstitutionalTheme.Colors.primary
-        case .neutral: return InstitutionalTheme.Colors.textSecondary
+        case .aggressiveBuy: return DesignTokens.Colors.success
+        case .accumulate: return DesignTokens.Colors.primary
+        case .neutral: return DesignTokens.Colors.textSecondary
         case .trim: return InstitutionalTheme.Colors.warning
-        case .liquidate: return InstitutionalTheme.Colors.negative
+        case .liquidate: return DesignTokens.Colors.error
         }
     }
 
@@ -98,7 +98,7 @@ struct DecisionPulseCard: View {
             HStack {
                 Text(decision.symbol)
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Text(decision.action.rawValue)
                     .font(InstitutionalTheme.Typography.micro)
@@ -113,17 +113,17 @@ struct DecisionPulseCard: View {
 
             Text(decision.reasoning)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .lineLimit(2)
 
             HStack {
                 Text("Konsey Güveni")
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Spacer()
                 Text("%\(Int(decision.confidence * 100))")
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
             }
         }
         .padding(10)
@@ -143,13 +143,13 @@ struct BrainEmptyCard: View {
         VStack(spacing: 10) {
             Image(systemName: icon)
                 .font(DesignTokens.Fonts.custom(size: 30, weight: .light))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(title)
                 .font(InstitutionalTheme.Typography.bodyStrong)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text(subtitle)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -170,22 +170,22 @@ struct EducationCard: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: icon)
                 .font(DesignTokens.Fonts.custom(size: 16, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
                 .frame(width: 22)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(content)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm, style: .continuous)
-                .fill(InstitutionalTheme.Colors.primary.opacity(0.10))
+                .fill(DesignTokens.Colors.primary.opacity(0.10))
         )
     }
 }
@@ -200,26 +200,26 @@ struct LessonCard: View {
         HStack(alignment: .top, spacing: 10) {
             ZStack {
                 Circle()
-                    .fill(isCompleted ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.surface3)
+                    .fill(isCompleted ? DesignTokens.Colors.success : InstitutionalTheme.Colors.surface3)
                     .frame(width: 28, height: 28)
                 if isCompleted {
                     Image(systemName: "checkmark")
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .bold))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                 } else {
                     Text("\(number)")
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .bold, design: .rounded))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                 }
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(content)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
         .padding(10)
@@ -251,7 +251,7 @@ struct RiskLimitCard: View {
     }
 
     private var metricColor: Color {
-        isWithinLimit ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+        isWithinLimit ? DesignTokens.Colors.success : DesignTokens.Colors.error
     }
 
     var body: some View {
@@ -262,14 +262,14 @@ struct RiskLimitCard: View {
                     .foregroundColor(metricColor)
                 Text(title)
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Text(currentText ?? "%\(Int(current * 100))")
                     .font(InstitutionalTheme.Typography.caption)
                     .foregroundColor(metricColor)
                 Text(isMinimum ? "min %\(Int(limit * 100))" : "max %\(Int(limit * 100))")
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             GeometryReader { geo in
@@ -285,7 +285,7 @@ struct RiskLimitCard: View {
 
             Text(description)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .padding(10)
         .background(
@@ -304,9 +304,9 @@ struct EventCard: View {
 
     private var riskColor: Color {
         switch event.type.riskLevel {
-        case .low: return InstitutionalTheme.Colors.positive
+        case .low: return DesignTokens.Colors.success
         case .medium: return InstitutionalTheme.Colors.warning
-        case .high: return InstitutionalTheme.Colors.negative
+        case .high: return DesignTokens.Colors.error
         }
     }
 
@@ -315,10 +315,10 @@ struct EventCard: View {
             VStack(spacing: 0) {
                 Text(event.date.formatted(.dateTime.day()))
                     .font(DesignTokens.Fonts.custom(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(event.date.formatted(.dateTime.month(.abbreviated)))
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             .frame(width: 48)
             .padding(.vertical, 8)
@@ -331,10 +331,10 @@ struct EventCard: View {
                 HStack {
                     Text(event.symbol ?? "MARKET")
                         .font(InstitutionalTheme.Typography.bodyStrong)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(event.type.rawValue)
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Spacer()
                     Text(daysUntil == 0 ? "Bugün" : "\(daysUntil) gün")
                         .font(InstitutionalTheme.Typography.micro)
@@ -346,12 +346,12 @@ struct EventCard: View {
 
                 Text(event.title)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
                 if let description = event.description {
                     Text(description)
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .lineLimit(2)
                 }
             }
@@ -379,7 +379,7 @@ struct PositionPlanCard: View {
     }
 
     private var pnlColor: Color {
-        pnlPercent >= 0 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+        pnlPercent >= 0 ? DesignTokens.Colors.success : DesignTokens.Colors.error
     }
 
     private var completedStepsCount: Int {
@@ -399,10 +399,10 @@ struct PositionPlanCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(trade.symbol)
                             .font(InstitutionalTheme.Typography.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text("\(String(format: "%.2f", trade.quantity)) adet")
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     Spacer()
                     Text("\(pnlPercent >= 0 ? "+" : "")\(String(format: "%.1f", pnlPercent))%")
@@ -419,20 +419,20 @@ struct PositionPlanCard: View {
                     HStack {
                         Text("Konsey")
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Spacer()
                         Text(decision.action.rawValue)
                             .font(InstitutionalTheme.Typography.caption)
                             .foregroundColor(actionColor(decision.action))
                         Text("%\(Int(decision.confidence * 100))")
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
 
                     HStack {
                         Text("Aether")
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Spacer()
                         Text(decision.aetherDecision.stance.rawValue)
                             .font(InstitutionalTheme.Typography.caption)
@@ -444,17 +444,17 @@ struct PositionPlanCard: View {
                     HStack {
                         Text("Plan ilerleme")
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Spacer()
                         Text("\(completedStepsCount)/\(totalStepsCount)")
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
 
                     if let nextStep = findNextStep(in: plan) {
                         Text("\(nextStep.trigger.displayText) → \(nextStep.action.displayText)")
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                             .lineLimit(2)
                     }
                 } else {
@@ -467,7 +467,7 @@ struct PositionPlanCard: View {
                     HStack {
                         Text("Delta")
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Spacer()
                         Text(delta.significance.rawValue)
                             .font(InstitutionalTheme.Typography.micro)
@@ -475,7 +475,7 @@ struct PositionPlanCard: View {
                     }
                     Text(delta.summaryText)
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
             }
@@ -525,29 +525,29 @@ struct PositionPlanCard: View {
 
     private func actionColor(_ action: ArgusAction) -> Color {
         switch action {
-        case .aggressiveBuy: return InstitutionalTheme.Colors.positive
-        case .accumulate: return InstitutionalTheme.Colors.primary
-        case .neutral: return InstitutionalTheme.Colors.textSecondary
+        case .aggressiveBuy: return DesignTokens.Colors.success
+        case .accumulate: return DesignTokens.Colors.primary
+        case .neutral: return DesignTokens.Colors.textSecondary
         case .trim: return InstitutionalTheme.Colors.warning
-        case .liquidate: return InstitutionalTheme.Colors.negative
+        case .liquidate: return DesignTokens.Colors.error
         }
     }
 
     private func aetherColor(_ stance: MacroStance) -> Color {
         switch stance {
-        case .riskOn: return InstitutionalTheme.Colors.positive
+        case .riskOn: return DesignTokens.Colors.success
         case .cautious: return InstitutionalTheme.Colors.warning
         case .defensive: return InstitutionalTheme.Colors.warning
-        case .riskOff: return InstitutionalTheme.Colors.negative
+        case .riskOff: return DesignTokens.Colors.error
         }
     }
 
     private func deltaColor(_ significance: PositionDeltaTracker.ChangeSignificance) -> Color {
         switch significance {
-        case .low: return InstitutionalTheme.Colors.textSecondary
-        case .medium: return InstitutionalTheme.Colors.primary
+        case .low: return DesignTokens.Colors.textSecondary
+        case .medium: return DesignTokens.Colors.primary
         case .high: return InstitutionalTheme.Colors.warning
-        case .critical: return InstitutionalTheme.Colors.negative
+        case .critical: return DesignTokens.Colors.error
         }
     }
 }
@@ -571,7 +571,7 @@ struct PositionPlanDetailView: View {
     }
 
     private var pnlColor: Color {
-        pnlPercent >= 0 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+        pnlPercent >= 0 ? DesignTokens.Colors.success : DesignTokens.Colors.error
     }
 
     private var nextStep: PlannedAction? {
@@ -580,10 +580,10 @@ struct PositionPlanDetailView: View {
 
     private var profileColor: Color {
         if (eventRisk?.shouldAvoidNewPosition ?? false) || estimatedVolatility > 0.05 {
-            return InstitutionalTheme.Colors.negative
+            return DesignTokens.Colors.error
         }
         if estimatedVolatility < 0.02 {
-            return InstitutionalTheme.Colors.positive
+            return DesignTokens.Colors.success
         }
         return InstitutionalTheme.Colors.warning
     }
@@ -624,7 +624,7 @@ struct PositionPlanDetailView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(plan.originalSnapshot.symbol)
                                     .font(DesignTokens.Fonts.custom(size: 30, weight: .bold, design: .rounded))
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                    .foregroundColor(DesignTokens.Colors.textPrimary)
 
                                 HStack(spacing: 8) {
                                     Text(plan.originalSnapshot.councilAction.rawValue)
@@ -638,14 +638,14 @@ struct PositionPlanDetailView: View {
                                         )
                                     Text("Kalite \(plan.originalSnapshot.entryQualityScore)/100")
                                         .font(InstitutionalTheme.Typography.micro)
-                                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                        .foregroundColor(DesignTokens.Colors.textSecondary)
                                 }
                             }
                             Spacer()
                             VStack(alignment: .trailing, spacing: 4) {
                                 Text(String(format: "%.2f", currentPrice))
                                     .font(DesignTokens.Fonts.custom(size: 22, weight: .bold, design: .rounded))
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                    .foregroundColor(DesignTokens.Colors.textPrimary)
                                 Text("\(pnlPercent >= 0 ? "+" : "")\(String(format: "%.2f", pnlPercent))%")
                                     .font(InstitutionalTheme.Typography.bodyStrong)
                                     .foregroundColor(pnlColor)
@@ -657,7 +657,7 @@ struct PositionPlanDetailView: View {
                     }
 
                     sectionCard {
-                        SectionHeader(title: "Plan Özeti", icon: "list.bullet.clipboard.fill", color: InstitutionalTheme.Colors.primary)
+                        SectionHeader(title: "Plan Özeti", icon: "list.bullet.clipboard.fill", color: DesignTokens.Colors.primary)
 
                         HStack {
                             detailMetric("İlerleme", "\(plan.completedStepCount)/\(plan.totalStepCount)")
@@ -672,7 +672,7 @@ struct PositionPlanDetailView: View {
                                 RoundedRectangle(cornerRadius: 4, style: .continuous)
                                     .fill(InstitutionalTheme.Colors.surface3)
                                 RoundedRectangle(cornerRadius: 4, style: .continuous)
-                                    .fill(InstitutionalTheme.Colors.primary)
+                                    .fill(DesignTokens.Colors.primary)
                                     .frame(width: geo.size.width * plan.completionRatio)
                             }
                         }
@@ -682,13 +682,13 @@ struct PositionPlanDetailView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Sıradaki adım")
                                     .font(InstitutionalTheme.Typography.micro)
-                                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                    .foregroundColor(DesignTokens.Colors.textTertiary)
                                 Text(nextStep.trigger.displayText)
                                     .font(InstitutionalTheme.Typography.caption)
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                    .foregroundColor(DesignTokens.Colors.textPrimary)
                                 Text(nextStep.action.displayText)
                                     .font(InstitutionalTheme.Typography.micro)
-                                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                    .foregroundColor(DesignTokens.Colors.textSecondary)
                             }
                             .padding(10)
                             .background(
@@ -697,13 +697,13 @@ struct PositionPlanDetailView: View {
                             )
                         }
 
-                        Divider().overlay(InstitutionalTheme.Colors.borderSubtle)
+                        Divider().overlay(DesignTokens.Colors.borderSubtle)
                         Text(plan.thesis)
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         Text("Geçersizlik: \(plan.invalidation)")
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                     }
 
                     sectionCard {
@@ -715,7 +715,7 @@ struct PositionPlanDetailView: View {
                             Spacer()
                             Text("Volatilite \(Int(estimatedVolatility * 100))%")
                                 .font(InstitutionalTheme.Typography.micro)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                         }
 
                         if let decision {
@@ -729,7 +729,7 @@ struct PositionPlanDetailView: View {
                         }
 
                         if let warnings = eventRisk?.warnings, !warnings.isEmpty {
-                            Divider().overlay(InstitutionalTheme.Colors.borderSubtle)
+                            Divider().overlay(DesignTokens.Colors.borderSubtle)
                             ForEach(warnings.prefix(3), id: \.self) { warning in
                                 Text("• \(warning)")
                                     .font(InstitutionalTheme.Typography.micro)
@@ -749,13 +749,13 @@ struct PositionPlanDetailView: View {
                 }
                 .padding(InstitutionalTheme.Spacing.md)
             }
-            .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+            .background(DesignTokens.Colors.background.ignoresSafeArea())
             .navigationTitle(plan.originalSnapshot.symbol)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Kapat") { dismiss() }
-                        .foregroundColor(InstitutionalTheme.Colors.primary)
+                        .foregroundColor(DesignTokens.Colors.primary)
                 }
             }
         }
@@ -771,21 +771,21 @@ struct PositionPlanDetailView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(value)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineLimit(1)
         }
     }
 
     private func colorForAction(_ action: ArgusAction) -> Color {
         switch action {
-        case .aggressiveBuy: return InstitutionalTheme.Colors.positive
-        case .accumulate: return InstitutionalTheme.Colors.primary
-        case .neutral: return InstitutionalTheme.Colors.textSecondary
+        case .aggressiveBuy: return DesignTokens.Colors.success
+        case .accumulate: return DesignTokens.Colors.primary
+        case .neutral: return DesignTokens.Colors.textSecondary
         case .trim: return InstitutionalTheme.Colors.warning
-        case .liquidate: return InstitutionalTheme.Colors.negative
+        case .liquidate: return DesignTokens.Colors.error
         }
     }
 }
@@ -797,9 +797,9 @@ struct ScenarioCard: View {
 
     private var scenarioColor: Color {
         switch scenario.type {
-        case .bullish: return InstitutionalTheme.Colors.positive
-        case .neutral: return InstitutionalTheme.Colors.textSecondary
-        case .bearish: return InstitutionalTheme.Colors.negative
+        case .bullish: return DesignTokens.Colors.success
+        case .neutral: return DesignTokens.Colors.textSecondary
+        case .bearish: return DesignTokens.Colors.error
         }
     }
 
@@ -820,14 +820,14 @@ struct ScenarioCard: View {
             ForEach(scenario.steps.sorted(by: { $0.priority < $1.priority })) { step in
                 HStack(alignment: .top, spacing: 10) {
                     Circle()
-                        .fill(executedSteps.contains(step.id) ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.textTertiary)
+                        .fill(executedSteps.contains(step.id) ? DesignTokens.Colors.success : DesignTokens.Colors.textTertiary)
                         .frame(width: 8, height: 8)
                         .padding(.top, 5)
                     VStack(alignment: .leading, spacing: 2) {
                         HStack {
                             Text(step.trigger.displayText)
                                 .font(InstitutionalTheme.Typography.caption)
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .strikethrough(executedSteps.contains(step.id))
                             if step.id == nextStepID {
                                 Text("Sıradaki")
@@ -837,13 +837,13 @@ struct ScenarioCard: View {
                                     .padding(.vertical, 2)
                                     .background(
                                         Capsule()
-                                            .fill(InstitutionalTheme.Colors.primary.opacity(0.18))
+                                            .fill(DesignTokens.Colors.primary.opacity(0.18))
                                     )
                             }
                         }
                         Text(step.action.displayText)
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     Spacer()
                 }
@@ -872,7 +872,7 @@ struct HorizonInfoBadge: View {
                 .foregroundColor(color)
             Text(description)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)

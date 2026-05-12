@@ -680,7 +680,19 @@ actor AtlasV2Engine {
     }
     
     private func getSectorFromYahoo(symbol: String) async throws -> String? {
+        // 2026-05-11 (Faz 5): FMP profile çağrılarını UserDefaults'a cache.
+        // Sektör bilgisi yıllarca aynı kalır — sembol başına bir kez
+        // FMP'ye sorulup kalıcı saklamak FMP free 250/day quota'sını
+        // korur. Cache key: "atlas.sector.{SYMBOL}".
+        let key = "atlas.sector.\(symbol.uppercased())"
+        if let cached = UserDefaults.standard.string(forKey: key), !cached.isEmpty {
+            return cached
+        }
         let profile = try? await FMPProvider.shared.fetchProfile(symbol: symbol)
-        return profile?.sector
+        if let sector = profile?.sector, !sector.isEmpty {
+            UserDefaults.standard.set(sector, forKey: key)
+            return sector
+        }
+        return nil
     }
 }

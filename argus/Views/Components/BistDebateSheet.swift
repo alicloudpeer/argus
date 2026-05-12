@@ -310,7 +310,7 @@ struct EmptyStateCard: View {
             
             Text(type == .support ? "Destek" : "İtiraz")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             Spacer()
             
@@ -345,13 +345,13 @@ struct BistVerdictCard: View {
                 
                 Text("Nihai karar")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
 
                 Spacer()
 
                 Text("Konsey")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             
             HStack(alignment: .top, spacing: 12) {

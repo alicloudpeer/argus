@@ -17,7 +17,7 @@ struct ObservatoryContainerView: View {
         ZStack {
             // V5: Tek katman surface0 background; NeuralNetworkBackground
             // kaldırıldı (mor overdose + performans).
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 ArgusNavHeader(
@@ -67,7 +67,7 @@ struct ObservatoryContainerView: View {
                         }
                         .foregroundColor(selectedTab == tab
                                          ? InstitutionalTheme.Colors.holo
-                                         : InstitutionalTheme.Colors.textSecondary)
+                                         : DesignTokens.Colors.textSecondary)
                         .padding(.vertical, 10)
 
                         // V5 active indicator
@@ -82,7 +82,7 @@ struct ObservatoryContainerView: View {
                 .buttonStyle(.plain)
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(ArgusHair(), alignment: .bottom)
     }
 }
@@ -348,7 +348,7 @@ struct DecisionCardView: View {
             HStack {
                 Label(decision.market, systemImage: "globe")
                     .font(DesignTokens.Fonts.custom(size: 10))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 
                 Spacer()
                 
@@ -360,7 +360,7 @@ struct DecisionCardView: View {
             }
         }
         .padding()
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -378,18 +378,18 @@ struct LearningEventCardView: View {
             HStack {
                 Text("Öğrenme")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
 
                 Spacer()
 
                 Text(event.timestamp, style: .date)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             
             Text(event.reason)
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .lineLimit(3)
             
             // Weight değişimlerini göster
@@ -398,7 +398,7 @@ struct LearningEventCardView: View {
                 .foregroundColor(InstitutionalTheme.Colors.holo)
         }
         .padding()
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -426,11 +426,11 @@ struct MetricCardView: View {
             
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

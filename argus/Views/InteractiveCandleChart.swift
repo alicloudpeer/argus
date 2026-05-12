@@ -70,7 +70,7 @@ struct InteractiveCandleChart: View {
                             .bold()
                     }
                     .padding(6)
-                    .background(isInspectionMode ? InstitutionalTheme.Colors.holo : InstitutionalTheme.Colors.surface1)
+                    .background(isInspectionMode ? InstitutionalTheme.Colors.holo : DesignTokens.Colors.surface)
                     .foregroundColor(isInspectionMode ? .white : .gray)
                     .cornerRadius(8)
                 }
@@ -175,12 +175,12 @@ struct InteractiveCandleChart: View {
                                 ForEach(trades) { trade in
                                     // Entry Marker (Green Dot)
                                     PointMark(x: .value("Date", trade.entryDate), y: .value("Entry", trade.entryPrice))
-                                        .foregroundStyle(.green)
+                                        .foregroundStyle(DesignTokens.Colors.success)
                                         .symbol(.circle)
                                     
                                     // Exit Marker (Red Dot)
                                     PointMark(x: .value("Date", trade.exitDate), y: .value("Exit", trade.exitPrice))
-                                        .foregroundStyle(.red)
+                                        .foregroundStyle(DesignTokens.Colors.error)
                                         .symbol(.circle)
                                 }
                             }
@@ -307,7 +307,7 @@ struct RSIChart: View {
         }
         .chartYScale(domain: 0...100)
         .padding(4)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.5))
+        .background(DesignTokens.Colors.surface.opacity(0.5))
     }
 }
 
@@ -318,7 +318,7 @@ struct StochasticChart: View {
             let stoch = IndicatorService.calculateStochastic(candles: candles)
             ForEach(candles.indices, id: \.self) { i in
                 if let k = stoch.k[i] {
-                    LineMark(x: .value("Date", candles[i].date), y: .value("%K", k)).foregroundStyle(.blue)
+                    LineMark(x: .value("Date", candles[i].date), y: .value("%K", k)).foregroundStyle(DesignTokens.Colors.primary)
                 }
                 if let d = stoch.d[i] {
                     LineMark(x: .value("Date", candles[i].date), y: .value("%D", d)).foregroundStyle(.orange)
@@ -331,7 +331,7 @@ struct StochasticChart: View {
         }
         .chartYScale(domain: 0...100)
         .padding(4)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.5))
+        .background(DesignTokens.Colors.surface.opacity(0.5))
     }
 }
 
@@ -346,7 +346,7 @@ struct MACDChart: View {
                         .foregroundStyle(hist >= 0 ? Color.green.opacity(0.7) : Color.red.opacity(0.7))
                  }
                  if let macd = macdData.macd[i] {
-                    LineMark(x: .value("Date", candles[i].date), y: .value("MACD", macd)).foregroundStyle(.blue)
+                    LineMark(x: .value("Date", candles[i].date), y: .value("MACD", macd)).foregroundStyle(DesignTokens.Colors.primary)
                  }
                  if let signal = macdData.signal[i] {
                     LineMark(x: .value("Date", candles[i].date), y: .value("Signal", signal)).foregroundStyle(.orange)
@@ -354,7 +354,7 @@ struct MACDChart: View {
              }
         }
         .padding(4)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.5))
+        .background(DesignTokens.Colors.surface.opacity(0.5))
     }
 }
 
@@ -378,7 +378,7 @@ struct TSIChart: View {
         }
         .chartYScale(domain: -50...50)
         .padding(4)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.5))
+        .background(DesignTokens.Colors.surface.opacity(0.5))
     }
 }
 

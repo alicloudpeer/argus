@@ -32,7 +32,7 @@ struct AetherDashboardCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(isCompact ? 12 : 14)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .contentShape(Rectangle())
         .onTapGesture { onTap?() }
@@ -44,7 +44,7 @@ struct AetherDashboardCard: View {
         HStack {
             Text("Makro")
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             Text(regimeLabel)
                 .font(DesignTokens.Fonts.custom(size: 12))
@@ -63,7 +63,7 @@ struct AetherDashboardCard: View {
                     .monospacedDigit()
                 Text("/ 100")
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 Text(rating.letterGrade.uppercased())
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
@@ -88,7 +88,7 @@ struct AetherDashboardCard: View {
         HStack(spacing: 10) {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 76, alignment: .leading)
 
             ArgusBar(value: max(0, min(1, score / 100)),
@@ -97,13 +97,13 @@ struct AetherDashboardCard: View {
 
             Text("\(Int(score))")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .monospacedDigit()
                 .frame(width: 26, alignment: .trailing)
 
             Text(weight)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .frame(width: 30, alignment: .trailing)
         }
     }
@@ -119,7 +119,7 @@ struct AetherDashboardCard: View {
                     .monospacedDigit()
                 Text("/100")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             Spacer(minLength: 8)
             HStack(spacing: 8) {
@@ -129,7 +129,7 @@ struct AetherDashboardCard: View {
             }
             Image(systemName: "chevron.right")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
     }
 
@@ -137,7 +137,7 @@ struct AetherDashboardCard: View {
         HStack(spacing: 3) {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("\(Int(score))")
                 .font(DesignTokens.Fonts.custom(size: 11))
                 .foregroundColor(scoreColor(score))
@@ -158,14 +158,14 @@ struct AetherDashboardCard: View {
     private var regimeColor: Color {
         switch rating.regime {
         case .riskOn:  return InstitutionalTheme.Colors.aurora
-        case .neutral: return InstitutionalTheme.Colors.textSecondary
+        case .neutral: return DesignTokens.Colors.textSecondary
         case .riskOff: return InstitutionalTheme.Colors.crimson
         }
     }
 
     private func scoreColor(_ score: Double) -> Color {
         if score >= 70 { return InstitutionalTheme.Colors.aurora }
-        if score >= 45 { return InstitutionalTheme.Colors.textPrimary }
+        if score >= 45 { return DesignTokens.Colors.textPrimary }
         return InstitutionalTheme.Colors.crimson
     }
 }
@@ -203,5 +203,5 @@ struct AetherDashboardCard: View {
         )
     }
     .padding()
-    .background(InstitutionalTheme.Colors.background)
+    .background(DesignTokens.Colors.background)
 }

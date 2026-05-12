@@ -25,7 +25,7 @@ enum ArgusChipTone: Equatable {
         case .aurora:    return InstitutionalTheme.Colors.aurora
         case .crimson:   return InstitutionalTheme.Colors.crimson
         case .titan:     return InstitutionalTheme.Colors.titan
-        case .neutral:   return InstitutionalTheme.Colors.textSecondary
+        case .neutral:   return DesignTokens.Colors.textSecondary
         case .motor(let e): return InstitutionalTheme.Colors.Motors.color(for: e)
         case .custom(let c): return c
         }
@@ -140,7 +140,7 @@ struct ArgusDot: View {
 struct ArgusHair: View {
     var body: some View {
         Rectangle()
-            .fill(InstitutionalTheme.Colors.border)
+            .fill(DesignTokens.Colors.border)
             .frame(height: InstitutionalTheme.Spacing.hair)
     }
 }
@@ -149,12 +149,12 @@ struct ArgusHair: View {
 
 struct ArgusOrb<Content: View>: View {
     let size: CGFloat
-    var ringColor: Color = InstitutionalTheme.Colors.border
+    var ringColor: Color = DesignTokens.Colors.border
     var glowColor: Color? = nil
     let content: () -> Content
 
     init(size: CGFloat,
-         ringColor: Color = InstitutionalTheme.Colors.border,
+         ringColor: Color = DesignTokens.Colors.border,
          glowColor: Color? = nil,
          @ViewBuilder content: @escaping () -> Content) {
         self.size = size
@@ -166,7 +166,7 @@ struct ArgusOrb<Content: View>: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(InstitutionalTheme.Colors.surface2)
+                .fill(DesignTokens.Colors.surfaceElevated)
             Circle()
                 .strokeBorder(ringColor, lineWidth: 1)
             if let glow = glowColor {
@@ -191,7 +191,7 @@ struct ArgusSectionCaption: View {
         Text(text.uppercased())
             .font(InstitutionalTheme.Typography.dataSmall)
             .tracking(1.3)
-            .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+            .foregroundStyle(DesignTokens.Colors.textSecondary)
     }
 }
 
@@ -237,7 +237,7 @@ struct ArgusIconButton: View {
                 .frame(width: 44, height: 44) // WCAG 2.5.8 min target
                 .background(
                     RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm, style: .continuous)
-                        .fill(filled ? tone.background : InstitutionalTheme.Colors.surface2)
+                        .fill(filled ? tone.background : DesignTokens.Colors.surfaceElevated)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm, style: .continuous)
@@ -309,7 +309,7 @@ struct ArgusInsightRow<Lead: View, Tail: View>: View {
         if let motor = tintMotor {
             return InstitutionalTheme.Colors.Motors.color(for: motor).opacity(0.3)
         }
-        return InstitutionalTheme.Colors.border
+        return DesignTokens.Colors.border
     }
 
     var body: some View {
@@ -330,13 +330,13 @@ struct ArgusInsightRow<Lead: View, Tail: View>: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .lineLimit(1)
 
                 if let subtitle, !subtitle.isEmpty {
                     Text(subtitle)
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
             }
@@ -348,13 +348,13 @@ struct ArgusInsightRow<Lead: View, Tail: View>: View {
             if action != nil {
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
                 .stroke(borderColor, lineWidth: 1)
@@ -393,7 +393,7 @@ private struct AccessibilityLabelIfPresent: ViewModifier {
 
 #Preview {
     ZStack {
-        InstitutionalTheme.Colors.backgroundDeep.ignoresSafeArea()
+        DesignTokens.Colors.backgroundDeep.ignoresSafeArea()
 
         VStack(spacing: 16) {
             HStack(spacing: 8) {
@@ -417,7 +417,7 @@ private struct AccessibilityLabelIfPresent: ViewModifier {
                 ArgusDot(color: InstitutionalTheme.Colors.aurora)
                 Text("PİYASA AKTİF")
                     .font(InstitutionalTheme.Typography.dataMicro)
-                    .foregroundStyle(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundStyle(DesignTokens.Colors.textPrimary)
             }
 
             ArgusHair().padding(.horizontal, 40)

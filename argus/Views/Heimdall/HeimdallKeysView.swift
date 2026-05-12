@@ -11,7 +11,7 @@ struct HeimdallKeysView: View {
             )
             APIKeyCenterView()
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
     }
 }

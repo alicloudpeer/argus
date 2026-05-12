@@ -60,7 +60,7 @@ struct BistMarketView: View {
         // Sheet olarak açan caller (örn. BistPortfolioView) kendi NavigationStack
         // wrapper'ını sağlamalı. Push olarak açılırsa dış stack kullanır.
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             VStack(spacing: 0) {
                     ArgusNavHeader(
                         title: "BIST piyasa",
@@ -89,17 +89,17 @@ struct BistMarketView: View {
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .semibold))
             TextField("BIST hissesi ara · THYAO, ASELS…", text: $searchText)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.characters)
             if !searchText.isEmpty {
                 Button { searchText = "" } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .font(.subheadline)
                 }
                 .buttonStyle(.plain)
@@ -108,11 +108,11 @@ struct BistMarketView: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm, style: .continuous)
-                .fill(InstitutionalTheme.Colors.surface2)
+                .fill(DesignTokens.Colors.surfaceElevated)
         )
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.sm, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderStrong, lineWidth: 1)
+                .stroke(DesignTokens.Colors.borderStrong, lineWidth: 1)
         )
         .padding(.horizontal, 16)
         .padding(.top, 8)
@@ -153,7 +153,7 @@ struct BistMarketView: View {
                 HStack(spacing: 6) {
                     Text(symbol.replacingOccurrences(of: ".IS", with: ""))
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .black, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     if let score = signalState.orionScores[symbol]?.score {
                         ArgusChip("ORION \(Int(score))",
                                   tone: score >= 60 ? .aurora :
@@ -162,7 +162,7 @@ struct BistMarketView: View {
                 }
                 Text(universe[symbol] ?? symbol)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .lineLimit(1)
             }
 
@@ -176,7 +176,7 @@ struct BistMarketView: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("₺\(String(format: "%.2f", q.currentPrice))")
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .black, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(String(format: "%+.2f%%", change))
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
                         .foregroundColor(changeColor)

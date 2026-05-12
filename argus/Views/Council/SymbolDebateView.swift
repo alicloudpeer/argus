@@ -12,7 +12,7 @@ struct SymbolDebateView: View {
     var body: some View {
         ZStack {
             // Background
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -117,13 +117,13 @@ struct SymbolDebateView: View {
                             VStack(alignment: .leading, spacing: 12) {
                                 Label("VETO ALERTS", systemImage: "exclamationmark.triangle.fill")
                                     .font(.headline)
-                                    .foregroundColor(.red)
+                                    .foregroundColor(DesignTokens.Colors.error)
                                     .padding(.horizontal)
                                 
                                 ForEach(decision.vetoes, id: \.module) { veto in
                                     HStack(spacing: 12) {
                                         Image(systemName: "hand.raised.fill")
-                                            .foregroundColor(.red)
+                                            .foregroundColor(DesignTokens.Colors.error)
                                         
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(veto.module.uppercased())
@@ -166,7 +166,7 @@ struct SymbolDebateView: View {
                             VStack(alignment: .leading, spacing: 12) {
                                 Label("DETECTED PATTERNS", systemImage: "chart.xyaxis.line")
                                     .font(.headline)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(DesignTokens.Colors.primary)
                                     .padding(.horizontal)
                                 
                                 ScrollView(.horizontal, showsIndicators: false) {
@@ -181,7 +181,7 @@ struct SymbolDebateView: View {
                         }
 
                         // 6. DETAILED AI REPORT
-                        NavigationLink(destination: ArgusAnalystReportView(symbol: decision.symbol)) {
+                        Button { NavigationRouter.shared.navigate(to: .analystReport(symbol: decision.symbol)) } label: {
                            HStack {
                                Image(systemName: "doc.text.magnifyingglass")
                                    .font(.headline)
@@ -319,10 +319,10 @@ struct VoteRow: View {
                     HStack {
                         Image(systemName: "cellularbars")
                             .font(.caption2)
-                            .foregroundColor(.blue)
+                            .foregroundColor(DesignTokens.Colors.primary)
                         Text("Momentum Boost Active")
                             .font(.caption2)
-                            .foregroundColor(.blue)
+                            .foregroundColor(DesignTokens.Colors.primary)
                     }
                     .padding(.top, 2)
                 }

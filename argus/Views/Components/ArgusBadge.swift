@@ -29,11 +29,11 @@ struct ArgusBadge: View {
                 .cornerRadius(6)
         }
         .padding(6)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(InstitutionalTheme.Colors.textSecondary.opacity(0.2), lineWidth: 1)
+                .stroke(DesignTokens.Colors.textSecondary.opacity(0.2), lineWidth: 1)
         )
     }
     

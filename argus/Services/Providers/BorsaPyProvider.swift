@@ -249,24 +249,30 @@ actor BorsaPyProvider {
     private var preferredBackendBaseURL: String?
     private var blockedBackendsUntil: [String: Date] = [:]
     private let backendCooldownSeconds: TimeInterval = 30
-    // Render free tier cold-starts in 30-60s. We refuse to block the
-    // BIST chain for that long; warmUp() runs in parallel at app launch
-    // so the first user-facing request finds the backend warm. If it
-    // still misses, fail fast at 5s and let the chain hand off to the
-    // Yahoo fallback while the circuit cools.
-    private let requestTimeoutSeconds: TimeInterval = 5
+    private let normalRequestTimeout: TimeInterval = 8
+    private let coldStartRequestTimeout: TimeInterval = 30
+    private var lastSuccessAt: Date?
+    private let coldStartInactivityThreshold: TimeInterval = 900 // 15dk
     private let slowRequestThresholdSeconds: TimeInterval = 3
     private let maxAttemptsPerBackend = 2
     private let initialRetryDelaySeconds: TimeInterval = 0.35
     private let requestGate = BorsaPyRequestGate.shared
 
-    // Global circuit breaker. Two consecutive timeouts trip the breaker
-    // for 5 minutes; BIST traffic falls through to the Yahoo fallback
-    // until BorsaPy recovers.
+    private var requestTimeoutSeconds: TimeInterval {
+        guard let lastOK = lastSuccessAt else { return coldStartRequestTimeout }
+        let elapsed = Date().timeIntervalSince(lastOK)
+        return elapsed > coldStartInactivityThreshold ? coldStartRequestTimeout : normalRequestTimeout
+    }
+
+    func isBackendWarm() -> Bool {
+        guard let lastOK = lastSuccessAt else { return false }
+        return Date().timeIntervalSince(lastOK) < coldStartInactivityThreshold
+    }
+
     private var consecutiveTimeouts: Int = 0
     private var circuitOpenUntil: Date?
-    private let circuitFailThreshold = 2
-    private let circuitOpenDuration: TimeInterval = 300
+    private let circuitFailThreshold = 4
+    private let circuitOpenDuration: TimeInterval = 120
     private let circuitQueue = DispatchQueue(label: "argus.borsapy.circuit")
 
     func isCircuitOpen() -> Bool {
@@ -293,12 +299,8 @@ actor BorsaPyProvider {
 
     private func recordSuccess() {
         circuitQueue.sync {
+            lastSuccessAt = Date()
             if consecutiveTimeouts > 0 { consecutiveTimeouts = 0 }
-            // Bir önceki timeout fırtınası nedeniyle circuit açıldıysa,
-            // backend artık yanıt veriyorsa circuit'i hemen kapat. Aksi halde
-            // 5dk pasif bekleme BIST trade'lerini gereksiz yere blokluyordu
-            // (TradeBrainExecutor'daki dataQualityPenalty=0.70 BIST güvenini
-            // %30 düşürüp eşik altına çekiyor → AutoPilot BIST alımı yapamıyor).
             if circuitOpenUntil != nil {
                 circuitOpenUntil = nil
                 print("✅ BorsaPyProvider: Backend yanıt verdi, circuit erken kapatıldı")
@@ -328,7 +330,8 @@ actor BorsaPyProvider {
         request.cachePolicy = .reloadIgnoringLocalCacheData
         do {
             _ = try await URLSession.shared.data(for: request)
-            print("BorsaPyProvider: backend warm")
+            recordSuccess()
+            print("BorsaPyProvider: backend warm ✅")
         } catch {
             print("BorsaPyProvider: warm-up failed (\(error.localizedDescription))")
         }

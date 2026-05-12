@@ -571,7 +571,7 @@ struct ArgusIntelligenceDiagView: View {
                         Spacer()
                         Text(opp.opportunityType.rawValue)
                             .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
-                            .foregroundColor(.red)
+                            .foregroundColor(DesignTokens.Colors.error)
                             .padding(.horizontal, 8).padding(.vertical, 3)
                             .background(Color.red.opacity(0.15))
                             .cornerRadius(6)

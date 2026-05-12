@@ -36,7 +36,7 @@ struct PoseidonView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(InstitutionalTheme.Colors.surface1)
+                    .background(DesignTokens.Colors.surface)
                     .cornerRadius(16)
                     .padding(.horizontal)
 
@@ -69,7 +69,7 @@ struct PoseidonView: View {
                 .padding(.top)
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
     }
 }

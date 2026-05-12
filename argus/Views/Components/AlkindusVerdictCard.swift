@@ -65,7 +65,7 @@ struct AlkindusVerdictCard: View {
 
                     Text("T+\(verdict.horizon) · \(verdict.evaluationDate.formatted(date: .abbreviated, time: .omitted))")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)

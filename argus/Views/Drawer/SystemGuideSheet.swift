@@ -23,20 +23,20 @@ struct SystemGuideSheet: View {
                 .padding(20)
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
     }
 
     private var introSection: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Argus Karar Sistemi")
                 .font(InstitutionalTheme.Typography.title)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text("Amaç: Ekrandaki çıktıyı ezberlemek değil, kararın hangi zincirden geldiğini görmek.")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("Bu ders 6 dakikadır. Bitince aynı sembolde Sanctum’a dönüp tekrar okumalısın.")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
         }
     }
 
@@ -89,10 +89,10 @@ struct SystemGuideSheet: View {
     private func bullet(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text("•")
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
             Text(text)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -101,18 +101,18 @@ struct SystemGuideSheet: View {
             HStack(spacing: 8) {
                 Text(index)
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.primary)
+                    .foregroundColor(DesignTokens.Colors.primary)
                     .frame(width: 16, alignment: .leading)
                 Text(title)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
             }
             Text(text)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .padding(.leading, 24)
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 1)
         }
     }
@@ -121,7 +121,7 @@ struct SystemGuideSheet: View {
     private func sectionTitle(_ text: String) -> some View {
         Text(text.capitalized)
             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 }
 

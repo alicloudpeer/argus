@@ -118,7 +118,7 @@ struct HolographicBalanceCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Toplam varlık")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
 
                     Text("\(currencySymbol)\(String(format: "%.0f", equity))")
                         .font(DesignTokens.Fonts.custom(size: 32, weight: .medium))
@@ -145,7 +145,7 @@ struct HolographicBalanceCard: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 9, weight: .bold))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("\(currencySymbol)\(String(format: "%.0f", value))")
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .bold, design: .monospaced))
                 .foregroundColor(color)

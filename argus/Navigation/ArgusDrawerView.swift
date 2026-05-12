@@ -84,7 +84,7 @@ struct ArgusDrawerView: View {
         //   • Sheet kapatınca drawer'ı kapatmak yerine açık bırakıyoruz —
         //     kullanıcı sheet'ten çıkınca menüye geri dönmek isteyebilir.
         ZStack {
-            InstitutionalTheme.Colors.background.opacity(0.78)
+            DesignTokens.Colors.background.opacity(0.78)
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -113,7 +113,7 @@ struct ArgusDrawerView: View {
                     .padding(.vertical, 18)
                 }
                 .frame(width: 320)
-                .background(InstitutionalTheme.Colors.background)
+                .background(DesignTokens.Colors.background)
 
                 // Sağ alan — explicit tap area (Spacer tap event'i yutmuyordu)
                 Color.clear
@@ -149,13 +149,13 @@ struct ArgusDrawerView: View {
                                    action: item.action)
                     if item.id != items.last?.id {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
                             .padding(.leading, 44)
                     }
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
@@ -172,7 +172,7 @@ struct ArgusDrawerView: View {
 
             Text("Argus")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             Spacer()
 
@@ -183,7 +183,7 @@ struct ArgusDrawerView: View {
             } label: {
                 Image(systemName: "xmark")
                     .font(DesignTokens.Fonts.custom(size: 15, weight: .regular))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(width: 32, height: 32)
                     .contentShape(Rectangle())
             }
@@ -197,25 +197,25 @@ struct ArgusDrawerView: View {
     private var searchSection: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .font(DesignTokens.Fonts.custom(size: 14))
 
             TextField("Ara…", text: $searchText)
                 .textFieldStyle(PlainTextFieldStyle())
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .font(DesignTokens.Fonts.custom(size: 14))
 
             if !searchText.isEmpty {
                 Button { searchText = "" } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .font(DesignTokens.Fonts.custom(size: 14))
                 }
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
@@ -233,12 +233,12 @@ struct ArgusDrawerView: View {
                 .resizable()
                 .renderingMode(.template)
                 .aspectRatio(contentMode: .fit)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 20, height: 20)
         } else {
             Image(systemName: icon)
                 .font(DesignTokens.Fonts.custom(size: 16, weight: .regular))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -268,7 +268,7 @@ struct ArgusDrawerView: View {
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .font(DesignTokens.Fonts.custom(size: 12))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .padding(.leading, 4)
     }
 
@@ -280,16 +280,16 @@ struct ArgusDrawerView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .regular))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(subtitle)
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 11)

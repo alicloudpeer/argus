@@ -188,7 +188,7 @@ struct TradeHistoryCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Sistem ayarı")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             ForEach(Array(changes.keys.sorted()), id: \.self) { key in
                 if let value = changes[key] {

@@ -300,8 +300,8 @@ struct ArgusChartEngine: View {
         return HStack(spacing: 12) {
             if let p = point {
                 Text("O").foregroundColor(DesignTokens.Colors.textTertiary) + Text(String(format: "%.2f", p.open)).foregroundColor(DesignTokens.Colors.textPrimary)
-                Text("H").foregroundColor(DesignTokens.Colors.textTertiary) + Text(String(format: "%.2f", p.high)).foregroundColor(.green)
-                Text("L").foregroundColor(DesignTokens.Colors.textTertiary) + Text(String(format: "%.2f", p.low)).foregroundColor(.red)
+                Text("H").foregroundColor(DesignTokens.Colors.textTertiary) + Text(String(format: "%.2f", p.high)).foregroundColor(DesignTokens.Colors.success)
+                Text("L").foregroundColor(DesignTokens.Colors.textTertiary) + Text(String(format: "%.2f", p.low)).foregroundColor(DesignTokens.Colors.error)
                 Text("C").foregroundColor(DesignTokens.Colors.textTertiary) + Text(String(format: "%.2f", p.close)).foregroundColor(p.isBullish ? .green : .red)
                 Text("V").foregroundColor(DesignTokens.Colors.textTertiary) + Text(formatVolume(p.volume)).foregroundColor(DesignTokens.Colors.textPrimary)
             }
@@ -322,7 +322,7 @@ struct ArgusChartEngine: View {
                 Text("EMA50").font(.caption2).padding(4).background(showEMA50 ? Color.orange.opacity(0.3) : .gray.opacity(0.2)).cornerRadius(4).foregroundColor(showEMA50 ? .orange : .gray)
             }
             Button(action: { drawings.removeAll() }) {
-                Image(systemName: "trash").font(.caption2).padding(4).background(Color.red.opacity(0.3)).cornerRadius(4).foregroundColor(.red)
+                Image(systemName: "trash").font(.caption2).padding(4).background(Color.red.opacity(0.3)).cornerRadius(4).foregroundColor(DesignTokens.Colors.error)
             }
         }
     }

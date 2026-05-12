@@ -35,11 +35,11 @@ struct TechnicalConsensusView: View {
             HStack {
                 Text("Teknik konsensüs")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Text("\(breakdown.summary.total) sinyal")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             ZStack {
@@ -53,17 +53,17 @@ struct TechnicalConsensusView: View {
                         .foregroundColor(dominantColor)
                     Text("\(breakdown.summary.buy) al · \(breakdown.summary.sell) sat")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 .offset(y: 16)
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -134,17 +134,17 @@ struct SignalColumn: View {
                     signalRow(signal)
                     if idx < signals.count - 1 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
                             .padding(.leading, 10)
                     }
                 }
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
@@ -153,20 +153,20 @@ struct SignalColumn: View {
         HStack {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Spacer()
             HStack(spacing: 6) {
                 voteCount(vote.buy, color: InstitutionalTheme.Colors.aurora)
                 voteCount(vote.sell, color: InstitutionalTheme.Colors.crimson)
-                voteCount(vote.neutral, color: InstitutionalTheme.Colors.textSecondary)
+                voteCount(vote.neutral, color: DesignTokens.Colors.textSecondary)
             }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -179,7 +179,7 @@ struct SignalColumn: View {
                 .frame(width: 5, height: 5)
             Text("\(count)")
                 .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .monospacedDigit()
         }
     }
@@ -189,10 +189,10 @@ struct SignalColumn: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(signal.name)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(signal.value)
                     .font(DesignTokens.Fonts.custom(size: 10, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             Spacer(minLength: 4)
             Text(actionLabel(signal.action))
@@ -216,7 +216,7 @@ struct SignalColumn: View {
         switch action.uppercased() {
         case "AL":  return InstitutionalTheme.Colors.aurora
         case "SAT": return InstitutionalTheme.Colors.crimson
-        default:    return InstitutionalTheme.Colors.textSecondary
+        default:    return DesignTokens.Colors.textSecondary
         }
     }
 }
@@ -285,13 +285,13 @@ struct GaugeView: View {
             needle.move(to: center)
             needle.addLine(to: needleEnd)
             context.stroke(needle,
-                           with: .color(InstitutionalTheme.Colors.textPrimary),
+                           with: .color(DesignTokens.Colors.textPrimary),
                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
 
             // Pivot dot — sade textSecondary (motor tinted yerine)
             context.fill(
                 Path(ellipseIn: CGRect(x: center.x - 4, y: center.y - 4, width: 8, height: 8)),
-                with: .color(InstitutionalTheme.Colors.textSecondary)
+                with: .color(DesignTokens.Colors.textSecondary)
             )
         }
     }

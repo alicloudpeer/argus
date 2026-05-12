@@ -5,17 +5,17 @@ import SwiftUI
 /// Bloomberg V2 tasarım dili.
 struct SanctumTheme {
     // Background: Institutional System
-    static let bg = InstitutionalTheme.Colors.background
-    static let terminalBg = InstitutionalTheme.Colors.surface1
-    static let surface = InstitutionalTheme.Colors.surface2
+    static let bg = DesignTokens.Colors.background
+    static let terminalBg = DesignTokens.Colors.surface
+    static let surface = DesignTokens.Colors.surfaceElevated
     
     // Core Palette (Bloomberg V3)
-    static let hologramBlue = InstitutionalTheme.Colors.primary
-    static let auroraGreen = InstitutionalTheme.Colors.positive
-    static let neonGreen = InstitutionalTheme.Colors.positive
+    static let hologramBlue = DesignTokens.Colors.primary
+    static let auroraGreen = DesignTokens.Colors.success
+    static let neonGreen = DesignTokens.Colors.success
     static let titanGold = InstitutionalTheme.Colors.neutral      // Artık neutral gri
-    static let ghostGrey = InstitutionalTheme.Colors.textSecondary
-    static let crimsonRed = InstitutionalTheme.Colors.negative
+    static let ghostGrey = DesignTokens.Colors.textSecondary
+    static let crimsonRed = DesignTokens.Colors.error
     
     // Module Colors — her modül görsel olarak ayırt edilebilir
     static let orionColor = hologramBlue                                          // Teknik   → Mavi

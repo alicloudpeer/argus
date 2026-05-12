@@ -14,7 +14,7 @@ struct GlobalModuleDetailCard: View {
             HStack {
                 ZStack {
                     Circle()
-                        .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 8)
+                        .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 8)
                         .frame(width: 60, height: 60)
 
                     Circle()
@@ -29,7 +29,7 @@ struct GlobalModuleDetailCard: View {
                             .foregroundColor(supportColor)
                         Text("%")
                             .font(DesignTokens.Fonts.custom(size: 9))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                 }
 
@@ -38,7 +38,7 @@ struct GlobalModuleDetailCard: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("SİNYAL")
                         .font(.caption2)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
 
                     Text(actionText)
                         .font(.headline.bold())
@@ -61,18 +61,18 @@ struct GlobalModuleDetailCard: View {
                             .foregroundColor(moduleColor)
                         Text("Kazanan Öneri")
                             .font(.subheadline.bold())
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                     }
 
                     Text(cleanReasoning(proposal.reasoning))
                         .font(.body)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding()
-                        .background(InstitutionalTheme.Colors.surface2)
+                        .background(DesignTokens.Colors.surfaceElevated)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
                         )
                         .cornerRadius(12)
                 }
@@ -82,25 +82,25 @@ struct GlobalModuleDetailCard: View {
                 HStack {
                     Text("Oylama")
                         .font(.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Spacer()
                     Text("Onay: \(Int(decision.approveWeight * 100))% | Veto: \(Int(decision.vetoWeight * 100))%")
                         .font(.caption.bold())
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
 
                 GeometryReader { geo in
                     HStack(spacing: 2) {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.positive)
+                            .fill(DesignTokens.Colors.success)
                             .frame(width: geo.size.width * decision.approveWeight)
 
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.negative)
+                            .fill(DesignTokens.Colors.error)
                             .frame(width: geo.size.width * decision.vetoWeight)
 
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                     }
                     .cornerRadius(4)
                 }
@@ -111,23 +111,23 @@ struct GlobalModuleDetailCard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(InstitutionalTheme.Colors.negative)
+                            .foregroundColor(DesignTokens.Colors.error)
                         Text("Veto Gerekçeleri")
                             .font(.caption.bold())
-                            .foregroundColor(InstitutionalTheme.Colors.negative)
+                            .foregroundColor(DesignTokens.Colors.error)
                     }
 
                     ForEach(decision.vetoReasons.prefix(3), id: \.self) { reason in
                         Text("• \(reason)")
                             .font(.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.negative.opacity(0.85))
+                            .foregroundColor(DesignTokens.Colors.error.opacity(0.85))
                     }
                 }
                 .padding()
-                .background(InstitutionalTheme.Colors.negative.opacity(0.12))
+                .background(DesignTokens.Colors.error.opacity(0.12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(InstitutionalTheme.Colors.negative.opacity(0.24), lineWidth: 1)
+                        .stroke(DesignTokens.Colors.error.opacity(0.24), lineWidth: 1)
                 )
                 .cornerRadius(12)
             }
@@ -146,9 +146,9 @@ struct GlobalModuleDetailCard: View {
     }
 
     private var supportColor: Color {
-        if decision.netSupport >= 0.5 { return InstitutionalTheme.Colors.positive }
+        if decision.netSupport >= 0.5 { return DesignTokens.Colors.success }
         if decision.netSupport >= 0.2 { return InstitutionalTheme.Colors.warning }
-        return InstitutionalTheme.Colors.negative
+        return DesignTokens.Colors.error
     }
 
     private var actionText: String {
@@ -161,17 +161,17 @@ struct GlobalModuleDetailCard: View {
 
     private var actionColor: Color {
         switch decision.action {
-        case .buy: return InstitutionalTheme.Colors.positive
-        case .sell: return InstitutionalTheme.Colors.negative
+        case .buy: return DesignTokens.Colors.success
+        case .sell: return DesignTokens.Colors.error
         case .hold: return InstitutionalTheme.Colors.warning
         }
     }
 
     private var signalStrengthColor: Color {
         switch decision.signalStrength {
-        case "GÜÇLÜ": return InstitutionalTheme.Colors.positive
+        case "GÜÇLÜ": return DesignTokens.Colors.success
         case "ZAYIF": return InstitutionalTheme.Colors.warning
-        default: return InstitutionalTheme.Colors.textSecondary
+        default: return DesignTokens.Colors.textSecondary
         }
     }
 }

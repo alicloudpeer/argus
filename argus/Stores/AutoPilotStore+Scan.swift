@@ -73,6 +73,20 @@ extension AutoPilotStore {
             ArgusLogger.info(.autopilot, "Açık pozisyon sayısı: \(portfolioMap.count)")
         }
 
+        // 0.5. BorsaPy backend'ini ısındır — BIST sembolleri varsa ve circuit
+        // açıksa veya backend soğuksa scan başlamadan önce /health pingi gönder.
+        // warmUp() kendi 90s timeout'unu kullanır, scan'i en fazla o kadar bekletir.
+        let hasBistSymbols = symbols.contains { $0.hasSuffix(".IS") }
+        if hasBistSymbols && bistOpen {
+            let circuitOpen = await BorsaPyProvider.shared.isCircuitOpen()
+            let backendWarm = await BorsaPyProvider.shared.isBackendWarm()
+            let needsWarmup = circuitOpen || !backendWarm
+            if needsWarmup {
+                ArgusLogger.info("🔥 BorsaPy backend ısındırılıyor (pre-scan)...", category: "OTOPİLOT")
+                await BorsaPyProvider.shared.warmUp()
+            }
+        }
+
         // 1. Get Signals (Argus Engine) — background offload
         let results = await Task.detached(priority: .userInitiated) {
             return await AutoPilotService.shared.scanMarket(

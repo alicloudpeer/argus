@@ -160,9 +160,6 @@ extension NavigationRouter {
         case .heimdallKeys:
             HeimdallKeysView()
 
-        case .mimir:
-            MimirView()
-
         // MARK: - Sirkiye Views
         case .sirkiyeDashboard:
             SirkiyeDashboardView()

@@ -27,7 +27,7 @@ struct OrionModuleDetailView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 topNav
@@ -59,7 +59,7 @@ struct OrionModuleDetailView: View {
             Button(action: onClose) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 16, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -70,10 +70,10 @@ struct OrionModuleDetailView: View {
             VStack(spacing: 1) {
                 Text(nodeTitle)
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text("Teknik · \(symbol.uppercased())")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             Spacer()
@@ -81,7 +81,7 @@ struct OrionModuleDetailView: View {
             Button(action: onClose) {
                 Image(systemName: "xmark")
                     .font(DesignTokens.Fonts.custom(size: 14))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -89,10 +89,10 @@ struct OrionModuleDetailView: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -114,11 +114,11 @@ struct OrionModuleDetailView: View {
             HStack {
                 Text("Canlı analiz")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 Text("son \(min(50, candles.count)) mum")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             // OrionTextGenerator zaten colored segments üretiyor — bunu sade
@@ -219,10 +219,10 @@ struct OrionModuleDetailView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text(subtitle)
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
@@ -233,14 +233,14 @@ struct OrionModuleDetailView: View {
                     if let meta = meta {
                         Text(meta)
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                     }
                 }
             }
 
             // Sade hairline ayraç
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
 
             content()
@@ -258,18 +258,18 @@ struct OrionModuleDetailView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Formasyon")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text(analysis.components.patternDesc.isEmpty || analysis.components.patternDesc == "Yok"
                          ? "Tespit yok"
                          : analysis.components.patternDesc)
                         .font(DesignTokens.Fonts.custom(size: 15, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                 }
                 Spacer()
             }
 
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
 
             patternSketch
@@ -336,7 +336,7 @@ struct OrionModuleDetailView: View {
 
                 ZStack {
                     pathShape(values: normPrices, in: geo.size)
-                        .stroke(InstitutionalTheme.Colors.textPrimary,
+                        .stroke(DesignTokens.Colors.textPrimary,
                                 style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
 
                     pathShape(values: normSMA, in: geo.size)
@@ -405,7 +405,7 @@ struct OrionModuleDetailView: View {
                     control2: CGPoint(x: w * 0.6, y: h * 0.9)
                 )
             }
-            .stroke(InstitutionalTheme.Colors.textSecondary,
+            .stroke(DesignTokens.Colors.textSecondary,
                     style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [4, 4]))
         }
     }
@@ -413,7 +413,7 @@ struct OrionModuleDetailView: View {
     private func emptyChartLabel(_ text: String) -> some View {
         Text(text)
             .font(DesignTokens.Fonts.custom(size: 12))
-            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+            .foregroundColor(DesignTokens.Colors.textTertiary)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -423,20 +423,20 @@ struct OrionModuleDetailView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Bu nedir?")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text(type.educationalContent(for: analysis))
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.6))
+        .background(DesignTokens.Colors.surface.opacity(0.6))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(
-                    InstitutionalTheme.Colors.borderSubtle,
+                    DesignTokens.Colors.borderSubtle,
                     style: StrokeStyle(lineWidth: 0.5, dash: [4, 3])
                 )
         )
@@ -454,13 +454,13 @@ struct OrionModuleDetailView: View {
                     Text("Alarm")
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
                 }
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                        .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
@@ -473,13 +473,13 @@ struct OrionModuleDetailView: View {
                     Text("Paylaş")
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
                 }
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                        .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
@@ -487,10 +487,10 @@ struct OrionModuleDetailView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(InstitutionalTheme.Colors.background.opacity(0.96))
+        .background(DesignTokens.Colors.background.opacity(0.96))
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -499,10 +499,10 @@ struct OrionModuleDetailView: View {
 
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 12, style: .continuous)
-            .fill(InstitutionalTheme.Colors.surface1)
+            .fill(DesignTokens.Colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
             )
     }
 
@@ -525,10 +525,10 @@ struct OrionModuleDetailView: View {
 
     private var priceDeltaColor: Color {
         guard let last = candles.last,
-              let prev = candles.dropLast().last else { return InstitutionalTheme.Colors.textPrimary }
+              let prev = candles.dropLast().last else { return DesignTokens.Colors.textPrimary }
         if last.close > prev.close { return InstitutionalTheme.Colors.aurora }
         if last.close < prev.close { return InstitutionalTheme.Colors.crimson }
-        return InstitutionalTheme.Colors.textPrimary
+        return DesignTokens.Colors.textPrimary
     }
 
     private func rsiColor(_ rsi: Double) -> Color {
@@ -536,7 +536,7 @@ struct OrionModuleDetailView: View {
         if rsi <= 30 { return InstitutionalTheme.Colors.crimson }
         if rsi >= 55 { return InstitutionalTheme.Colors.aurora }
         if rsi <= 45 { return InstitutionalTheme.Colors.titan }
-        return InstitutionalTheme.Colors.textPrimary
+        return DesignTokens.Colors.textPrimary
     }
 
     private func rsiZoneLabel(_ rsi: Double) -> String {

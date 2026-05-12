@@ -27,7 +27,7 @@ struct FeedbackSheet: View {
                 }
                 .padding(20)
             }
-            .background(InstitutionalTheme.Colors.background)
+            .background(DesignTokens.Colors.background)
             .alert("Gönderildi", isPresented: $showingConfirmation) {
                 Button("Tamam") { dismiss() }
             } message: {
@@ -39,7 +39,7 @@ struct FeedbackSheet: View {
                 Text(errorMessage ?? "Beklenmeyen bir hata oluştu.")
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
     }
 
@@ -68,7 +68,7 @@ struct FeedbackSheet: View {
                 if feedbackText.isEmpty {
                     Text("Geri bildiriminizi buraya yazın...")
                         .font(.subheadline)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 14)
                 }
@@ -91,7 +91,7 @@ struct FeedbackSheet: View {
 
             Text("\(feedbackText.count) / 1000 karakter")
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .accessibilityLabel("\(feedbackText.count) karakter, en fazla 1000")
         }
     }
@@ -106,7 +106,7 @@ struct FeedbackSheet: View {
                 Spacer()
                 if isSubmitting {
                     ProgressView()
-                        .tint(InstitutionalTheme.Colors.background)
+                        .tint(DesignTokens.Colors.background)
                 } else {
                     Text("Gönder")
                         .font(.subheadline)
@@ -114,7 +114,7 @@ struct FeedbackSheet: View {
                 }
                 Spacer()
             }
-            .foregroundColor(InstitutionalTheme.Colors.background)
+            .foregroundColor(DesignTokens.Colors.background)
             .padding(.vertical, 14)
             .background(
                 RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md)
@@ -156,14 +156,14 @@ struct FeedbackSheet: View {
                             .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text("@sigarayib1rak")
                             .font(.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
 
                     Spacer()
 
                     Image(systemName: "arrow.up.right")
                         .font(.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 .padding(12)
                 .background(DesignTokens.Colors.Overlay.l05)
@@ -176,7 +176,7 @@ struct FeedbackSheet: View {
 
             Text("Geri bildirimler genellikle 24-48 saat içinde değerlendirilir.")
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -220,7 +220,7 @@ struct FeedbackSheet: View {
     private func sectionHeader(_ title: String) -> some View {
         Text(title.capitalized)
             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 }
 

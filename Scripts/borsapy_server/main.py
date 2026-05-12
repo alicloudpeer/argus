@@ -18,6 +18,10 @@ try:
 except ImportError:
     pass  # certifi yoksa sistem sertifikalarına güven
 
+import asyncio
+import urllib.request
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -31,7 +35,40 @@ except ImportError:
     DataNotAvailableError = Exception
     BorsapyAPIError = Exception
 
-app = FastAPI(title="Argus Borsapy API", version="1.1.0")
+_KEEP_ALIVE_INTERVAL = 600  # 10 dakika
+
+async def _keep_alive_loop():
+    """Render free tier 15dk inaktivite sonrası uyutur. Kendi /health
+    endpoint'imize periyodik istek göndererek bunu önlüyoruz."""
+    external_url = os.environ.get("RENDER_EXTERNAL_URL", "").rstrip("/")
+    if not external_url:
+        print("KEEP-ALIVE: RENDER_EXTERNAL_URL yok, self-ping devre dışı")
+        return
+    health_url = f"{external_url}/health"
+    print(f"KEEP-ALIVE: {_KEEP_ALIVE_INTERVAL}s aralıkla {health_url} pinglenir")
+    while True:
+        await asyncio.sleep(_KEEP_ALIVE_INTERVAL)
+        try:
+            urllib.request.urlopen(health_url, timeout=30)
+        except Exception as e:
+            print(f"KEEP-ALIVE: ping başarısız — {e}")
+
+def _prewarm_modules():
+    """İlk isteği hızlandırmak için borsapy modüllerini önceden yükle."""
+    try:
+        _ = bp.Ticker("THYAO")
+        print("PREWARM: borsapy Ticker modülü yüklendi")
+    except Exception:
+        pass
+
+@asynccontextmanager
+async def lifespan(app):
+    _prewarm_modules()
+    task = asyncio.create_task(_keep_alive_loop())
+    yield
+    task.cancel()
+
+app = FastAPI(title="Argus Borsapy API", version="1.2.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

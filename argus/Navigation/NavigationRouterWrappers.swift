@@ -21,12 +21,12 @@ struct PoseidonRouterView: View {
             } else if isLoading {
                 ProgressView("Balina verileri yükleniyor...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(InstitutionalTheme.Colors.background)
+                    .background(DesignTokens.Colors.background)
             } else {
                 Text("Poseidon verisi bulunamadı")
                     .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(InstitutionalTheme.Colors.background)
+                    .background(DesignTokens.Colors.background)
             }
         }
         .task {
@@ -60,7 +60,7 @@ struct SectorDetailRouterView: View {
             } else if isLoading {
                 ProgressView("Sektör verisi yükleniyor...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(InstitutionalTheme.Colors.background)
+                    .background(DesignTokens.Colors.background)
             } else {
                 VStack(spacing: 16) {
                     Image(systemName: "chart.pie")
@@ -73,7 +73,7 @@ struct SectorDetailRouterView: View {
                         .foregroundColor(.secondary.opacity(0.7))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(InstitutionalTheme.Colors.background)
+                .background(DesignTokens.Colors.background)
             }
         }
         .task {
@@ -104,12 +104,12 @@ struct PhoenixDetailRouterView: View {
             } else if isLoading {
                 ProgressView("Phoenix analizi yükleniyor...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(InstitutionalTheme.Colors.background)
+                    .background(DesignTokens.Colors.background)
             } else {
                 Text("Phoenix verisi bulunamadı: \(symbol)")
                     .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(InstitutionalTheme.Colors.background)
+                    .background(DesignTokens.Colors.background)
             }
         }
         .task {
@@ -144,12 +144,12 @@ struct AetherDetailRouterView: View {
             } else if isLoading {
                 ProgressView("Aether verisi yükleniyor...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(InstitutionalTheme.Colors.background)
+                    .background(DesignTokens.Colors.background)
             } else {
                 Text("Aether verisi bulunamadı")
                     .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(InstitutionalTheme.Colors.background)
+                    .background(DesignTokens.Colors.background)
             }
         }
         .task {
@@ -183,7 +183,7 @@ struct SymbolDebateRouterView: View {
                     .foregroundColor(.secondary.opacity(0.7))
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(InstitutionalTheme.Colors.background)
+            .background(DesignTokens.Colors.background)
         }
     }
 }
@@ -204,11 +204,11 @@ struct IntelligenceCardsRouterView: View {
                     IntelligenceCardsView(snapshot: nil, currentPrice: currentPrice, isETF: false)
                         .padding()
                 }
-                .background(InstitutionalTheme.Colors.background)
+                .background(DesignTokens.Colors.background)
             } else {
                 ProgressView("İstihbarat verisi yükleniyor...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(InstitutionalTheme.Colors.background)
+                    .background(DesignTokens.Colors.background)
             }
         }
         .task {

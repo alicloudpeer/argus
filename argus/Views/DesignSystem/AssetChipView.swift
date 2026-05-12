@@ -35,7 +35,7 @@ struct AssetChipView: View {
                 HStack(spacing: 6) {
                     Text(symbol)
                         .font(DesignTokens.Fonts.custom(size: 16, weight: .bold, design: .rounded))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     
                     // Engine Badge with Info
                     if let engine = engine {
@@ -66,17 +66,17 @@ struct AssetChipView: View {
                 HStack(spacing: 4) {
                     Text("\(String(format: "%.0f", quantity)) Adet")
                         .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     
                     if let price = currentPrice {
                         Text("•")
                             .font(.caption2)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         
                         let symbolPrefix = symbol.hasSuffix(".IS") ? "₺" : "$"
                         Text("\(symbolPrefix)\(String(format: "%.2f", price))")
                             .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                     }
                 }
             }

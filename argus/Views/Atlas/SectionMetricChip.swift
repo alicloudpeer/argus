@@ -12,15 +12,15 @@ struct SectionMetricChip: View {
                 .foregroundColor(color)
             Divider()
                 .frame(height: 12)
-                .overlay(InstitutionalTheme.Colors.borderSubtle)
+                .overlay(DesignTokens.Colors.borderSubtle)
             VStack(alignment: .leading, spacing: 1) {
                 Text(metric.name)
                     .font(.caption2.weight(.semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(1)
                 Text(metric.formattedValue)
                     .font(.caption2.weight(.bold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .monospacedDigit()
             }
             Spacer(minLength: 0)
@@ -28,7 +28,7 @@ struct SectionMetricChip: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 8, style: .continuous)

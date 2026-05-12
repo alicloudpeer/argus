@@ -32,7 +32,7 @@ struct SanctumTradePanel: View {
         Button(action: action) {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 15, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(

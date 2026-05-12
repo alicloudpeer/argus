@@ -76,7 +76,6 @@ enum NavigationRoute: Hashable, Identifiable {
     // MARK: - Heimdall/Admin Views
     case heimdallDashboard
     case heimdallKeys
-    case mimir
 
     // MARK: - Sirkiye Views
     case sirkiyeDashboard

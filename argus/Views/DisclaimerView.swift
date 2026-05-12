@@ -9,7 +9,7 @@ struct DisclaimerView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 20) {
                 // Header ribbon
@@ -33,7 +33,7 @@ struct DisclaimerView: View {
                         Text("YASAL UYARI")
                             .font(DesignTokens.Fonts.custom(size: 24, weight: .bold, design: .rounded))
                             .tracking(3)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                     }
                 }
                 .padding(.top, 48)
@@ -64,11 +64,11 @@ struct DisclaimerView: View {
                         )
 
                         HStack(spacing: 8) {
-                            ArgusDot(color: InstitutionalTheme.Colors.textTertiary, size: 4)
+                            ArgusDot(color: DesignTokens.Colors.textTertiary, size: 4)
                             Text("SON GÜNCELLEME · 26.12.2025")
                                 .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
                                 .tracking(1.2)
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                         }
                         .padding(.top, 10)
                     }
@@ -76,11 +76,11 @@ struct DisclaimerView: View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                        .fill(InstitutionalTheme.Colors.surface1)
+                        .fill(DesignTokens.Colors.surface)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                        .stroke(InstitutionalTheme.Colors.border, lineWidth: 1)
+                        .stroke(DesignTokens.Colors.border, lineWidth: 1)
                 )
                 .padding(.horizontal, 20)
 
@@ -100,21 +100,21 @@ struct DisclaimerView: View {
                             .tracking(1.4)
                     }
                     .foregroundColor(canAccept
-                                     ? InstitutionalTheme.Colors.background
-                                     : InstitutionalTheme.Colors.textSecondary)
+                                     ? DesignTokens.Colors.background
+                                     : DesignTokens.Colors.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(
                         RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
                             .fill(canAccept
                                   ? InstitutionalTheme.Colors.holo
-                                  : InstitutionalTheme.Colors.surface2)
+                                  : DesignTokens.Colors.surfaceElevated)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
                             .stroke(canAccept
                                     ? InstitutionalTheme.Colors.holo
-                                    : InstitutionalTheme.Colors.border, lineWidth: 1)
+                                    : DesignTokens.Colors.border, lineWidth: 1)
                     )
                     .shadow(color: canAccept
                             ? InstitutionalTheme.Colors.holo.opacity(0.35)
@@ -146,7 +146,7 @@ struct DisclaimerView: View {
 
             Text(content)
                 .font(InstitutionalTheme.Typography.body)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary.opacity(0.9))
+                .foregroundColor(DesignTokens.Colors.textPrimary.opacity(0.9))
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
         }

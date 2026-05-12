@@ -5,7 +5,7 @@ struct BrandStoryView: View {
     
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 32) {
@@ -15,7 +15,7 @@ struct BrandStoryView: View {
                         Button(action: { presentationMode.wrappedValue.dismiss() }) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.title2)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                         }
                     }
                     .padding()
@@ -39,18 +39,18 @@ struct BrandStoryView: View {
                         
                         Text("The All-Seeing Analyst")
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         
                         Text("İsmini Yunan mitolojisindeki 100 gözlü dev Argus Panoptes'ten alır. Argus, asla uyumaz ve her şeyi görür.\n\nAlgoritmamız da piyasadaki binlerce veri noktasını aynı anda tarar, hiçbir detayı kaçırmaz ve en derin temel analizleri saniyeler içinde sunar.")
                             .font(.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
                             .padding(.horizontal)
                     }
                     
                     Divider()
-                        .background(InstitutionalTheme.Colors.surface1)
+                        .background(DesignTokens.Colors.surface)
                     
                     // Aether Section
                     VStack(spacing: 16) {
@@ -71,11 +71,11 @@ struct BrandStoryView: View {
                         
                         Text("The Market Atmosphere")
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         
                         Text("Mitolojide tanrıların soluduğu saf, üst atmosfer tabakasıdır. Dünyevi kaosun üzerindeki berrak gökyüzünü temsil eder.\n\nArgus Aether, piyasanın gürültüsünden (noise) arınarak makro ekonomik iklimi koklar. Fırtına mı geliyor yoksa hava açık mı? Sadece fiyatı değil, atmosferi analiz eder.")
                             .font(.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
                             .padding(.horizontal)
@@ -85,7 +85,7 @@ struct BrandStoryView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Veri Durumu")
                                     .font(.headline)
-                                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                    .foregroundColor(DesignTokens.Colors.textSecondary)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 
                                 StatusRow(label: "Hisse Senedi (SPY)", isActive: rating.equityRiskScore != nil)
@@ -94,14 +94,14 @@ struct BrandStoryView: View {
                                 StatusRow(label: "Kripto (BTC)", isActive: rating.cryptoRiskScore != nil)
                             }
                             .padding()
-                            .background(InstitutionalTheme.Colors.surface1)
+                            .background(DesignTokens.Colors.surface)
                             .cornerRadius(12)
                             .padding(.horizontal)
                         }
                     }
                     
                     Divider()
-                        .background(InstitutionalTheme.Colors.surface1)
+                        .background(DesignTokens.Colors.surface)
                     
                     // Orion Section (New)
                     VStack(spacing: 16) {
@@ -122,17 +122,17 @@ struct BrandStoryView: View {
                         
                         Text("The Hunter")
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         
                         Text("Mitolojideki büyük avcı. Orion, Argus'un gördüğü ve Aether'in kokladığı ortamda avını (fırsatları) yakalar.\n\nTeknik analiz ve zamanlama ustasıdır. Temel analiz (Argus) 'Ne almalı?' sorusunu, Makro analiz (Aether) 'Ne zaman almalı?' sorusunu, Orion ise 'Hangi fiyattan girmeli?' sorusunu yanıtlar.")
                             .font(.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
                             .padding(.horizontal)
                     }
                     Divider()
-                        .background(InstitutionalTheme.Colors.surface1)
+                        .background(DesignTokens.Colors.surface)
                     
                     // Demeter Section (New)
                     VStack(spacing: 16) {
@@ -153,18 +153,18 @@ struct BrandStoryView: View {
                         
                         Text("The Harvest Guardian")
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         
                         Text("Yunan mitolojisinde tarım ve bereket tanrıçası. Piyasada sermayenin nereye aktığını (Sector Rotation) analiz eder.\n\nChronos zamanı ölçerdi, Demeter ise verimi ölçer. Hangi sektörün 'hasat zamanı' geldiğini ve hangisinin nadasa bırakılması gerektiğini söyler.")
                             .font(.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
                             .padding(.horizontal)
                     }
                     .padding(.top)
 
-                    Divider().background(InstitutionalTheme.Colors.surface1)
+                    Divider().background(DesignTokens.Colors.surface)
                     
                     // Atlas Section
                     VStack(spacing: 16) {
@@ -182,16 +182,16 @@ struct BrandStoryView: View {
                         }
                         Text("The Valuator")
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         Text("Mitolojide gök kubbeyi taşıyan titan. Şirketlerin mali yükünü ve gerçek değerini tartar.\n\nBilançoları, nakit akışlarını ve rasyoları analiz ederek 'Bu hisse pahalı mı, ucuz mu?' sorusunu yanıtlar. Fiyat etiketiyle değil, değerle ilgilenir.")
                             .font(.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
                             .padding(.horizontal)
                     }
                     
-                    Divider().background(InstitutionalTheme.Colors.surface1)
+                    Divider().background(DesignTokens.Colors.surface)
                     
                     // Hermes Section
                     VStack(spacing: 16) {
@@ -209,16 +209,16 @@ struct BrandStoryView: View {
                         }
                         Text("The Messenger")
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         Text("Tanrıların habercisi. Piyasadaki tüm haber akışını, KAP bildirimlerini ve sosyal medya sinyallerini tarar.\n\nFiyat hareketlenmeden önce bilgiyi yakalar. Hız onun silahıdır.")
                             .font(.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
                             .padding(.horizontal)
                     }
                     
-                    Divider().background(InstitutionalTheme.Colors.surface1)
+                    Divider().background(DesignTokens.Colors.surface)
                     
                     // Council Section
                     VStack(spacing: 16) {
@@ -236,10 +236,10 @@ struct BrandStoryView: View {
                         }
                         Text("The Final Decision")
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         Text("Agora Konseyi. Tüm modüllerin (Argus, Orion, Atlas, Aether) oylarını toplar ve nihai kararı verir.\n\nDemokratik bir yapay zeka yönetimidir. Çelişkili sinyaller burada çözülür ve işlem emrine dönüşür.")
                             .font(.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
                             .padding(.horizontal)
@@ -284,7 +284,7 @@ struct StatusRow: View {
         HStack {
             Text(label)
                 .font(.subheadline)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             Image(systemName: isActive ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                 .foregroundColor(isActive ? .green : .orange)

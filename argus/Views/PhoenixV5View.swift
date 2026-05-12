@@ -23,7 +23,7 @@ struct PhoenixV5View: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     navbar
@@ -55,35 +55,35 @@ struct PhoenixV5View: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
-                    .background(InstitutionalTheme.Colors.surface2)
+                    .background(DesignTokens.Colors.surfaceElevated)
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Risk fırsatları")
                     .font(DesignTokens.Fonts.custom(size: 15, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text("Dip dedektörü, dönüş onayları")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             Spacer()
 
             Text("\(otherSymbols.count + (mainAdvice != nil ? 1 : 0)) aday")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .monospacedDigit()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
         .background(
-            InstitutionalTheme.Colors.surface1
+            DesignTokens.Colors.surface
                 .overlay(
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 0.5),
                     alignment: .bottom
                 )
@@ -99,17 +99,17 @@ struct PhoenixV5View: View {
                     HStack(spacing: 8) {
                         Text(advice.symbol)
                             .font(DesignTokens.Fonts.custom(size: 15, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         if let price = currentPrice(for: advice.symbol) {
                             Text(formatPrice(price, symbol: advice.symbol))
                                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .monospacedDigit()
                         }
                     }
                     Text(scenarioSummary(advice))
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
 
@@ -118,7 +118,7 @@ struct PhoenixV5View: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("Güven")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text("\(Int(advice.confidence))")
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
                         .foregroundColor(confidenceColor(advice.confidence))
@@ -130,8 +130,8 @@ struct PhoenixV5View: View {
             if let candles = marketVM.candles[advice.symbol], candles.count >= 2 {
                 SanctumMiniChart(candles: candles.suffix(60).map { $0 },
                                color: advice.status == .active
-                                   ? InstitutionalTheme.Colors.positive
-                                   : InstitutionalTheme.Colors.negative)
+                                   ? DesignTokens.Colors.success
+                                   : DesignTokens.Colors.error)
                     .frame(height: 66)
             }
 
@@ -141,17 +141,17 @@ struct PhoenixV5View: View {
                          color: InstitutionalTheme.Colors.crimson)
                 statTile(title: "Destek",
                          value: formatPriceOptional(advice.channelLower, advice.symbol),
-                         color: InstitutionalTheme.Colors.textPrimary)
+                         color: DesignTokens.Colors.textPrimary)
                 statTile(title: "Hedef",
                          value: formatPriceOptional(advice.targets.first, advice.symbol),
                          color: InstitutionalTheme.Colors.aurora)
             }
         }
         .padding(14)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
         .padding(.horizontal, 12)
@@ -162,7 +162,7 @@ struct PhoenixV5View: View {
         VStack(spacing: 3) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
                 .foregroundColor(color)
@@ -170,7 +170,7 @@ struct PhoenixV5View: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
@@ -180,7 +180,7 @@ struct PhoenixV5View: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Dönüş kontrol listesi")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             VStack(spacing: 8) {
                 checklistRow(done: advice.triggers.touchLowerBand,
@@ -195,10 +195,10 @@ struct PhoenixV5View: View {
                              text: "Pozitif katalizör (haber bekleniyor)")
             }
             .padding(12)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
         }
@@ -215,8 +215,8 @@ struct PhoenixV5View: View {
             Text(text)
                 .font(DesignTokens.Fonts.custom(size: 12))
                 .foregroundColor(done == true
-                                 ? InstitutionalTheme.Colors.textPrimary
-                                 : InstitutionalTheme.Colors.textSecondary)
+                                 ? DesignTokens.Colors.textPrimary
+                                 : DesignTokens.Colors.textSecondary)
             Spacer()
         }
     }
@@ -230,7 +230,7 @@ struct PhoenixV5View: View {
     private func checklistColor(_ done: Bool?) -> Color {
         if done == true  { return InstitutionalTheme.Colors.aurora }
         if done == false { return InstitutionalTheme.Colors.titan }
-        return InstitutionalTheme.Colors.textTertiary
+        return DesignTokens.Colors.textTertiary
     }
 
     // MARK: - Diğer adaylar (sade)
@@ -240,7 +240,7 @@ struct PhoenixV5View: View {
             if !otherSymbols.isEmpty {
                 Text("Diğer adaylar")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
 
                 VStack(spacing: 6) {
                     ForEach(otherSymbols.prefix(6), id: \.self) { sym in
@@ -261,13 +261,13 @@ struct PhoenixV5View: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(sym)
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(advice.reasonShort.isEmpty ? "İzle" : advice.reasonShort)
                     .font(DesignTokens.Fonts.custom(size: 11))
                     .foregroundColor(
                         advice.status == .active
                             ? InstitutionalTheme.Colors.aurora
-                            : InstitutionalTheme.Colors.textSecondary
+                            : DesignTokens.Colors.textSecondary
                     )
                     .lineLimit(1)
             }
@@ -281,10 +281,10 @@ struct PhoenixV5View: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
     }

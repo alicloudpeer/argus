@@ -112,7 +112,7 @@ struct MiniPantheonOrb: View {
                     .blur(radius: isPrimary ? 8 : 6)
 
                 Circle()
-                    .fill(InstitutionalTheme.Colors.surface2)
+                    .fill(DesignTokens.Colors.surfaceElevated)
                     .frame(width: size, height: size)
 
                 Circle()
@@ -141,10 +141,10 @@ struct PantheonFlankView: View {
         VStack(spacing: 4) {
             ZStack {
                 Circle()
-                    .fill(InstitutionalTheme.Colors.surface2)
+                    .fill(DesignTokens.Colors.surfaceElevated)
                     .frame(width: 44, height: 44)
                 Circle()
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
                     .frame(width: 44, height: 44)
                 
                 Circle()
@@ -163,7 +163,7 @@ struct PantheonFlankView: View {
 
                 Text(score)
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .monospacedDigit()
             }
         }

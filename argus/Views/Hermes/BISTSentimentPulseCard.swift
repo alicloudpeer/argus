@@ -208,7 +208,7 @@ struct BISTSentimentPulseCard: View {
             }
         }
         .padding(14)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             // 2026-04-23 V5.C: Color(hex:"1C1C1E") + orange halka → surface1
             // + motor(.hermes) tint. BIST pulse kartını Global ile aynı dile

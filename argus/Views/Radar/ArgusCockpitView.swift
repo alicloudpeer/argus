@@ -105,71 +105,60 @@ struct ArgusCockpitView: View {
 
     var body: some View {
         ZStack {
-            NavigationStack {
-                VStack(spacing: 0) {
-                    // 2026-04-30 H-54 — sade nav. SwiftUI toolbar (mono caps
-                    // başlık + tinted ikon + 44×44 default item'lar) yerine
-                    // Portfolio / MarketView / Trade Brain ile aynı dil:
-                    // sol drawer + başlık + sağ refresh, hepsi 32×32 sade.
-                    customTopBar
+            VStack(spacing: 0) {
+                customTopBar
 
-                    Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
-                        .frame(height: 0.5)
+                Rectangle()
+                    .fill(DesignTokens.Colors.borderSubtle)
+                    .frame(height: 0.5)
 
-                    marketTabBar
+                marketTabBar
 
-                    if selectedMarket == .fonlar {
-                        FundListView()
-                    } else {
-                        ScrollView {
-                            LazyVStack(spacing: 0) {
-                                // 2026-04-30 H-50 — Cockpit sade. Eski 5-katman
-                                // (control bar + Scout stories + Chiron widget +
-                                // Chiron feed + liste) → 3-katman (control bar +
-                                // liste + boş hal). Scout stories Discover'a
-                                // taşındı; Chiron widget/feed silindi (Alkindus
-                                // dashboard kalibrasyon paneli aynı bilgiyi
-                                // sağlıyor).
-                                TerminalControlBar(
-                                    sortOption: $sortOption,
-                                    hideLowQualityData: $hideLowQualityData,
-                                    count: terminalData.count,
-                                    selectedMarket: selectedMarket
+                if selectedMarket == .fonlar {
+                    FundListView()
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            TerminalControlBar(
+                                sortOption: $sortOption,
+                                hideLowQualityData: $hideLowQualityData,
+                                count: terminalData.count,
+                                selectedMarket: selectedMarket
+                            )
+
+                            if terminalData.isEmpty {
+                                ArgusEmptyState(
+                                    icon: "antenna.radiowaves.left.and.right.slash",
+                                    title: "Veri bulunamadı",
+                                    message: "Kriterlere uygun hisse bulunamadı. Kalite filtresini veya arama terimini değiştirmeyi dene."
                                 )
-
-                                if terminalData.isEmpty {
-                                    ArgusEmptyState(
-                                        icon: "antenna.radiowaves.left.and.right.slash",
-                                        title: "Veri bulunamadı",
-                                        message: "Kriterlere uygun hisse bulunamadı. Kalite filtresini veya arama terimini değiştirmeyi dene."
-                                    )
-                                    .padding(.top, 16)
-                                } else {
-                                    ForEach(terminalData) { item in
-                                        NavigationLink(destination: ArgusSanctumView(symbol: item.symbol)) {
-                                            TerminalStockRow(
-                                                item: item,
-                                                onOrionTap: { openModule(.orion, for: item.symbol) },
-                                                onAtlasTap: { openModule(.atlas, for: item.symbol) }
-                                            )
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-
-                                        Rectangle()
-                                            .fill(InstitutionalTheme.Colors.borderSubtle)
-                                            .frame(height: 0.5)
-                                            .padding(.leading, 16)
+                                .padding(.top, 16)
+                            } else {
+                                ForEach(terminalData) { item in
+                                    Button {
+                                        NavigationRouter.shared.navigate(to: .stockDetail(symbol: item.symbol))
+                                    } label: {
+                                        TerminalStockRow(
+                                            item: item,
+                                            onOrionTap: { openModule(.orion, for: item.symbol) },
+                                            onAtlasTap: { openModule(.atlas, for: item.symbol) }
+                                        )
                                     }
+                                    .buttonStyle(PlainButtonStyle())
+
+                                    Rectangle()
+                                        .fill(DesignTokens.Colors.borderSubtle)
+                                        .frame(height: 0.5)
+                                        .padding(.leading, 16)
                                 }
                             }
-                            .padding(.bottom, 80)
                         }
+                        .padding(.bottom, 80)
                     }
                 }
-                .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
-                .navigationBarHidden(true)
             }
+            .background(DesignTokens.Colors.background.ignoresSafeArea())
+            .navigationBarHidden(true)
 
             if showDrawer {
                 ArgusDrawerView(isPresented: $showDrawer) { openSheet in
@@ -283,7 +272,7 @@ struct ArgusCockpitView: View {
             }) {
                 Image(systemName: "line.3.horizontal")
                     .font(DesignTokens.Fonts.custom(size: 16, weight: .regular))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(width: 32, height: 32)
                     .contentShape(Rectangle())
             }
@@ -292,7 +281,7 @@ struct ArgusCockpitView: View {
 
             Text(toolbarTitle)
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .accessibilityAddTraits(.isHeader)
 
             Spacer()
@@ -307,7 +296,7 @@ struct ArgusCockpitView: View {
             }) {
                 Image(systemName: "arrow.clockwise")
                     .font(DesignTokens.Fonts.custom(size: 16, weight: .regular))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(width: 32, height: 32)
                     .contentShape(Rectangle())
             }
@@ -316,7 +305,7 @@ struct ArgusCockpitView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.background)
+        .background(DesignTokens.Colors.background)
     }
 
     /// 2026-04-30 H-50 — sade. Mono caps tracking 1 + tab başına ayrı renk
@@ -330,13 +319,13 @@ struct ArgusCockpitView: View {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 13, weight: isSelected ? .medium : .regular))
                     .foregroundColor(isSelected
-                                     ? InstitutionalTheme.Colors.textPrimary
-                                     : InstitutionalTheme.Colors.textSecondary)
+                                     ? DesignTokens.Colors.textPrimary
+                                     : DesignTokens.Colors.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 12)
                 Rectangle()
                     .fill(isSelected
-                          ? InstitutionalTheme.Colors.textPrimary
+                          ? DesignTokens.Colors.textPrimary
                           : Color.clear)
                     .frame(height: 1.5)
             }
@@ -354,10 +343,10 @@ struct ArgusCockpitView: View {
             tabButton(title: "Sirkiye", tab: .bist)
             tabButton(title: "Fonlar",  tab: .fonlar)
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -383,8 +372,8 @@ struct TerminalControlBar: View {
 
     private var accent: Color {
         selectedMarket == .bist
-            ? InstitutionalTheme.Colors.negative
-            : InstitutionalTheme.Colors.primary
+            ? DesignTokens.Colors.error
+            : DesignTokens.Colors.primary
     }
 
     /// 2026-04-30 H-50 — sade. İki ayrı satır (count+tinted sort menü
@@ -396,7 +385,7 @@ struct TerminalControlBar: View {
         HStack(spacing: 10) {
             Text("\(count) hisse")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .monospacedDigit()
 
             Spacer(minLength: 6)
@@ -411,10 +400,10 @@ struct TerminalControlBar: View {
                 HStack(spacing: 4) {
                     Text(sortLabel(for: sortOption))
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Image(systemName: "chevron.down")
                         .font(DesignTokens.Fonts.custom(size: 9))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 .padding(.horizontal, 4)
                 .padding(.vertical, 6)
@@ -425,7 +414,7 @@ struct TerminalControlBar: View {
             Toggle(isOn: $hideLowQualityData) {
                 Text("Kalite")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             .toggleStyle(SwitchToggleStyle(tint: InstitutionalTheme.Colors.aurora))
             .labelsHidden()
@@ -433,7 +422,7 @@ struct TerminalControlBar: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.background)
+        .background(DesignTokens.Colors.background)
     }
 
     func sortLabel(for option: ArgusCockpitView.TerminalSortOption) -> String {
@@ -467,7 +456,7 @@ struct TerminalStockRow: View {
             } else {
                 Text("Henüz analiz yok")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             Spacer(minLength: 4)
@@ -477,7 +466,7 @@ struct TerminalStockRow: View {
         .padding(.vertical, 12)
         .overlay(
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5),
             alignment: .bottom
         )
@@ -500,12 +489,12 @@ struct TerminalStockRow: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(item.symbol.replacingOccurrences(of: ".IS", with: ""))
                 .font(DesignTokens.Fonts.custom(size: 15, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineLimit(1)
 
             Text(priceText)
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .regular, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .lineLimit(1)
         }
         .frame(minWidth: 70, alignment: .leading)
@@ -536,7 +525,7 @@ struct TerminalStockRow: View {
                         .foregroundColor(actionColor(item.action))
                     Text("\(Int(council * 100))%")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .monospacedDigit()
                 }
             }
@@ -571,7 +560,7 @@ struct TerminalStockRow: View {
                 .foregroundColor(tone)
             Text("\(Int(score))")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .monospacedDigit()
         }
     }
@@ -581,8 +570,8 @@ struct TerminalStockRow: View {
     private var dailyChangeBlock: some View {
         let change = item.dayChangePercent
         let color: Color = (change ?? 0) >= 0
-            ? InstitutionalTheme.Colors.positive
-            : InstitutionalTheme.Colors.negative
+            ? DesignTokens.Colors.success
+            : DesignTokens.Colors.error
         return Group {
             if let c = change {
                 Text(String(format: "%+.1f%%", c))
@@ -592,7 +581,7 @@ struct TerminalStockRow: View {
             } else {
                 Text("—")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
         }
     }
@@ -601,11 +590,11 @@ struct TerminalStockRow: View {
 
     func actionColor(_ action: ArgusAction) -> Color {
         switch action {
-        case .aggressiveBuy: return InstitutionalTheme.Colors.positive
-        case .accumulate:    return InstitutionalTheme.Colors.primary
-        case .neutral:       return InstitutionalTheme.Colors.textSecondary
+        case .aggressiveBuy: return DesignTokens.Colors.success
+        case .accumulate:    return DesignTokens.Colors.primary
+        case .neutral:       return DesignTokens.Colors.textSecondary
         case .trim:          return InstitutionalTheme.Colors.warning
-        case .liquidate:     return InstitutionalTheme.Colors.negative
+        case .liquidate:     return DesignTokens.Colors.error
         }
     }
 

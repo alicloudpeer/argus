@@ -20,7 +20,7 @@ struct GlassCard<Content: View>: View {
             
             // 2. Tint Overlay (Darkening or Lightening)
             RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(InstitutionalTheme.Colors.surface1.opacity(0.4 + brightness))
+                .fill(DesignTokens.Colors.surface.opacity(0.4 + brightness))
             
             // 3. Border (The "Tech" Edge)
             RoundedRectangle(cornerRadius: cornerRadius)
@@ -58,7 +58,7 @@ extension View {
 
 #Preview {
     ZStack {
-        InstitutionalTheme.Colors.background.ignoresSafeArea()
+        DesignTokens.Colors.background.ignoresSafeArea()
         VStack {
             Text("Argus Glass System")
                 .font(.title)

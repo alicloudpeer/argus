@@ -45,49 +45,49 @@ struct BistPortfolioView: View {
                         HStack {
                             Text("BIST değeri")
                                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                             Spacer()
                             Text("TL")
                                 .font(DesignTokens.Fonts.custom(size: 11))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                         }
 
                         Text("₺\(String(format: "%.2f", bistBalance + portfolioValue))")
                             .font(DesignTokens.Fonts.custom(size: 30, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .monospacedDigit()
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
 
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
 
                         HStack(spacing: 8) {
                             sadeStatTile(title: "Nakit",
                                          value: "₺\(String(format: "%.2f", bistBalance))",
-                                         tone: InstitutionalTheme.Colors.textPrimary)
+                                         tone: DesignTokens.Colors.textPrimary)
                             sadeStatTile(title: "Hisse değeri",
                                          value: "₺\(String(format: "%.2f", portfolioValue))",
-                                         tone: InstitutionalTheme.Colors.textPrimary)
+                                         tone: DesignTokens.Colors.textPrimary)
                         }
 
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
 
                         HStack(spacing: 12) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Otopilot")
                                     .font(DesignTokens.Fonts.custom(size: 11))
-                                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                    .foregroundColor(DesignTokens.Colors.textTertiary)
                                 Text(autoPilot.isAutoPilotEnabled
                                      ? "Aktif · piyasa taranıyor"
                                      : "Pasif · manuel mod")
                                     .font(DesignTokens.Fonts.custom(size: 13))
                                     .foregroundColor(autoPilot.isAutoPilotEnabled
                                                      ? InstitutionalTheme.Colors.aurora
-                                                     : InstitutionalTheme.Colors.textSecondary)
+                                                     : DesignTokens.Colors.textSecondary)
                             }
                             Spacer()
                             Toggle("", isOn: $autoPilot.isAutoPilotEnabled)
@@ -97,10 +97,10 @@ struct BistPortfolioView: View {
                     }
                     .padding(14)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(InstitutionalTheme.Colors.surface1)
+                    .background(DesignTokens.Colors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                            .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                            .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
                     .padding(.horizontal)
@@ -110,14 +110,14 @@ struct BistPortfolioView: View {
                         VStack(spacing: 14) {
                             Image(systemName: "case")
                                 .font(DesignTokens.Fonts.custom(size: 28))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                             VStack(spacing: 4) {
                                 Text("Portföyün boş")
                                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                    .foregroundColor(DesignTokens.Colors.textPrimary)
                                 Text("BIST hisseleri ekleyerek başla.")
                                     .font(DesignTokens.Fonts.custom(size: 12))
-                                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                    .foregroundColor(DesignTokens.Colors.textSecondary)
                             }
                             Button(action: { showSearch = true }) {
                                 HStack(spacing: 6) {
@@ -126,10 +126,10 @@ struct BistPortfolioView: View {
                                     Text("Hisse ekle")
                                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
                                 }
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 9)
-                                .background(InstitutionalTheme.Colors.surface2)
+                                .background(DesignTokens.Colors.surfaceElevated)
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             }
                             .buttonStyle(.plain)
@@ -159,7 +159,7 @@ struct BistPortfolioView: View {
                 .padding(.top)
                 }
             }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .sheet(isPresented: $showSearch) {
             BistMarketView()
@@ -187,7 +187,7 @@ struct BistPortfolioView: View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
                 .foregroundColor(tone)
@@ -198,7 +198,7 @@ struct BistPortfolioView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 8)
         .padding(.horizontal, 10)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 

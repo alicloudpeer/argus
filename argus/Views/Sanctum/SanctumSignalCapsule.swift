@@ -29,7 +29,7 @@ struct SanctumSignalCapsule: View {
             
             Divider()
                 .frame(height: 16)
-                .background(InstitutionalTheme.Colors.borderSubtle)
+                .background(DesignTokens.Colors.borderSubtle)
             
             // 2. Signal Action
             HStack(spacing: 4) {
@@ -40,13 +40,13 @@ struct SanctumSignalCapsule: View {
                 if let title = education?.title {
                     Text(title.uppercased())
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 
                 if let confidence = signal?.confidence {
                     Text(String(format: "%.0f", confidence * 100))
                         .font(InstitutionalTheme.Typography.dataSmall)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary.opacity(0.85))
+                        .foregroundColor(DesignTokens.Colors.textPrimary.opacity(0.85))
                 }
             }
             .padding(.horizontal, 10)
@@ -56,7 +56,7 @@ struct SanctumSignalCapsule: View {
         .background(
             Capsule()
                 .strokeBorder(LinearGradient(colors: [healthColor.opacity(0.3), signalColor.opacity(0.3)], startPoint: .leading, endPoint: .trailing), lineWidth: 1)
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
         )
         .clipShape(Capsule())
     }
@@ -69,6 +69,6 @@ struct SanctumSignalCapsule: View {
     }
     
     private var signalColor: Color {
-        education?.color ?? InstitutionalTheme.Colors.textSecondary
+        education?.color ?? DesignTokens.Colors.textSecondary
     }
 }

@@ -16,10 +16,10 @@ struct BistMacroSummaryCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("MAKRO PANO")
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .bold))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text("Piyasa Nabzı")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Spacer()
                 Button(action: { withAnimation(.snappy) { showEducation.toggle() } }) {
@@ -33,7 +33,7 @@ struct BistMacroSummaryCard: View {
                 macroEducationNote
             }
             
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
             
             if isLoading {
                 ProgressView()
@@ -43,17 +43,17 @@ struct BistMacroSummaryCard: View {
             } else {
                 Text("Makro veri yüklenemedi")
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(24)
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .shadow(color: InstitutionalTheme.Colors.background.opacity(0.35), radius: 8, x: 0, y: 4)
+        .shadow(color: DesignTokens.Colors.background.opacity(0.35), radius: 8, x: 0, y: 4)
         .onAppear { loadData() }
     }
     
@@ -110,7 +110,7 @@ struct BistMacroSummaryCard: View {
         
         // Alt satır: Ek bilgiler
         if s.currentAccount != nil || s.industrialProduction != nil {
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
             
             HStack(spacing: 16) {
                 if let ca = s.currentAccount {
@@ -139,18 +139,18 @@ struct BistMacroSummaryCard: View {
             
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
             
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 7, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface2.opacity(0.5))
+        .background(DesignTokens.Colors.surfaceElevated.opacity(0.5))
         .cornerRadius(8)
     }
     
@@ -159,10 +159,10 @@ struct BistMacroSummaryCard: View {
         VStack(spacing: 2) {
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 8))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
     }
     
@@ -214,7 +214,7 @@ struct BistMacroSummaryCard: View {
     
     private func realRateColor(_ value: Double?) -> Color {
         guard let v = value else { return .gray }
-        return v > 0 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+        return v > 0 ? DesignTokens.Colors.success : DesignTokens.Colors.error
     }
     
     // MARK: - Öğretici Not
@@ -227,7 +227,7 @@ struct BistMacroSummaryCard: View {
                     .foregroundColor(.orange)
                 Text("Makro Veriler Piyasayı Nasıl Etkiler?")
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .bold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
             }
             
             Group {
@@ -239,7 +239,7 @@ struct BistMacroSummaryCard: View {
             
             Text("⚠️ Bu veriler bilgilendirme amaçlıdır, yatırım tavsiyesi değildir.")
                 .font(DesignTokens.Fonts.custom(size: 9))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(12)
         .background(Color.orange.opacity(0.08))
@@ -251,7 +251,7 @@ struct BistMacroSummaryCard: View {
             Text("•").font(.caption).foregroundColor(.orange)
             Text(text)
                 .font(DesignTokens.Fonts.custom(size: 10))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 }

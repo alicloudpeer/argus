@@ -39,7 +39,7 @@ struct ScoutStoryDetailView: View {
     var body: some View {
         ZStack {
             // 1. Background (Void)
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             
             // 2. Content Layer (Draggable)
             VStack(spacing: 0) {
@@ -207,7 +207,7 @@ struct ScoutStoryDetailView: View {
                 }
             }
             .padding(20)
-            .background(RoundedRectangle(cornerRadius: 20).fill(InstitutionalTheme.Colors.surface1))
+            .background(RoundedRectangle(cornerRadius: 20).fill(DesignTokens.Colors.surface))
             
             // Highlights
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -234,7 +234,7 @@ struct ScoutStoryDetailView: View {
             }.frame(height: 4)
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 12).fill(InstitutionalTheme.Colors.surface1))
+        .background(RoundedRectangle(cornerRadius: 12).fill(DesignTokens.Colors.surface))
     }
     
     private var actionButtons: some View {
@@ -251,7 +251,7 @@ struct ScoutStoryDetailView: View {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                     Text("Detay")
                 }
-                .font(.headline).foregroundColor(DesignTokens.Colors.textPrimary).frame(maxWidth: .infinity).padding().background(RoundedRectangle(cornerRadius: 14).fill(InstitutionalTheme.Colors.surface1))
+                .font(.headline).foregroundColor(DesignTokens.Colors.textPrimary).frame(maxWidth: .infinity).padding().background(RoundedRectangle(cornerRadius: 14).fill(DesignTokens.Colors.surface))
             }
         }
     }

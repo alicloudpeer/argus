@@ -17,7 +17,7 @@ struct SectorDetailView: View {
                 actions: [.custom(sfSymbol: "xmark", action: { presentationMode.wrappedValue.dismiss() })]
             )
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 24) {
@@ -67,7 +67,7 @@ struct SectorDetailView: View {
                                 }
                             }
                             .padding()
-                            .background(InstitutionalTheme.Colors.surface1)
+                            .background(DesignTokens.Colors.surface)
                             .cornerRadius(12)
                         } else {
                             Text("Şok etkisi nötr.")
@@ -105,7 +105,7 @@ struct SectorDetailView: View {
                                     .font(.body)
                                     .multilineTextAlignment(.leading)
                                     .padding()
-                                    .background(insight.starts(with: "Analiz oluşturulamadı") ? Color.red.opacity(0.1) : InstitutionalTheme.Colors.surface1)
+                                    .background(insight.starts(with: "Analiz oluşturulamadı") ? Color.red.opacity(0.1) : DesignTokens.Colors.surface)
                                     .foregroundColor(insight.starts(with: "Analiz oluşturulamadı") ? .red : .primary)
                                     .cornerRadius(8)
                                     .transition(.opacity)
@@ -114,7 +114,7 @@ struct SectorDetailView: View {
                                     .font(.body)
                                     .multilineTextAlignment(.leading)
                                     .padding()
-                                    .background(InstitutionalTheme.Colors.surface1)
+                                    .background(DesignTokens.Colors.surface)
                                     .cornerRadius(8)
                             }
                         }

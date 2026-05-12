@@ -98,7 +98,7 @@ struct ArgusAthenaSheet: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Faktör skoru")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(Int(r.factorScore))")
                         .font(DesignTokens.Fonts.custom(size: 32, weight: .medium))
@@ -106,7 +106,7 @@ struct ArgusAthenaSheet: View {
                         .monospacedDigit()
                     Text("/ 100")
                         .font(DesignTokens.Fonts.custom(size: 13))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
 
@@ -115,26 +115,26 @@ struct ArgusAthenaSheet: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text("Strateji")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(r.styleLabel)
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .multilineTextAlignment(.trailing)
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
     }
 
     private func scoreColor(_ score: Double) -> Color {
         if score >= 70 { return InstitutionalTheme.Colors.aurora }
-        if score >= 45 { return InstitutionalTheme.Colors.textPrimary }
+        if score >= 45 { return DesignTokens.Colors.textPrimary }
         return InstitutionalTheme.Colors.crimson
     }
 
@@ -144,19 +144,19 @@ struct ArgusAthenaSheet: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Nasıl okunur")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("Hisse 4 akademik faktöre göre puanlanır. En yüksek 2 faktör strateji etiketini belirler.")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -167,7 +167,7 @@ struct ArgusAthenaSheet: View {
         HStack {
             Text("4 faktör kırılımı")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Spacer()
         }
         .padding(.top, 2)
@@ -186,10 +186,10 @@ struct ArgusAthenaSheet: View {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(factor.title)
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(factor.microCaption)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Spacer(minLength: 0)
                 if isStrongest {
                     Text("en güçlü")
@@ -207,17 +207,17 @@ struct ArgusAthenaSheet: View {
             if let line = factorDataLine(factor) {
                 Text(line)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 2)
             }
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -291,19 +291,19 @@ struct ArgusAthenaSheet: View {
         return VStack(alignment: .leading, spacing: 8) {
             Text("Yorum")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text(summary)
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -333,7 +333,7 @@ struct ArgusAthenaSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Faktör yatırımı nedir")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             VStack(alignment: .leading, spacing: 8) {
                 pedagogyRow(.value)
@@ -344,11 +344,11 @@ struct ArgusAthenaSheet: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.6))
+        .background(DesignTokens.Colors.surface.opacity(0.6))
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
                 .strokeBorder(
-                    InstitutionalTheme.Colors.borderSubtle,
+                    DesignTokens.Colors.borderSubtle,
                     style: StrokeStyle(lineWidth: 0.5, dash: [4, 3])
                 )
         )
@@ -359,11 +359,11 @@ struct ArgusAthenaSheet: View {
         HStack(alignment: .top, spacing: 10) {
             Text(factor.title)
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .frame(width: 84, alignment: .leading)
             Text(factor.pedagogy)
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
         }

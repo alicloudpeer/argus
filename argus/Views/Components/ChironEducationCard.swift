@@ -57,7 +57,7 @@ struct ChironEducationCard: View {
                             
                             Text(result.explanationBody)
                                 .font(.body)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(4)
                                 .padding(.horizontal)
@@ -147,7 +147,7 @@ struct ChironEducationCard: View {
                     .foregroundColor(color)
                 Text(desc)
                     .font(.subheadline)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

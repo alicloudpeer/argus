@@ -36,7 +36,7 @@ struct TahtaView: View {
             }
             .padding()
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .onAppear { loadData() }
     }
 
@@ -46,11 +46,11 @@ struct TahtaView: View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.2)
-                .tint(InstitutionalTheme.Colors.primary)
+                .tint(DesignTokens.Colors.primary)
 
             Text("Teknik analiz yapılıyor...")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, minHeight: 300)
     }
@@ -65,13 +65,13 @@ struct TahtaView: View {
 
             Text(message)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .multilineTextAlignment(.center)
 
             Button("Tekrar Dene") {
                 loadData()
             }
-            .foregroundColor(InstitutionalTheme.Colors.primary)
+            .foregroundColor(DesignTokens.Colors.primary)
         }
         .frame(maxWidth: .infinity, minHeight: 200)
         .padding()
@@ -88,10 +88,10 @@ struct TahtaView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Teknik analiz")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text(symbol.uppercased())
                         .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                 }
                 Spacer()
                 Text(r.signal.rawValue)
@@ -99,7 +99,7 @@ struct TahtaView: View {
                     .foregroundColor(signalColor(r.signal))
             }
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
 
             // Orta: Ana Sinyal
@@ -241,10 +241,10 @@ struct TahtaView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Rölatif güç")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text("Endekse göre · XU100")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 Spacer()
                 if let rs = r.rsResult {
@@ -384,11 +384,11 @@ struct TahtaView: View {
 
     private func signalColor(_ signal: TahtaSignal) -> Color {
         switch signal {
-        case .gucluAl: return InstitutionalTheme.Colors.positive
-        case .al: return InstitutionalTheme.Colors.positive.opacity(0.8)
+        case .gucluAl: return DesignTokens.Colors.success
+        case .al: return DesignTokens.Colors.success.opacity(0.8)
         case .tut: return InstitutionalTheme.Colors.warning
         case .sat: return InstitutionalTheme.Colors.warning
-        case .gucluSat: return InstitutionalTheme.Colors.negative
+        case .gucluSat: return DesignTokens.Colors.error
         }
     }
 
@@ -417,11 +417,11 @@ struct TahtaView: View {
 
     private func flowColor(_ status: FlowStatus) -> Color {
         switch status {
-        case .strongInflow: return InstitutionalTheme.Colors.positive
-        case .inflow: return InstitutionalTheme.Colors.positive.opacity(0.8)
+        case .strongInflow: return DesignTokens.Colors.success
+        case .inflow: return DesignTokens.Colors.success.opacity(0.8)
         case .neutral: return InstitutionalTheme.Colors.warning
         case .outflow: return InstitutionalTheme.Colors.warning
-        case .strongOutflow: return InstitutionalTheme.Colors.negative
+        case .strongOutflow: return DesignTokens.Colors.error
         }
     }
 

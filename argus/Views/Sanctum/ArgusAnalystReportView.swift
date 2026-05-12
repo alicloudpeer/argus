@@ -30,10 +30,10 @@ struct ArgusAnalystReportView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
@@ -49,16 +49,16 @@ struct ArgusAnalystReportView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Konsey raporu")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(symbol.uppercased())
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             Spacer()
             Text(isLoading ? "Hazırlanıyor" : "Hazır")
                 .font(DesignTokens.Fonts.custom(size: 11))
                 .foregroundColor(isLoading
-                                 ? InstitutionalTheme.Colors.textTertiary
+                                 ? DesignTokens.Colors.textTertiary
                                  : InstitutionalTheme.Colors.aurora)
         }
     }
@@ -70,7 +70,7 @@ struct ArgusAnalystReportView: View {
             ProgressView()
             Text("\(symbol.uppercased()) analiz ediliyor")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, minHeight: 160)
     }
@@ -79,7 +79,7 @@ struct ArgusAnalystReportView: View {
         ScrollView {
             Text(displayedText)
                 .font(DesignTokens.Fonts.custom(size: 14))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineSpacing(3)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
@@ -87,7 +87,7 @@ struct ArgusAnalystReportView: View {
                 .background(
                     RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md,
                                      style: .continuous)
-                        .fill(InstitutionalTheme.Colors.surface2)
+                        .fill(DesignTokens.Colors.surfaceElevated)
                 )
         }
         .frame(minHeight: 280, maxHeight: 500)

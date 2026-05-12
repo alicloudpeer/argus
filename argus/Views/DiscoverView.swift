@@ -21,7 +21,7 @@ struct DiscoverView: View {
         // 2026-05-03 H-59: nested NavigationStack kaldırıldı — ContentView
         // root'taki NavigationStack ile çakışıp back butonunu bozuyordu.
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                     ArgusNavHeader(
@@ -51,7 +51,7 @@ struct DiscoverView: View {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 12) {
                                     ForEach(market.topGainers, id: \.symbol) { quote in
-                                        NavigationLink(destination: ArgusSanctumView(symbol: quote.symbol ?? "---")) {
+                                        Button { NavigationRouter.shared.navigate(to: .stockDetail(symbol: quote.symbol ?? "---")) } label: {
                                             DiscoverMarketCard(
                                                 quote: quote,
                                                 type: .gainer,
@@ -73,7 +73,7 @@ struct DiscoverView: View {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 12) {
                                     ForEach(market.topLosers, id: \.symbol) { quote in
-                                        NavigationLink(destination: ArgusSanctumView(symbol: quote.symbol ?? "---")) {
+                                        Button { NavigationRouter.shared.navigate(to: .stockDetail(symbol: quote.symbol ?? "---")) } label: {
                                             DiscoverMarketCard(
                                                 quote: quote,
                                                 type: .loser,
@@ -95,19 +95,19 @@ struct DiscoverView: View {
                             
                             LazyVStack(spacing: 0) {
                                 ForEach(market.mostActive, id: \.symbol) { quote in
-                                    NavigationLink(destination: ArgusSanctumView(symbol: quote.symbol ?? "---")) {
+                                    Button { NavigationRouter.shared.navigate(to: .stockDetail(symbol: quote.symbol ?? "---")) } label: {
                                         DiscoverMarketRow(quote: quote)
                                     }
                                     Divider()
-                                        .background(InstitutionalTheme.Colors.borderSubtle)
+                                        .background(DesignTokens.Colors.borderSubtle)
                                         .padding(.leading, 70)
                                 }
                             }
-                            .background(InstitutionalTheme.Colors.surface1)
+                            .background(DesignTokens.Colors.surface)
                             .cornerRadius(InstitutionalTheme.Radius.lg)
                             .overlay(
                                 RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
                             )
                             .padding(.horizontal)
                         }
@@ -166,7 +166,7 @@ struct DiscoverSectionHeader: View {
             ArgusSectionCaption(title)
             Text(subtitle)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .padding(.horizontal)
     }
@@ -212,16 +212,16 @@ struct DiscoverMarketCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(quote.symbol ?? "---")
                     .font(DesignTokens.Fonts.custom(size: 15, weight: .black, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 let isBist = (quote.symbol ?? "").uppercased().hasSuffix(".IS")
                 Text(String(format: isBist ? "₺%.0f" : "$%.2f", quote.currentPrice))
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
         .padding(12)
         .frame(width: 142, height: 112)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
                 .stroke(cardColor.opacity(0.35), lineWidth: 1)
@@ -265,11 +265,11 @@ struct DiscoverMarketRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(quote.symbol ?? "---")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .black, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 if let name = quote.shortName, !name.isEmpty {
                     Text(name)
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .lineLimit(1)
                 }
             }
@@ -280,7 +280,7 @@ struct DiscoverMarketRow: View {
                 let isBist = (quote.symbol ?? "").uppercased().hasSuffix(".IS")
                 Text(String(format: isBist ? "₺%.0f" : "$%.2f", quote.currentPrice))
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .black, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
 
                 Text(String(format: "%+.2f%%", quote.percentChange))
                     .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))

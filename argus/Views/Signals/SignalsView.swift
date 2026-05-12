@@ -20,7 +20,7 @@ struct SignalsView: View {
         // 2026-05-03 H-59: nested NavigationStack kaldırıldı — ContentView
         // root NavigationStack ile çakışıyordu.
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                     ArgusNavHeader(
@@ -85,14 +85,14 @@ struct SignalsView: View {
 
     private var headerStatus: ArgusNavHeader.Status {
         if isScanning {
-            return .custom(dotColor: InstitutionalTheme.Colors.textTertiary,
+            return .custom(dotColor: DesignTokens.Colors.textTertiary,
                            label: "Taranıyor",
                            trailing: "Sinyal akışı")
         }
         let total = analysis.aiSignals.count
         let strongBuy = analysis.aiSignals.filter { $0.action == .buy && $0.confidenceScore >= 85 }.count
         if total == 0 {
-            return .custom(dotColor: InstitutionalTheme.Colors.textTertiary,
+            return .custom(dotColor: DesignTokens.Colors.textTertiary,
                            label: "Sinyal yok",
                            trailing: "Taramayı çalıştır")
         }
@@ -131,17 +131,17 @@ private struct MacroStatusBanner: View {
                     .foregroundColor(tone.foreground)
                 Text(macro.summary)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
             }
             Spacer()
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -199,7 +199,7 @@ struct SignalSection: View {
             .padding(.horizontal, 16)
 
             ForEach(signals) { signal in
-                NavigationLink(destination: ArgusSanctumView(symbol: signal.symbol)) {
+                Button { NavigationRouter.shared.navigate(to: .stockDetail(symbol: signal.symbol)) } label: {
                     AISignalCard(signal: signal, orion: SignalStateViewModel.shared.orionScores[signal.symbol])
                 }
                 .buttonStyle(.plain)
@@ -222,29 +222,29 @@ struct AISignalCard: View {
                 HStack(spacing: 8) {
                     Text(signal.symbol)
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(localizedAction)
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
                         .foregroundColor(actionTone.foreground)
                     Spacer()
                     Text(timeAgo(signal.timestamp))
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
 
                 Text(primaryReason)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
             }
 
             Image(systemName: "chevron.right")
                 .font(DesignTokens.Fonts.custom(size: 10, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(14)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
                 .stroke(actionTone.foreground.opacity(0.25), lineWidth: 1)
@@ -305,18 +305,18 @@ struct SignalsEmptyStateView: View {
             } else {
                 Image(systemName: "magnifyingglass")
                     .font(DesignTokens.Fonts.custom(size: 28))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             VStack(spacing: 4) {
                 Text(isScanning ? "Taranıyor" : "Sinyal bulunamadı")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(isScanning
                      ? "İzleme listendeki hisseler analiz ediliyor."
                      : "Şu an güçlü bir sinyal yok. Tekrar taramayı deneyebilirsin.")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
             }
@@ -329,10 +329,10 @@ struct SignalsEmptyStateView: View {
                         Text("Tara")
                             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
                     }
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 9)
-                    .background(InstitutionalTheme.Colors.surface2)
+                    .background(DesignTokens.Colors.surfaceElevated)
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
                 .buttonStyle(.plain)

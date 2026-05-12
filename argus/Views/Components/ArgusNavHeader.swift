@@ -50,7 +50,7 @@ struct ArgusNavHeader: View {
             case .holo:    return InstitutionalTheme.Colors.holo
             case .aurora:  return InstitutionalTheme.Colors.aurora
             case .crimson: return InstitutionalTheme.Colors.crimson
-            case .text:    return InstitutionalTheme.Colors.textPrimary
+            case .text:    return DesignTokens.Colors.textPrimary
             }
         }
     }
@@ -144,10 +144,10 @@ struct ArgusNavHeader: View {
         .padding(.top, 12)
         .padding(.bottom, 8)
         .background(
-            InstitutionalTheme.Colors.surface1
+            DesignTokens.Colors.surface
                 .overlay(
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.border)
+                        .fill(DesignTokens.Colors.border)
                         .frame(height: 1),
                     alignment: .bottom
                 )
@@ -168,7 +168,7 @@ struct ArgusNavHeader: View {
                             .tracking(1.2)
                             .foregroundColor(idx == selected
                                              ? InstitutionalTheme.Colors.holo
-                                             : InstitutionalTheme.Colors.textTertiary)
+                                             : DesignTokens.Colors.textTertiary)
 
                         Rectangle()
                             .fill(idx == selected ? InstitutionalTheme.Colors.holo : .clear)
@@ -196,7 +196,7 @@ struct ArgusNavHeader: View {
                 HStack(spacing: 8) {
                     Text(title)
                         .font(DesignTokens.Fonts.custom(size: 22, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
 
                     if let pill = titlePill {
                         ArgusPill(pill.text, tone: pill.tone)
@@ -206,7 +206,7 @@ struct ArgusNavHeader: View {
                 if let subtitle {
                     Text(subtitle)
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
 
@@ -234,7 +234,7 @@ struct ArgusNavHeader: View {
             Button(action: onTap) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 17, weight: .regular))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(width: 32, height: 32)
                     .contentShape(Rectangle())
             }
@@ -248,7 +248,7 @@ struct ArgusNavHeader: View {
         Button(action: action.action) {
             Image(systemName: action.sfSymbol)
                 .font(DesignTokens.Fonts.custom(size: 16, weight: .regular))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 32, height: 32)
                 .contentShape(Rectangle())
         }
@@ -268,7 +268,7 @@ struct ArgusNavHeader: View {
                       trailing: timestamp,
                       primary: true)
         case .closed(let label, let timestamp):
-            statusBar(dotColor: InstitutionalTheme.Colors.textTertiary,
+            statusBar(dotColor: DesignTokens.Colors.textTertiary,
                       label: label,
                       trailing: timestamp,
                       primary: false)
@@ -285,12 +285,12 @@ struct ArgusNavHeader: View {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 12))
                 .foregroundColor(primary
-                                 ? InstitutionalTheme.Colors.textPrimary
-                                 : InstitutionalTheme.Colors.textSecondary)
+                                 ? DesignTokens.Colors.textPrimary
+                                 : DesignTokens.Colors.textSecondary)
             Spacer(minLength: 8)
             Text(trailing)
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 }
@@ -308,7 +308,7 @@ private extension ArgusNavHeader.Segment {
 
 #Preview("Market header") {
     ZStack(alignment: .top) {
-        InstitutionalTheme.Colors.backgroundDeep.ignoresSafeArea()
+        DesignTokens.Colors.backgroundDeep.ignoresSafeArea()
         VStack(spacing: 12) {
             ArgusNavHeader(
                 title: "PİYASA",

@@ -22,10 +22,10 @@ struct KulisKAPCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("KULİS")
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .bold))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text("KAP Bildirimleri")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Spacer()
                 Button(action: { withAnimation(.snappy) { showEducation.toggle() } }) {
@@ -39,7 +39,7 @@ struct KulisKAPCard: View {
                 kulisEducationNote
             }
             
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
             
             if isLoading {
                 ProgressView()
@@ -50,13 +50,13 @@ struct KulisKAPCard: View {
                 newsListView
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .shadow(color: InstitutionalTheme.Colors.background.opacity(0.35), radius: 8, x: 0, y: 4)
+        .shadow(color: DesignTokens.Colors.background.opacity(0.35), radius: 8, x: 0, y: 4)
         .onAppear { loadData() }
     }
     
@@ -66,10 +66,10 @@ struct KulisKAPCard: View {
         VStack(spacing: 8) {
             Image(systemName: "newspaper")
                 .font(.title3)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text("Kayitli KAP bildirimi bulunamadi")
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .padding(24)
     }
@@ -83,14 +83,14 @@ struct KulisKAPCard: View {
                 
                 if index < displayedNews.count - 1 {
                     Divider()
-                        .background(InstitutionalTheme.Colors.borderSubtle)
+                        .background(DesignTokens.Colors.borderSubtle)
                         .padding(.horizontal, 16)
                 }
             }
             
             // Daha fazla göster
             if news.count > 3 {
-                Divider().background(InstitutionalTheme.Colors.borderSubtle)
+                Divider().background(DesignTokens.Colors.borderSubtle)
                 
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.25)) {
@@ -120,7 +120,7 @@ struct KulisKAPCard: View {
             HStack {
                 Text(item.date)
                     .font(DesignTokens.Fonts.custom(size: 9, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 
                 Spacer()
                 
@@ -136,14 +136,14 @@ struct KulisKAPCard: View {
             // Başlık
             Text(item.title)
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineLimit(2)
             
             // Özet (varsa)
             if !item.summary.isEmpty {
                 Text(item.summary)
                     .font(DesignTokens.Fonts.custom(size: 10))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
             }
         }
@@ -176,7 +176,7 @@ struct KulisKAPCard: View {
                     .foregroundColor(SanctumTheme.hermesColor)
                 Text("KAP Bildirimleri Neden Önemli?")
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .bold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
             }
             
             Group {
@@ -187,7 +187,7 @@ struct KulisKAPCard: View {
             
             Text("⚠️ KAP haberleri bilgilendirme amaçlıdır, yatırım tavsiyesi değildir.")
                 .font(DesignTokens.Fonts.custom(size: 9))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(12)
         .background(SanctumTheme.hermesColor.opacity(0.08))
@@ -199,7 +199,7 @@ struct KulisKAPCard: View {
             Text("•").font(.caption).foregroundColor(SanctumTheme.hermesColor)
             Text(text)
                 .font(DesignTokens.Fonts.custom(size: 10))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 }

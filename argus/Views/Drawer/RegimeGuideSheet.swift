@@ -22,18 +22,18 @@ struct RegimeGuideSheet: View {
                 .padding(20)
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
     }
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Rejimi Okumadan İşlem Açma")
                 .font(InstitutionalTheme.Typography.title)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             Text("Aynı strateji her piyasada aynı sonucu vermez. Rejim, işlemin yönünü değil risk dozunu belirler.")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -42,7 +42,7 @@ struct RegimeGuideSheet: View {
             sectionTitle("3 TEMEL REJİM")
             regimeRow(
                 name: "Trend",
-                color: InstitutionalTheme.Colors.positive,
+                color: DesignTokens.Colors.success,
                 summary: "Yön belirgin, devam olasılığı daha yüksek.",
                 clue: "ADX güçlü, kırılım teyitli."
             )
@@ -54,7 +54,7 @@ struct RegimeGuideSheet: View {
             )
             regimeRow(
                 name: "Risk-off",
-                color: InstitutionalTheme.Colors.negative,
+                color: DesignTokens.Colors.error,
                 summary: "Belirsizlik yüksek, korunma öncelikli.",
                 clue: "VIX yükseliş eğiliminde, volatilite sert."
             )
@@ -97,16 +97,16 @@ struct RegimeGuideSheet: View {
                     .frame(width: 8, height: 8)
                 Text(name)
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
             }
             Text(summary)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("İpucu: \(clue)")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 1)
         }
     }
@@ -116,18 +116,18 @@ struct RegimeGuideSheet: View {
             HStack(spacing: 8) {
                 Text(index)
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.primary)
+                    .foregroundColor(DesignTokens.Colors.primary)
                     .frame(width: 14, alignment: .leading)
                 Text(title)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
             }
             Text(detail)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .padding(.leading, 22)
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 1)
         }
     }
@@ -136,11 +136,11 @@ struct RegimeGuideSheet: View {
         HStack(alignment: .top, spacing: 10) {
             Text(regime)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
                 .frame(width: 64, alignment: .leading)
             Text(action)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -150,7 +150,7 @@ struct RegimeGuideSheet: View {
                 .foregroundColor(InstitutionalTheme.Colors.warning)
             Text(text)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -158,7 +158,7 @@ struct RegimeGuideSheet: View {
     private func sectionTitle(_ text: String) -> some View {
         Text(text.capitalized)
             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 }
 

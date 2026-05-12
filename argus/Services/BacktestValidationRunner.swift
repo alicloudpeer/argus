@@ -32,11 +32,11 @@ struct ValidationSymbolResult: Identifiable {
     var isOverfit: Bool { (walkForwardDegradation ?? 0) > 20 }
 
     var returnColor: Color {
-        totalReturn >= 0 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+        totalReturn >= 0 ? DesignTokens.Colors.success : DesignTokens.Colors.error
     }
 
     var alphaColor: Color {
-        alpha >= 0 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+        alpha >= 0 ? DesignTokens.Colors.success : DesignTokens.Colors.error
     }
 }
 

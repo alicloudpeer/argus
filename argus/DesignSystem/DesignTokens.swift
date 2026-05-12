@@ -32,37 +32,42 @@ enum DesignTokens {
         }
 
         // MARK: Semantik — arka plan ve yüzey
-        static let background         = Gray.g900
-        static let surface            = Gray.g800
-        static let surfaceElevated    = Gray.g700
-        static let secondaryBackground = Gray.g800   // geriye uyumluluk
+        // 2026-05-08: V5 mockup paletine hizalandı. InstitutionalTheme tek source-of-truth;
+        // bu semantik token'lar oraya alias'tır, böylece DesignTokens üzerinden yapılan
+        // tüm çağrılar otomatik V5 spec'iyle senkron çalışır.
+        static let background         = InstitutionalTheme.Colors.background
+        static let backgroundDeep     = InstitutionalTheme.Colors.backgroundDeep
+        static let surface            = InstitutionalTheme.Colors.surface1
+        static let surfaceElevated    = InstitutionalTheme.Colors.surface2
+        static let secondaryBackground = InstitutionalTheme.Colors.surface1  // geriye uyumluluk
 
-        // MARK: Semantik — metin
-        static let textPrimary        = Gray.g50
-        static let textSecondary      = Gray.g200
-        static let textTertiary       = Gray.g300
-        static let textDisabled       = Gray.g400
+        // MARK: Semantik — metin (V5: E8EDF6 / 8A97B2 / 5B6782)
+        static let textPrimary        = InstitutionalTheme.Colors.textPrimary
+        static let textSecondary      = InstitutionalTheme.Colors.textSecondary
+        static let textTertiary       = InstitutionalTheme.Colors.textTertiary
+        static let textDisabled       = Gray.g400  // V5'te ayrı disabled tonu yok; raw palet kalır
 
-        // MARK: Semantik — border ve ayraç
-        static let border             = Gray.g600
-        static let borderSubtle       = Gray.g700
-        static let divider            = Gray.g700
+        // MARK: Semantik — border ve ayraç (V5: 1E2A44)
+        static let border             = InstitutionalTheme.Colors.border
+        static let borderStrong       = InstitutionalTheme.Colors.borderStrong
+        static let borderSubtle       = InstitutionalTheme.Colors.border  // V5'te subtle = border (alias)
+        static let divider            = InstitutionalTheme.Colors.border
 
-        // MARK: Semantik — marka
-        static let primary            = Color(red: 0.38, green: 0.82, blue: 0.96)  // cyan 400
-        static let primaryMuted       = Color(red: 0.38, green: 0.82, blue: 0.96).opacity(0.20)
-        static let secondary          = Color(red: 0.72, green: 0.54, blue: 0.98)  // purple 400
-        static let accent             = Color(red: 0.98, green: 0.75, blue: 0.38)  // amber 400
+        // MARK: Semantik — marka (V5: 3B82F6 holo)
+        static let primary            = InstitutionalTheme.Colors.primary  // V5 --holo
+        static let primaryMuted       = InstitutionalTheme.Colors.primary.opacity(0.20)
+        static let secondary          = Color(red: 0.72, green: 0.54, blue: 0.98)  // V5 spec'inde yok; eski değer
+        static let accent             = InstitutionalTheme.Colors.titan         // V5 --titan amber
 
-        // MARK: Semantik — durum (AA kontrast için canlı tonlar)
-        static let success            = Color(red: 0.22, green: 0.83, blue: 0.54)  // emerald 500
-        static let successMuted       = Color(red: 0.22, green: 0.83, blue: 0.54).opacity(0.18)
-        static let warning            = Color(red: 0.98, green: 0.70, blue: 0.27)  // amber 500
-        static let warningMuted       = Color(red: 0.98, green: 0.70, blue: 0.27).opacity(0.18)
-        static let error              = Color(red: 0.96, green: 0.36, blue: 0.40)  // rose 500
-        static let errorMuted         = Color(red: 0.96, green: 0.36, blue: 0.40).opacity(0.18)
-        static let info               = Color(red: 0.38, green: 0.65, blue: 0.96)  // blue 400
-        static let infoMuted          = Color(red: 0.38, green: 0.65, blue: 0.96).opacity(0.18)
+        // MARK: Semantik — durum (V5: 22C55E aurora / EF4444 crimson)
+        static let success            = InstitutionalTheme.Colors.positive  // V5 --aurora
+        static let successMuted       = InstitutionalTheme.Colors.positive.opacity(0.18)
+        static let warning            = InstitutionalTheme.Colors.titan      // V5'te warning = titan
+        static let warningMuted       = InstitutionalTheme.Colors.titan.opacity(0.18)
+        static let error              = InstitutionalTheme.Colors.negative   // V5 --crimson
+        static let errorMuted         = InstitutionalTheme.Colors.negative.opacity(0.18)
+        static let info               = InstitutionalTheme.Colors.primary    // V5'te info = holo
+        static let infoMuted          = InstitutionalTheme.Colors.primary.opacity(0.18)
 
         // MARK: Tazelik (StaleDataRegistry UI karşılığı)
         static let fresh              = success
@@ -145,7 +150,10 @@ enum DesignTokens {
         static let s6:  CGFloat = 6
         static let sm:  CGFloat = 8
         static let s10: CGFloat = 10
+        static let s11: CGFloat = 11
         static let md:  CGFloat = 12
+        static let s13: CGFloat = 13
+        static let s14: CGFloat = 14
         static let lg:  CGFloat = 16
         static let xl:  CGFloat = 24
         static let xxl: CGFloat = 32

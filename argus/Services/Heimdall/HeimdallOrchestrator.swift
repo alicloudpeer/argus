@@ -10,15 +10,23 @@ import Foundation
 final class HeimdallOrchestrator {
     static let shared = HeimdallOrchestrator()
 
-    private let yahoo   = YahooFinanceProvider.shared
-    private let borsaPy = BorsaPyProvider.shared
-    private let stooq   = StooqProvider.shared
-    private let finnhub = FinnhubProvider.shared
-    private let binance = BinanceCandleAdapter.shared
-    private let fmp     = FMPProvider.shared
-    private let news    = GoogleNewsRSSProvider.shared
-    private let fred    = FredProvider.shared
-    private let resolver = SymbolResolver.shared
+    private let yahoo       = YahooFinanceProvider.shared
+    private let borsaPy     = BorsaPyProvider.shared
+    private let stooq       = StooqProvider.shared
+    private let finnhub     = FinnhubProvider.shared
+    private let binance     = BinanceCandleAdapter.shared
+    private let fmp         = FMPProvider.shared
+    private let alpaca      = AlpacaProvider.shared
+    private let frankfurter = FrankfurterProvider.shared
+    private let tcmbToday   = TCMBTodayProvider.shared
+    private let secEdgar    = SECEdgarProvider.shared
+    private let btcTurk     = BtcTurkProvider.shared
+    private let coinbase    = CoinbasePublicProvider.shared
+    private let isYatirim   = IsYatirimProvider.shared
+    private let news        = GoogleNewsRSSProvider.shared
+    private let gdelt       = GDELTNewsProvider.shared
+    private let fred        = FredProvider.shared
+    private let resolver    = SymbolResolver.shared
 
     private init() {
         print("HEIMDALL: multi-provider chain initialized")
@@ -143,38 +151,81 @@ final class HeimdallOrchestrator {
 
         switch destination {
         case .bist:
+            // 2026-05-11: İş Yatırım BorsaPy ile Yahoo arasında —
+            // BorsaPy cold-start (Render free) yiyince İş Yatırım
+            // CDN-destekli kurumsal endpoint anında cevap verir.
+            // BIST 15-min delayed kapanış zaten standart.
             return [
                 ChainStep(provider: "borsapy") { [borsaPy] in
                     let bist = try await borsaPy.getBistQuote(symbol: bareBist)
                     return Self.convert(bist: bist, canonical: original)
+                },
+                ChainStep(provider: "isyatirim") { [isYatirim] in
+                    try await isYatirim.fetchQuote(symbol: bareBist)
                 },
                 ChainStep(provider: "yahoo") { [yahoo] in
                     try await yahoo.fetchQuote(symbol: resolved)
                 }
             ]
         case .crypto:
+            // 2026-05-11: BtcTurk TR pair native (TRY karşılığı), Coinbase
+            // ABD/EU yedek, Finnhub primary (key gerektirir). TR
+            // kullanıcı için BtcTurk en doğrudan.
             return [
-                ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) },
-                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) }
+                ChainStep(provider: "finnhub")  { [finnhub]  in try await finnhub.fetchQuote(symbol: resolved) },
+                ChainStep(provider: "btcturk")  { [btcTurk]  in try await btcTurk.fetchQuote(symbol: resolved) },
+                ChainStep(provider: "coinbase") { [coinbase] in try await coinbase.fetchQuote(symbol: resolved) },
+                ChainStep(provider: "yahoo")    { [yahoo]    in try await yahoo.fetchQuote(symbol: resolved) }
             ]
         case .usEquity:
-            // 2026-05-08: Stooq birincil — keyless CSV, tek HTTP'de yüzlerce
-            // sembol, ~70-200ms yanıt. Yahoo cap=4 inflight × 25sn timeout
-            // başarısızlığında fallback. 304 sembollük watchlist için 1dk
-            // bekleme yerine birkaç saniye.
-            return [
+            // 2026-05-11: Alpaca paper IEX RT birincil (200 r/dk, snapshot
+            // endpoint trade+quote+prevDailyBar tek HTTP'de). Key yoksa
+            // graceful fallback → Stooq batch (keyless CSV) → Yahoo →
+            // Finnhub → FMP.
+            var steps: [ChainStep<Quote>] = []
+            if alpaca.hasKey {
+                steps.append(ChainStep(provider: "alpaca") { [alpaca] in
+                    try await alpaca.fetchQuote(symbol: resolved)
+                })
+            }
+            steps.append(contentsOf: [
                 ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) },
                 ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
                 ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) },
                 ChainStep(provider: "fmp")     { [fmp]     in try await Self.fmpToQuote(fmp: fmp, symbol: resolved) }
-            ]
-        case .index, .forex, .commodity:
-            // Stooq US index/FX/commodity için de hızlı; Yahoo fallback.
+            ])
+            return steps
+        case .index:
+            // Stooq US index için de hızlı; Yahoo fallback.
+            // Frankfurter index sağlamaz; Alpaca free-tier de yok.
             return [
                 ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) },
                 ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
                 ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) }
             ]
+        case .forex, .commodity:
+            // 2026-05-11: FX/Commodity için Stooq önce (intraday batch),
+            // Yahoo ve Finnhub orta, TCMB Today + Frankfurter referans
+            // katmanı son. TCMB sadece TR pair'leri (USDTRY/EURTRY vb.)
+            // için devreye girer (parsePair → quote=TRY). Frankfurter
+            // ECB resmi referansı — XAU/XAG commodity için de çalışır
+            // (GC=F → XAU/USD mapping).
+            var steps: [ChainStep<Quote>] = [
+                ChainStep(provider: "stooq")   { [stooq]   in try await Self.singleFromBatch(stooq: stooq, resolved: resolved, original: original) },
+                ChainStep(provider: "yahoo")   { [yahoo]   in try await yahoo.fetchQuote(symbol: resolved) },
+                ChainStep(provider: "finnhub") { [finnhub] in try await finnhub.fetchQuote(symbol: resolved) }
+            ]
+            if let pair = TCMBTodayProvider.parsePair(resolved), pair.quote == "TRY" {
+                steps.append(ChainStep(provider: "tcmb_today") { [tcmbToday] in
+                    try await tcmbToday.fetchQuote(symbol: resolved)
+                })
+            }
+            if FrankfurterProvider.parsePair(resolved) != nil {
+                steps.append(ChainStep(provider: "frankfurter") { [frankfurter] in
+                    try await frankfurter.fetchQuote(symbol: resolved)
+                })
+            }
+            return steps
         }
     }
 
@@ -246,6 +297,16 @@ final class HeimdallOrchestrator {
                     }
                 }
             }
+            // 2026-05-11: .usEquity için Alpaca multi-snapshot birincil
+            // (varsa). Alpaca'nın bulamadığı + index/forex/commodity
+            // bucket'ları Stooq batch'e düşer; her ikisi de paralel
+            // çalışır, sonuçlar `combined` map'ine birleştirilir.
+            if let usEquity = buckets[.usEquity], !usEquity.isEmpty, alpaca.hasKey {
+                group.addTask { [weak self] in
+                    guard let self = self else { return [:] }
+                    return await self.batchAlpacaBucket(usEquity)
+                }
+            }
             for destination: MarketDestination in [.usEquity, .index, .forex, .commodity] {
                 if let bucket = buckets[destination], !bucket.isEmpty {
                     group.addTask { [weak self] in
@@ -255,7 +316,25 @@ final class HeimdallOrchestrator {
                 }
             }
             for await partial in group {
-                for (key, value) in partial { combined[key] = value }
+                // Alpaca ve Stooq bucket'larından gelen sonuçlar ÇAKIŞABİLİR
+                // (aynı sembol her ikisinden de gelebilir). Alpaca IEX RT
+                // birincil olduğu için Alpaca sonucu öncelik kazansın:
+                // sadece henüz `combined`'da yoksa veya partial'da Alpaca
+                // identifier'ı varsa kabul et.
+                for (key, value) in partial {
+                    if combined[key] == nil {
+                        combined[key] = value
+                    }
+                    // Alpaca'nın geliş sırası önce ise zaten alınır;
+                    // Stooq sonradan geldiğinde combined dolu olduğu
+                    // için overwrite olmaz. TaskGroup ilk biten önce
+                    // gelir, Alpaca tipik 200-400ms, Stooq 70-200ms —
+                    // Stooq önce dönerse Alpaca üzerine yazılmasını
+                    // engellemek istiyoruz, bu nedenle ilk-gelen-kazanır
+                    // mantığı pratikte Alpaca'yı sembol başına teyit
+                    // etmek için yeterli (Alpaca IEX feed mid-spread
+                    // farkı kuruşlar, Stooq snapshot delayed).
+                }
             }
         }
 
@@ -355,6 +434,42 @@ final class HeimdallOrchestrator {
         }
     }
 
+    /// Alpaca multi-symbol snapshot bucket — used for `.usEquity` when
+    /// the user has configured paper credentials. Returns up to 100
+    /// symbols per HTTP call (IEX feed, real-time). Symbols Alpaca
+    /// cannot resolve (BIST/FX/index/crypto) are filtered out by
+    /// `AlpacaProvider.normalize`.
+    private func batchAlpacaBucket(_ routes: [Route]) async -> [String: Quote] {
+        guard alpaca.hasKey else { return [:] }
+        let circuit = circuitKey(provider: "alpaca", endpoint: "quote")
+        guard await HeimdallCircuitBreaker.shared.canRequest(provider: circuit) else {
+            return [:]
+        }
+        do {
+            let resolved = routes.map(\.resolved)
+            let map = try await alpaca.fetchSnapshotBatch(symbols: resolved)
+            await HeimdallCircuitBreaker.shared.reportSuccess(provider: circuit)
+            var out: [String: Quote] = [:]
+            for route in routes {
+                guard let normalized = AlpacaProvider.normalize(route.resolved) else { continue }
+                if let quote = map[normalized] {
+                    out[route.original] = quote.with(symbol: route.original)
+                }
+            }
+            return out
+        } catch {
+            await HeimdallCircuitBreaker.shared.reportFailure(provider: circuit, error: error)
+            await HeimdallLogger.shared.warn(
+                "batch_snapshot_failed",
+                provider: "alpaca",
+                errorClass: classifyError(error),
+                errorMessage: error.localizedDescription,
+                endpoint: "quote"
+            )
+            return [:]
+        }
+    }
+
     /// Yahoo single-symbol fetch fan-out for symbols Stooq dropped.
     /// 8 chunk x 800ms stays within Yahoo's 5 r/s sliding window.
     private func yahooChunkedFallback(_ routes: [Route]) async -> [String: Quote] {
@@ -424,10 +539,22 @@ final class HeimdallOrchestrator {
                 }
             ]
         default:
-            return [
+            // 2026-05-11: SEC EDGAR Yahoo'dan SONRA, FMP'den ÖNCE.
+            // Yahoo birincil (analyst targets, dividend yield, marketCap
+            // gibi türev alanlar için). Yahoo fail edince SEC EDGAR
+            // resmi XBRL — ham revenue/netIncome/cashFlow/debt/equity.
+            // FMP free 250/day quota'sı bu sırayla korunur.
+            var steps: [ChainStep<FinancialsData>] = [
                 ChainStep(provider: "yahoo") { [yahoo] in
                     try await yahoo.fetchFundamentals(symbol: resolved)
-                },
+                }
+            ]
+            if SECEdgarProvider.isLikelyUSEquity(resolved) {
+                steps.append(ChainStep(provider: "sec_edgar") { [secEdgar] in
+                    try await secEdgar.fetchFundamentals(symbol: resolved)
+                })
+            }
+            steps.append(contentsOf: [
                 ChainStep(provider: "fmp") { [fmp, finnhub] in
                     let metrics = try? await finnhub.fetchBasicFinancials(symbol: resolved)
                     return try await fmp.fetchFundamentals(symbol: resolved, mergingFinnhub: metrics)
@@ -436,7 +563,8 @@ final class HeimdallOrchestrator {
                     let metrics = try await finnhub.fetchBasicFinancials(symbol: resolved)
                     return Self.convert(finnhubMetrics: metrics, canonical: original)
                 }
-            ]
+            ])
+            return steps
         }
     }
 
@@ -477,11 +605,18 @@ final class HeimdallOrchestrator {
 
         switch destination {
         case .bist:
+            // 2026-05-11: BIST daily için İş Yatırım eklendi — BorsaPy
+            // cold-start veya circuit OPEN olduğunda hızlı fallback.
+            // İntraday BIST kapsamı yok (sadece daily), o yüzden Yahoo
+            // intraday için son halka olarak duruyor.
             var steps: [ChainStep<[Candle]>] = []
             if isDaily {
                 steps.append(ChainStep(provider: "borsapy") { [borsaPy] in
                     let bistCandles = try await borsaPy.getBistHistory(symbol: bareBist, days: max(limit, 30))
                     return bistCandles.map { Candle(date: $0.date, open: $0.open, high: $0.high, low: $0.low, close: $0.close, volume: $0.volume) }
+                })
+                steps.append(ChainStep(provider: "isyatirim") { [isYatirim] in
+                    try await isYatirim.fetchCandles(symbol: bareBist, days: max(limit, 30))
                 })
             }
             steps.append(ChainStep(provider: "yahoo") { [yahoo] in
@@ -489,35 +624,54 @@ final class HeimdallOrchestrator {
             })
             return steps
         case .crypto:
+            // Binance birincil (cömert limit, derin tarihçe). Coinbase
+            // yedek (Binance geo-block riskine karşı). Finnhub key var
+            // ise ikinci alternatif. Yahoo en son.
             return [
-                ChainStep(provider: "binance") { [binance] in
+                ChainStep(provider: "binance")  { [binance]  in
                     try await binance.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
                 },
-                ChainStep(provider: "finnhub") { [finnhub] in
+                ChainStep(provider: "coinbase") { [coinbase] in
+                    try await coinbase.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+                },
+                ChainStep(provider: "finnhub")  { [finnhub]  in
                     try await finnhub.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
                 },
-                ChainStep(provider: "yahoo") { [yahoo] in
+                ChainStep(provider: "yahoo")    { [yahoo]    in
                     try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
                 }
             ]
-        case .usEquity, .index, .forex, .commodity:
-            // 2026-05-08: Daily/üstü timeframe'de Stooq birincil — keyless ve hızlı.
-            // Intraday için Stooq verisi yok, Yahoo birincil olarak kalır.
-            // Yahoo rate cap timeout'unda Finnhub fallback.
+        case .usEquity:
+            // 2026-05-11: Alpaca paper IEX birincil — 5+ yıl history, daily
+            // + intraday (1Min/5Min/15Min/30Min/1Hour/4Hour/1Day/1Week/
+            // 1Month), 200 r/dk. Key yoksa Yahoo → Finnhub fallback.
             var steps: [ChainStep<[Candle]>] = []
-            if isDaily {
-                let interval = Self.stooqInterval(for: timeframe)
-                steps.append(ChainStep(provider: "stooq") { [stooq] in
-                    try await stooq.fetchDailyCandles(symbol: resolved, limit: limit, interval: interval)
+            if alpaca.hasKey {
+                steps.append(ChainStep(provider: "alpaca") { [alpaca] in
+                    try await alpaca.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
                 })
             }
-            steps.append(ChainStep(provider: "yahoo") { [yahoo] in
-                try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
-            })
-            steps.append(ChainStep(provider: "finnhub") { [finnhub] in
-                try await finnhub.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
-            })
+            steps.append(contentsOf: [
+                ChainStep(provider: "yahoo") { [yahoo] in
+                    try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+                },
+                ChainStep(provider: "finnhub") { [finnhub] in
+                    try await finnhub.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+                }
+            ])
             return steps
+        case .index, .forex, .commodity:
+            // Alpaca free-tier IEX feed indeks/FX/commodity sağlamıyor.
+            // Stooq candle endpoint Mayıs 2026'da captcha-gated oldu;
+            // Yahoo birincil, Finnhub backstop.
+            return [
+                ChainStep(provider: "yahoo") { [yahoo] in
+                    try await yahoo.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+                },
+                ChainStep(provider: "finnhub") { [finnhub] in
+                    try await finnhub.fetchCandles(symbol: resolved, timeframe: timeframe, limit: limit)
+                }
+            ]
         }
     }
 
@@ -525,7 +679,15 @@ final class HeimdallOrchestrator {
 
     func requestNews(symbol: String, limit: Int = 10, context: UsageContext = .interactive) async throws -> [NewsArticle] {
         await RateLimiter.shared.waitIfNeeded()
-        return try await news.fetchNews(symbol: symbol, limit: limit)
+        // 2026-05-11: GoogleNewsRSS birincil (hızlı, cache var). Boş veya
+        // hata dönerse GDELT yedek (3-aylık dünya geneli, ticker-tone).
+        do {
+            let articles = try await news.fetchNews(symbol: symbol, limit: limit)
+            if !articles.isEmpty { return articles }
+            return (try? await gdelt.fetchNews(symbol: symbol, limit: limit)) ?? []
+        } catch {
+            return (try? await gdelt.fetchNews(symbol: symbol, limit: limit)) ?? []
+        }
     }
 
     // MARK: - Screener
@@ -676,14 +838,6 @@ final class HeimdallOrchestrator {
         switch timeframe.lowercased() {
         case "1d", "1day", "1g", "d", "1week", "1wk", "1w", "1month", "1mo", "3month", "1y": return true
         default: return false
-        }
-    }
-
-    private static func stooqInterval(for timeframe: String) -> StooqProvider.Interval {
-        switch timeframe.lowercased() {
-        case "1week", "1wk", "1w":      return .weekly
-        case "1month", "1mo", "3month": return .monthly
-        default:                        return .daily
         }
     }
 

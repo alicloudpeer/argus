@@ -46,9 +46,9 @@ private struct ReportSnapshot {
         return ReportSnapshot(
             state: .loading,
             metrics: [
-                ReportMetric(label: "Net K/Z", value: placeholder, icon: "banknote", color: InstitutionalTheme.Colors.textSecondary),
-                ReportMetric(label: "Başarı", value: placeholder, icon: "target", color: InstitutionalTheme.Colors.textSecondary),
-                ReportMetric(label: thirdLabel, value: placeholder, icon: "chart.bar", color: InstitutionalTheme.Colors.textSecondary)
+                ReportMetric(label: "Net K/Z", value: placeholder, icon: "banknote", color: DesignTokens.Colors.textSecondary),
+                ReportMetric(label: "Başarı", value: placeholder, icon: "target", color: DesignTokens.Colors.textSecondary),
+                ReportMetric(label: thirdLabel, value: placeholder, icon: "chart.bar", color: DesignTokens.Colors.textSecondary)
             ],
             highlights: ["Rapor hazırlanıyor..."]
         )
@@ -85,7 +85,7 @@ struct PortfolioReportsView: View {
             ReportButton(
                 period: .weekly,
                 subtitle: weekRangeString(),
-                color: mode == .global ? InstitutionalTheme.Colors.primary : InstitutionalTheme.Colors.warning,
+                color: mode == .global ? DesignTokens.Colors.primary : InstitutionalTheme.Colors.warning,
                 reportText: weeklyText
             ) {
                 showWeeklyReport = true
@@ -119,7 +119,7 @@ struct PortfolioReportsView: View {
             ReportDetailSheetV2(
                 title: ReportPeriod.weekly.title,
                 subtitle: weekRangeString(),
-                color: mode == .global ? InstitutionalTheme.Colors.primary : InstitutionalTheme.Colors.warning,
+                color: mode == .global ? DesignTokens.Colors.primary : InstitutionalTheme.Colors.warning,
                 text: weeklyText ?? "",
                 period: .weekly,
                 market: mode
@@ -172,17 +172,17 @@ private struct ReportButton: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(period.title)
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text("\(subtitle) · \(statusText)")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
                 Spacer(minLength: 6)
                 if isReady {
                     Image(systemName: "chevron.right")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 } else {
                     ProgressView()
                         .scaleEffect(0.6)
@@ -191,7 +191,7 @@ private struct ReportButton: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .contentShape(Rectangle())
             .opacity(isReady ? 1 : 0.7)
@@ -223,7 +223,7 @@ private struct ReportDetailSheetV2: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         ReportHeroHeader(
@@ -237,16 +237,16 @@ private struct ReportDetailSheetV2: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Ham metin")
                                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                    .foregroundColor(DesignTokens.Colors.textPrimary)
                                 Text(text)
                                     .font(DesignTokens.Fonts.custom(size: 13))
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                    .foregroundColor(DesignTokens.Colors.textPrimary)
                                     .textSelection(.enabled)
                                     .lineSpacing(3)
                             }
                             .padding(14)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(InstitutionalTheme.Colors.surface1)
+                            .background(DesignTokens.Colors.surface)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         } else {
                             ForEach(parsedSections) { section in
@@ -257,7 +257,7 @@ private struct ReportDetailSheetV2: View {
                         // Yasal uyarı
                         Text("Bu rapor yatırım tavsiyesi değildir. Argus, Alkindus öğrenme sistemi üstünden geçmiş verileri özetler.")
                             .font(DesignTokens.Fonts.custom(size: 10))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
                             .padding(.top, 6)
@@ -296,10 +296,10 @@ private struct ReportHeroHeader: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(subtitle)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
 
             HStack(spacing: 0) {
@@ -310,7 +310,7 @@ private struct ReportHeroHeader: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
@@ -320,14 +320,14 @@ private struct ReportHeroHeader: View {
         HStack(spacing: 0) {
             if leadingDivider {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(width: 0.5)
                     .padding(.vertical, 2)
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text(metric.label)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Text(metric.value)
                     .font(DesignTokens.Fonts.custom(size: 16, weight: .medium))
                     .foregroundColor(metric.color)
@@ -374,7 +374,7 @@ private struct SectionCard: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(section.title)
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(section.items) { item in
@@ -387,7 +387,7 @@ private struct SectionCard: View {
                                 .padding(.top, 6)
                             Text(value)
                                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                         }
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -395,10 +395,10 @@ private struct SectionCard: View {
                         HStack(alignment: .top, spacing: 10) {
                             Text("•")
                                 .font(DesignTokens.Fonts.custom(size: 13))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                             Text(value)
                                 .font(DesignTokens.Fonts.custom(size: 13))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
 
@@ -406,17 +406,17 @@ private struct SectionCard: View {
                         HStack {
                             Text(label)
                                 .font(DesignTokens.Fonts.custom(size: 13))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                             Spacer()
                             Text(value)
                                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .monospacedDigit()
                         }
                         .padding(.vertical, 6)
                         .overlay(
                             Rectangle()
-                                .fill(InstitutionalTheme.Colors.borderSubtle)
+                                .fill(DesignTokens.Colors.borderSubtle)
                                 .frame(height: 0.5),
                             alignment: .bottom
                         )
@@ -424,7 +424,7 @@ private struct SectionCard: View {
                     case .paragraph(let value):
                         Text(value)
                             .font(DesignTokens.Fonts.custom(size: 13))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                             .lineSpacing(3)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -433,7 +433,7 @@ private struct SectionCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
@@ -479,7 +479,7 @@ private enum ReportParser {
                 label: "Veto",
                 value: "\(vetoCount)",
                 icon: "shield",
-                color: vetoCount == 0 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.warning
+                color: vetoCount == 0 ? DesignTokens.Colors.success : InstitutionalTheme.Colors.warning
             )
         } else {
             let value = period == .daily ? tradeCount : (opportunityCount ?? tradeCount)
@@ -488,7 +488,7 @@ private enum ReportParser {
                 label: label,
                 value: value != nil ? "\(value!)" : "--",
                 icon: "chart.bar",
-                color: InstitutionalTheme.Colors.textPrimary
+                color: DesignTokens.Colors.textPrimary
             )
         }
 
@@ -790,21 +790,21 @@ private enum ReportParser {
     }
 
     private static func pnlColor(_ value: Double?) -> Color {
-        guard let value else { return InstitutionalTheme.Colors.textSecondary }
-        if value > 0 { return InstitutionalTheme.Colors.positive }
-        if value < 0 { return InstitutionalTheme.Colors.negative }
-        return InstitutionalTheme.Colors.textSecondary
+        guard let value else { return DesignTokens.Colors.textSecondary }
+        if value > 0 { return DesignTokens.Colors.success }
+        if value < 0 { return DesignTokens.Colors.error }
+        return DesignTokens.Colors.textSecondary
     }
 
     private static func successColor(_ value: Double?) -> Color {
-        guard let value else { return InstitutionalTheme.Colors.textSecondary }
-        if value >= 60 { return InstitutionalTheme.Colors.positive }
+        guard let value else { return DesignTokens.Colors.textSecondary }
+        if value >= 60 { return DesignTokens.Colors.success }
         if value >= 45 { return InstitutionalTheme.Colors.warning }
-        return InstitutionalTheme.Colors.negative
+        return DesignTokens.Colors.error
     }
 }
 
 #Preview {
     PortfolioReportsView()
-        .background(InstitutionalTheme.Colors.background)
+        .background(DesignTokens.Colors.background)
 }

@@ -23,7 +23,7 @@ struct EngineGuideSheet: View {
             }
             .pickerStyle(.segmented)
             .padding(16)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
@@ -36,20 +36,20 @@ struct EngineGuideSheet: View {
                 .padding(20)
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
     }
 
     private func headerSection(_ engine: EngineType) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(engine.title)
                 .font(InstitutionalTheme.Typography.title)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text(engine.subtitle)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
             Text(engine.summary)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -78,7 +78,7 @@ struct EngineGuideSheet: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Ne zaman kullan?")
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.positive)
+                    .foregroundColor(DesignTokens.Colors.success)
                 ForEach(engine.whenToUse, id: \.self) { item in
                     bullet(item)
                 }
@@ -104,17 +104,17 @@ struct EngineGuideSheet: View {
 
             Text(engine.caution)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(InstitutionalTheme.Colors.surface1)
+                .fill(DesignTokens.Colors.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                        .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
                 )
         )
     }
@@ -123,18 +123,18 @@ struct EngineGuideSheet: View {
     private func sectionTitle(_ text: String) -> some View {
         Text(text.capitalized)
             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 
     private func bullet(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Circle()
-                .fill(InstitutionalTheme.Colors.primary)
+                .fill(DesignTokens.Colors.primary)
                 .frame(width: 4, height: 4)
                 .padding(.top, 7)
             Text(text)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -144,15 +144,15 @@ struct EngineGuideSheet: View {
             HStack(spacing: 8) {
                 Text(String(index))
                     .font(DesignTokens.Fonts.custom(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.primary)
+                    .foregroundColor(DesignTokens.Colors.primary)
                     .frame(width: 14, alignment: .leading)
                 Text(text)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 1)
         }
     }

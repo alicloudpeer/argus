@@ -60,13 +60,13 @@ struct LoserCard: View {
             
             HStack {
                 Image(systemName: "arrow.down.right.circle.fill")
-                    .foregroundColor(.red)
+                    .foregroundColor(DesignTokens.Colors.error)
                     .font(.caption)
                 
                 Text(String(format: "%.2f%%", quote.percentChange))
                     .font(.caption)
                     .bold()
-                    .foregroundColor(.red)
+                    .foregroundColor(DesignTokens.Colors.error)
             }
         }
         .padding(12)

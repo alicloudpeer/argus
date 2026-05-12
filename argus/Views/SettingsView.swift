@@ -75,7 +75,7 @@ struct SettingsView: View {
         // root'taki NavigationStack(path: $router.navigationStack) ile çakışıp
         // back butonunu ve toolbar'ı bozuyordu.
         ZStack {
-            InstitutionalTheme.Colors.background.edgesIgnoringSafeArea(.all)
+            DesignTokens.Colors.background.edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 0) {
                 topNav
@@ -133,7 +133,7 @@ extension SettingsView {
         HStack(spacing: 8) {
             Text("Ayarlar")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .accessibilityAddTraits(.isHeader)
 
             Spacer()
@@ -145,7 +145,7 @@ extension SettingsView {
             }) {
                 Image(systemName: "line.3.horizontal")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -154,10 +154,10 @@ extension SettingsView {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.border)
+                .fill(DesignTokens.Colors.border)
                 .frame(height: 0.5)
         }
     }
@@ -243,12 +243,12 @@ extension SettingsView {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 6)
             VStack(spacing: 0) {
                 content()
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
@@ -257,7 +257,7 @@ extension SettingsView {
         HStack {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 14))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             Toggle("", isOn: isOn)
                 .labelsHidden()
@@ -270,7 +270,7 @@ extension SettingsView {
         .overlay(alignment: .bottom) {
             if !last {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.border)
+                    .fill(DesignTokens.Colors.border)
                     .frame(height: 0.5)
                     .padding(.leading, 14)
             }
@@ -288,16 +288,16 @@ extension SettingsView {
             HStack(spacing: 6) {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 14))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 if let value, !value.isEmpty {
                     Text(value)
                         .font(DesignTokens.Fonts.custom(size: 13))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 11)
@@ -308,7 +308,7 @@ extension SettingsView {
         .overlay(alignment: .bottom) {
             if !last {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.border)
+                    .fill(DesignTokens.Colors.border)
                     .frame(height: 0.5)
                     .padding(.leading, 14)
             }
@@ -320,16 +320,16 @@ extension SettingsView {
             HStack(spacing: 6) {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 14))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 if let value, !value.isEmpty {
                     Text(value)
                         .font(DesignTokens.Fonts.custom(size: 13))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 11)
@@ -340,7 +340,7 @@ extension SettingsView {
         .overlay(alignment: .bottom) {
             if !last {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.border)
+                    .fill(DesignTokens.Colors.border)
                     .frame(height: 0.5)
                     .padding(.leading, 14)
             }
@@ -351,11 +351,11 @@ extension SettingsView {
         HStack {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 14))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 13, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
@@ -363,7 +363,7 @@ extension SettingsView {
         .overlay(alignment: .bottom) {
             if !last {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.border)
+                    .fill(DesignTokens.Colors.border)
                     .frame(height: 0.5)
                     .padding(.leading, 14)
             }
@@ -394,7 +394,7 @@ extension SettingsView {
                         label: "Performans",
                         value: "Grafikler",
                         icon: "chart.bar.xaxis",
-                        color: InstitutionalTheme.Colors.primary
+                        color: DesignTokens.Colors.primary
                     )
                 }
                 NavigationLink(destination: ChironInsightsView(symbol: nil)) {
@@ -402,7 +402,7 @@ extension SettingsView {
                         label: "İçgörüler",
                         value: "Son dersler",
                         icon: "waveform.path.ecg",
-                        color: InstitutionalTheme.Colors.positive
+                        color: DesignTokens.Colors.success
                     )
                 }
             }
@@ -437,21 +437,21 @@ extension SettingsView {
                     HStack(spacing: 12) {
                         Image(systemName: isRunningCalibration ? "arrow.triangle.2.circlepath" : "play.circle.fill")
                             .font(.system(.callout))
-                            .foregroundColor(isRunningCalibration ? InstitutionalTheme.Colors.textSecondary : InstitutionalTheme.Colors.primary)
+                            .foregroundColor(isRunningCalibration ? DesignTokens.Colors.textSecondary : DesignTokens.Colors.primary)
                             .frame(width: 20)
                             .rotationEffect(.degrees(isRunningCalibration ? 360 : 0))
                             .animation(isRunningCalibration ? .linear(duration: 1.2).repeatForever(autoreverses: false) : .default, value: isRunningCalibration)
 
                         Text(isRunningCalibration ? "Çalışıyor…" : "Kalibrasyonu şimdi çalıştır")
                             .font(InstitutionalTheme.Typography.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
 
                         Spacer()
 
                         if let flash = calibrationFlash {
                             Text(flash)
                                 .font(InstitutionalTheme.Typography.caption)
-                                .foregroundColor(InstitutionalTheme.Colors.positive)
+                                .foregroundColor(DesignTokens.Colors.success)
                                 .transition(.opacity)
                         }
                     }
@@ -508,13 +508,13 @@ struct SettingsSubPage<Content: View>: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             VStack(spacing: 0) {
                 HStack(spacing: 8) {
                     Button(action: popBack) {
                         Image(systemName: "chevron.left")
                             .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .frame(width: 36, height: 36)
                             .contentShape(Rectangle())
                     }
@@ -523,17 +523,17 @@ struct SettingsSubPage<Content: View>: View {
 
                     Text(title)
                         .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .accessibilityAddTraits(.isHeader)
 
                     Spacer()
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .overlay(alignment: .bottom) {
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.border)
+                        .fill(DesignTokens.Colors.border)
                         .frame(height: 0.5)
                 }
 
@@ -560,12 +560,12 @@ extension SettingsView {
             HStack(spacing: 12) {
                 Image(systemName: autoPilotStore.isAutoPilotEnabled ? "bolt.fill" : "bolt.slash.fill")
                     .font(.system(.callout))
-                    .foregroundColor(autoPilotStore.isAutoPilotEnabled ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative)
+                    .foregroundColor(autoPilotStore.isAutoPilotEnabled ? DesignTokens.Colors.success : DesignTokens.Colors.error)
                     .frame(width: 20)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(autoPilotStore.isAutoPilotEnabled ? "Aktif" : "Kapalı")
                         .font(InstitutionalTheme.Typography.body)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(compactModeLabel)
                         .font(InstitutionalTheme.Typography.caption)
                         .foregroundColor(compactModeColor)
@@ -573,7 +573,7 @@ extension SettingsView {
                 Spacer()
                 Toggle("", isOn: $autoPilotStore.isAutoPilotEnabled)
                     .labelsHidden()
-                    .tint(InstitutionalTheme.Colors.positive)
+                    .tint(DesignTokens.Colors.success)
                     .accessibilityLabel("Otopilot")
             }
             .padding(.vertical, 8)
@@ -582,11 +582,11 @@ extension SettingsView {
                 HStack(spacing: 8) {
                     Image(systemName: "stethoscope")
                         .font(.system(.footnote))
-                        .foregroundColor(InstitutionalTheme.Colors.primary)
+                        .foregroundColor(DesignTokens.Colors.primary)
                         .frame(width: 20)
                     Text("Durum Panosu")
                         .font(InstitutionalTheme.Typography.body)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Spacer()
                     if !tradeBlockReasons.isEmpty {
                         Text("\(tradeBlockReasons.count) uyarı")
@@ -595,7 +595,7 @@ extension SettingsView {
                     }
                     Image(systemName: "chevron.right")
                         .font(.system(.caption2))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary.opacity(0.7))
+                        .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.7))
                 }
                 .frame(minHeight: 44)
                 .padding(.vertical, 10)
@@ -617,9 +617,9 @@ extension SettingsView {
     private var compactModeColor: Color {
         let snap = marketContext.snapshot
         if !autoPilotStore.isAutoPilotEnabled { return InstitutionalTheme.Colors.neutral }
-        if snap.opportunityMode { return InstitutionalTheme.Colors.positive }
-        if snap.protectiveMode { return InstitutionalTheme.Colors.negative }
-        return InstitutionalTheme.Colors.textSecondary
+        if snap.opportunityMode { return DesignTokens.Colors.success }
+        if snap.protectiveMode { return DesignTokens.Colors.error }
+        return DesignTokens.Colors.textSecondary
     }
 
     // -- Aether Hassasiyet Kartı (sade ayar) --
@@ -637,7 +637,7 @@ extension SettingsView {
 
                 Text(sensitivityExplanation)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, 8)
@@ -664,7 +664,7 @@ extension SettingsView {
             VStack(alignment: .leading, spacing: 14) {
                 Text("Aracı kurumunuzun komisyon oranlarını girin. Sıfır bırakırsanız komisyon hesaplanmaz — Midas, Garanti, Alpaca gibi sıfır komisyon aracılar için doğru ayar.")
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 feeRow(
@@ -681,11 +681,11 @@ extension SettingsView {
                     icon: "dollarsign.circle.fill"
                 )
 
-                Divider().background(InstitutionalTheme.Colors.textSecondary.opacity(0.2))
+                Divider().background(DesignTokens.Colors.textSecondary.opacity(0.2))
 
                 Text("BIST stopajı şu an 2026 itibariyle hisse senedi kâr istisnası kapsamında. Vergi rejimi değişirse buradan oran girebilirsiniz; backtest ve gerçek alım hesaplarında kâra uygulanır.")
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 feeRow(
@@ -708,11 +708,11 @@ extension SettingsView {
                 .frame(width: 20)
             Text(label)
                 .font(InstitutionalTheme.Typography.body)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             Text(String(format: "%%%.2f", value.wrappedValue))
                 .font(InstitutionalTheme.Typography.data)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .frame(width: 64, alignment: .trailing)
         }
         Slider(value: value, in: range, step: 0.01)
@@ -881,7 +881,7 @@ struct TerminalSection<Content: View>: View {
     init(title: String,
          motor: MotorEngine? = nil,
          systemImage: String? = nil,
-         accentColor: Color = InstitutionalTheme.Colors.textSecondary,
+         accentColor: Color = DesignTokens.Colors.textSecondary,
          @ViewBuilder content: () -> Content) {
         self.title = title
         self.motor = motor
@@ -911,10 +911,10 @@ struct TerminalSection<Content: View>: View {
                 content
             }
             .padding(16)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.border, lineWidth: 1)
+                    .stroke(DesignTokens.Colors.border, lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
         }
@@ -938,7 +938,7 @@ struct ArgusTerminalRow: View {
 
             Text(label)
                 .font(InstitutionalTheme.Typography.body)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             Spacer()
 
@@ -950,7 +950,7 @@ struct ArgusTerminalRow: View {
 
             Image(systemName: "chevron.right")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary.opacity(0.7))
+                .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.7))
         }
         .frame(minHeight: 44)
         .padding(.vertical, 12)
@@ -958,7 +958,7 @@ struct ArgusTerminalRow: View {
         .overlay(
             Rectangle()
                 .frame(height: 0.5)
-                .foregroundColor(InstitutionalTheme.Colors.borderSubtle),
+                .foregroundColor(DesignTokens.Colors.borderSubtle),
             alignment: .bottom
         )
         .accessibilityElement(children: .combine)
@@ -976,9 +976,9 @@ struct LegalDocumentView: View {
             Text(document.content)
                 .font(.system(.body, design: .monospaced))
                 .padding()
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
         }
-        .background(InstitutionalTheme.Colors.background.edgesIgnoringSafeArea(.all))
+        .background(DesignTokens.Colors.background.edgesIgnoringSafeArea(.all))
         .navigationTitle(document.title)
         .preferredColorScheme(.dark)
     }
@@ -1008,7 +1008,7 @@ struct StorageCleanupSection: View {
     var body: some View {
         TerminalSection(title: "DEPOLAMA",
                         systemImage: "externaldrive.fill",
-                        accentColor: InstitutionalTheme.Colors.textSecondary) {
+                        accentColor: DesignTokens.Colors.textSecondary) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Image(systemName: "externaldrive.fill")
@@ -1017,31 +1017,31 @@ struct StorageCleanupSection: View {
                         .frame(width: 20)
                     Text("Kullanılan alan")
                         .font(InstitutionalTheme.Typography.body)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Spacer()
                     Text(storageSize)
                         .font(InstitutionalTheme.Typography.dataSmall)
                         .foregroundColor(InstitutionalTheme.Colors.neutral)
                 }
 
-                Divider().background(InstitutionalTheme.Colors.borderSubtle)
+                Divider().background(DesignTokens.Colors.borderSubtle)
 
                 Button(action: { showCleanupConfirmation = true }) {
                     HStack(spacing: 12) {
                         if isCleaningUp {
                             ProgressView()
                                 .scaleEffect(0.8)
-                                .tint(InstitutionalTheme.Colors.negative)
+                                .tint(DesignTokens.Colors.error)
                                 .frame(width: 20)
                         } else {
                             Image(systemName: "trash.fill")
-                                .foregroundColor(InstitutionalTheme.Colors.negative)
+                                .foregroundColor(DesignTokens.Colors.error)
                                 .font(.system(.callout))
                                 .frame(width: 20)
                         }
                         Text(isCleaningUp ? "Temizleniyor..." : "Önbelleği temizle")
                             .font(InstitutionalTheme.Typography.body)
-                            .foregroundColor(InstitutionalTheme.Colors.negative)
+                            .foregroundColor(DesignTokens.Colors.error)
                         Spacer()
                     }
                     .frame(minHeight: 44)
@@ -1054,12 +1054,12 @@ struct StorageCleanupSection: View {
                 if let result = cleanupResult {
                     Text(result)
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.positive)
+                        .foregroundColor(DesignTokens.Colors.success)
                 }
 
                 Text("Önbellek ve geçici dosyalar silinir. Öğrenme verileri korunur.")
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
         .onAppear { calculateStorageSize() }

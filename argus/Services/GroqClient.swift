@@ -3,7 +3,15 @@ import Foundation
 /// Shared Client for LLM APIs
 /// Priority: Gemini 2.5 Flash -> GLM -> Groq
 /// Replaces ad-hoc implementations in Hermes and ArgusExplanationService.
-final class GroqClient: Sendable {
+///
+/// 2026-05-11 düzeltmeleri:
+///   * `gemini-1.5-flash` kaldırıldı — 404 dönüyordu (deprecated).
+///   * Gemini v1 endpoint kaldırıldı — `systemInstruction` ve
+///     `responseMimeType` field isimleri v1'de farklı (snake_case)
+///     ve 400 üretiyordu. v1beta tek başına yeterli.
+///   * Gemini 429 sonrası 60 sn cooldown — Cerebras + Gemini ikilisi
+///     sırayla quota tükenince ABBV tıklama 30+ sn kasıyordu.
+final class GroqClient: @unchecked Sendable {
     static let shared = GroqClient()
 
     // API Keys from Secrets (Modified to use APIKeyStore for Runtime Updates)
@@ -19,13 +27,17 @@ final class GroqClient: Sendable {
         "https://api.z.ai/api/coding/paas/v4/chat/completions"
     ]
 
-    // Gemini 2.5 Flash GA — 2026-04: preview-05-20 sunset edildi
+    // Gemini 2.5 Flash GA + 2.0 Flash. (1.5-flash deprecated, kaldırıldı.)
     private let geminiModels = [
         "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
+        "gemini-2.0-flash"
     ]
     private let geminiBaseURL = "https://generativelanguage.googleapis.com"
+
+    // Gemini 429 sonrası kısa süreli devre dışı bırakma.
+    private let geminiCooldownLock = NSLock()
+    private var geminiCooldownUntil: Date?
+    private let geminiCooldownDuration: TimeInterval = 60
 
     private let primaryModel = "llama-3.3-70b-versatile" // NEW LLaMA 3.3
     private let fallbackModel = "llama-3.1-8b-instant" // Fast Fallback
@@ -44,8 +56,24 @@ final class GroqClient: Sendable {
         let role: String
         let content: String
     }
-    
+
     private init() {}
+
+    // MARK: - Gemini cooldown
+
+    private var isGeminiInCooldown: Bool {
+        // `withLock` async-uyumlu — Swift 5.9+ pattern.
+        return geminiCooldownLock.withLock {
+            if let until = geminiCooldownUntil, Date() < until { return true }
+            return false
+        }
+    }
+
+    private func enterGeminiCooldown() {
+        geminiCooldownLock.withLock {
+            geminiCooldownUntil = Date().addingTimeInterval(geminiCooldownDuration)
+        }
+    }
     
     /// Generates a structured JSON object from a prompt
     /// Priority: Gemini 2.5 Flash -> GLM -> Groq
@@ -175,6 +203,10 @@ final class GroqClient: Sendable {
 
     private func chatWithGeminiDirect(messages: [ChatMessage], maxTokens: Int = 1024) async throws -> String {
         guard !geminiKey.isEmpty else { throw URLError(.userAuthenticationRequired) }
+        if isGeminiInCooldown {
+            throw NSError(domain: "GeminiClient", code: 429,
+                          userInfo: [NSLocalizedDescriptionKey: "Gemini in cooldown (recent 429)"])
+        }
 
         // Build Gemini-format contents from chat messages
         var contents: [[String: Any]] = []
@@ -200,39 +232,46 @@ final class GroqClient: Sendable {
             requestBody["systemInstruction"] = sys
         }
 
+        // Sadece v1beta — v1'de `systemInstruction` ve `responseMimeType`
+        // field isimleri farklı (snake_case) ve her zaman 400 dönüyor.
         var lastError: Error?
-        for version in ["v1beta", "v1"] {
-            for model in geminiModels {
-                guard let url = URL(string: "\(geminiBaseURL)/\(version)/models/\(model):generateContent?key=\(geminiKey)") else { continue }
+        var sawRateLimit = false
+        for model in geminiModels {
+            guard let url = URL(string: "\(geminiBaseURL)/v1beta/models/\(model):generateContent?key=\(geminiKey)") else { continue }
 
-                var request = URLRequest(url: url)
-                request.httpMethod = "POST"
-                request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
 
-                do {
-                    let (data, response) = try await URLSession.shared.data(for: request)
-                    if let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) {
-                        let decoded = try JSONDecoder().decode(GeminiResponse.self, from: data)
-                        if let text = decoded.candidates?.first?.content.parts.first?.text {
-                            print("✅ Gemini (\(model)) success")
-                            return text
-                        }
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                if let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) {
+                    let decoded = try JSONDecoder().decode(GeminiResponse.self, from: data)
+                    if let text = decoded.candidates?.first?.content.parts.first?.text {
+                        print("✅ Gemini (\(model)) success")
+                        return text
                     }
-                    let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                    let errStr = String(data: data, encoding: .utf8) ?? "Unknown"
-                    print("⚠️ Gemini \(version)/\(model) Error (\(statusCode)): \(errStr.prefix(200))")
-                    lastError = NSError(domain: "GeminiClient", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "Gemini Error \(statusCode)"])
-                } catch {
-                    lastError = error
                 }
+                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                let errStr = String(data: data, encoding: .utf8) ?? "Unknown"
+                print("⚠️ Gemini v1beta/\(model) Error (\(statusCode)): \(errStr.prefix(200))")
+                if statusCode == 429 { sawRateLimit = true }
+                lastError = NSError(domain: "GeminiClient", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "Gemini Error \(statusCode)"])
+            } catch {
+                lastError = error
             }
         }
+        if sawRateLimit { enterGeminiCooldown() }
         throw lastError ?? URLError(.badServerResponse)
     }
 
     private func generateJSONWithGemini<T: Decodable>(messages: [ChatMessage], maxTokens: Int = 1024) async throws -> T {
         guard !geminiKey.isEmpty else { throw URLError(.userAuthenticationRequired) }
+        if isGeminiInCooldown {
+            throw NSError(domain: "GeminiClient", code: 429,
+                          userInfo: [NSLocalizedDescriptionKey: "Gemini in cooldown (recent 429)"])
+        }
 
         var contents: [[String: Any]] = []
         var systemInstruction: [String: Any]? = nil
@@ -258,38 +297,41 @@ final class GroqClient: Sendable {
             requestBody["systemInstruction"] = sys
         }
 
+        // Sadece v1beta — v1 endpoint `systemInstruction` ve
+        // `responseMimeType` camelCase field isimlerini bilmiyor.
         var lastError: Error?
-        for version in ["v1beta", "v1"] {
-            for model in geminiModels {
-                guard let url = URL(string: "\(geminiBaseURL)/\(version)/models/\(model):generateContent?key=\(geminiKey)") else { continue }
+        var sawRateLimit = false
+        for model in geminiModels {
+            guard let url = URL(string: "\(geminiBaseURL)/v1beta/models/\(model):generateContent?key=\(geminiKey)") else { continue }
 
-                var request = URLRequest(url: url)
-                request.httpMethod = "POST"
-                request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
 
-                do {
-                    let (data, response) = try await URLSession.shared.data(for: request)
-                    if let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) {
-                        let decoded = try JSONDecoder().decode(GeminiResponse.self, from: data)
-                        if let text = decoded.candidates?.first?.content.parts.first?.text {
-                            print("✅ Gemini JSON (\(model)) success")
-                            let cleanJson = cleanJsonString(text)
-                            guard let jsonData = cleanJson.data(using: .utf8) else {
-                                throw URLError(.cannotDecodeContentData)
-                            }
-                            return try JSONDecoder().decode(T.self, from: jsonData)
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                if let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) {
+                    let decoded = try JSONDecoder().decode(GeminiResponse.self, from: data)
+                    if let text = decoded.candidates?.first?.content.parts.first?.text {
+                        print("✅ Gemini JSON (\(model)) success")
+                        let cleanJson = cleanJsonString(text)
+                        guard let jsonData = cleanJson.data(using: .utf8) else {
+                            throw URLError(.cannotDecodeContentData)
                         }
+                        return try JSONDecoder().decode(T.self, from: jsonData)
                     }
-                    let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                    let errStr = String(data: data, encoding: .utf8) ?? "Unknown"
-                    print("⚠️ Gemini JSON \(version)/\(model) Error (\(statusCode)): \(errStr.prefix(200))")
-                    lastError = NSError(domain: "GeminiClient", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "Gemini JSON Error \(statusCode)"])
-                } catch {
-                    lastError = error
                 }
+                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                let errStr = String(data: data, encoding: .utf8) ?? "Unknown"
+                print("⚠️ Gemini JSON v1beta/\(model) Error (\(statusCode)): \(errStr.prefix(200))")
+                if statusCode == 429 { sawRateLimit = true }
+                lastError = NSError(domain: "GeminiClient", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "Gemini JSON Error \(statusCode)"])
+            } catch {
+                lastError = error
             }
         }
+        if sawRateLimit { enterGeminiCooldown() }
         throw lastError ?? URLError(.badServerResponse)
     }
 

@@ -101,7 +101,7 @@ struct OrionPatternGraphView: View {
                         
                         Text("HEDEF")
                             .font(DesignTokens.Fonts.custom(size: 8, weight: .bold))
-                            .foregroundColor(.blue)
+                            .foregroundColor(DesignTokens.Colors.primary)
                             .position(x: 20, y: yTarget - 6)
                     }
                 }

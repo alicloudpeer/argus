@@ -88,19 +88,9 @@ struct TCMBPolicyRateResponse: Codable {
     let timestamp: String
 }
 
-// MARK: - Institution Rates (Doviz.com)
-
-/// Bir kurumun (banka veya kuyumcu) döviz/altın alış-satış fiyatları
-struct InstitutionRate: Identifiable, Codable {
-    var id: String { institution }
-    let institution: String      // örn: "akbank", "kapalicarsi"
-    let institutionName: String  // örn: "Akbank", "Kapalıçarşı"
-    let asset: String            // örn: "gram-altin", "USD"
-    let buy: Double
-    let sell: Double
-    let spread: Double?          // Alış-satış makası (%)
-    let updateTime: Date?
-}
+// 2026-05-11: InstitutionRate (Doviz.com) struct'ı kaldırıldı.
+// Kurum bazlı altın/döviz karşılaştırması Faz 1'de Frankfurter
+// (XAU/XAG/USD/TRY) üzerinden yeniden tasarlanacak.
 
 // MARK: - Institution History
 

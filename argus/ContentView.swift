@@ -13,7 +13,7 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             // Global Living Background (Design System Base)
-            InstitutionalTheme.Colors.background
+            DesignTokens.Colors.background
                 .ignoresSafeArea()
 
             // Background Animation Layer

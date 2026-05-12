@@ -32,7 +32,7 @@ struct SirkiyeAetherView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 inlineTopNav
@@ -72,7 +72,7 @@ struct SirkiyeAetherView: View {
             Button(action: { dismiss() }) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -81,17 +81,17 @@ struct SirkiyeAetherView: View {
 
             Text("Türkiye makrosu")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .accessibilityAddTraits(.isHeader)
 
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -103,7 +103,7 @@ struct SirkiyeAetherView: View {
             ProgressView().scaleEffect(0.8)
             Text("TCMB verileri yükleniyor…")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 22)
@@ -116,7 +116,7 @@ struct SirkiyeAetherView: View {
     private var statusParagraph: some View {
         Text(statusSentence)
             .font(DesignTokens.Fonts.custom(size: 14))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .lineSpacing(3)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.bottom, 22)
@@ -166,7 +166,7 @@ struct SirkiyeAetherView: View {
                 label: "USD/TRY",
                 sub: String(format: "%.2f", usdTry),
                 value: "—",
-                valueColor: InstitutionalTheme.Colors.textSecondary
+                valueColor: DesignTokens.Colors.textSecondary
             ))
         }
 
@@ -175,7 +175,7 @@ struct SirkiyeAetherView: View {
                 label: "BIST 100",
                 sub: bistFormatted(bist),
                 value: "—",
-                valueColor: InstitutionalTheme.Colors.textSecondary
+                valueColor: DesignTokens.Colors.textSecondary
             ))
         }
 
@@ -184,7 +184,7 @@ struct SirkiyeAetherView: View {
                 label: "Politika faizi",
                 sub: "TCMB",
                 value: String(format: "%.2f%%", policy),
-                valueColor: InstitutionalTheme.Colors.textSecondary
+                valueColor: DesignTokens.Colors.textSecondary
             ))
         }
 
@@ -195,7 +195,7 @@ struct SirkiyeAetherView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Bugün")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 2)
 
             VStack(spacing: 0) {
@@ -204,10 +204,10 @@ struct SirkiyeAetherView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(row.label)
                                 .font(DesignTokens.Fonts.custom(size: 14))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                             Text(row.sub)
                                 .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                         }
                         Spacer()
                         if row.value != "—" {
@@ -221,13 +221,13 @@ struct SirkiyeAetherView: View {
                     .padding(.vertical, 12)
                     if idx < todayRows.count - 1 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
                             .padding(.leading, 14)
                     }
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .padding(.bottom, 22)
@@ -265,14 +265,14 @@ struct SirkiyeAetherView: View {
             }
             .buttonStyle(.plain)
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .padding(.bottom, 18)
     }
 
     private var divider: some View {
         Rectangle()
-            .fill(InstitutionalTheme.Colors.borderSubtle)
+            .fill(DesignTokens.Colors.borderSubtle)
             .frame(height: 0.5)
             .padding(.leading, 14)
     }
@@ -281,17 +281,17 @@ struct SirkiyeAetherView: View {
         HStack(spacing: 10) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 15))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             if let trailing {
                 Text(trailing)
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .lineLimit(1)
             }
             Image(systemName: "chevron.right")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 13)
@@ -310,7 +310,7 @@ struct SirkiyeAetherView: View {
     private var footerNote: some View {
         Text("Skor TCMB politika faizi, USD/TRY, enflasyon ve dış denge göstergelerinin ağırlıklı ortalamasıdır.")
             .font(DesignTokens.Fonts.custom(size: 12))
-            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+            .foregroundColor(DesignTokens.Colors.textTertiary)
             .lineSpacing(2)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 4)
@@ -352,7 +352,7 @@ struct SirkiyeBilesenlerView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             VStack(spacing: 0) {
                 topNav
                 ScrollView {
@@ -377,22 +377,22 @@ struct SirkiyeBilesenlerView: View {
             Button(action: { dismiss() }) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             Text("Bileşenler")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -401,7 +401,7 @@ struct SirkiyeBilesenlerView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Boyutlar")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 2)
 
             VStack(spacing: 0) {
@@ -433,7 +433,7 @@ struct SirkiyeBilesenlerView: View {
                     color: pressureColor(macroScore.inflationPressure)
                 )
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .padding(.bottom, 18)
@@ -444,10 +444,10 @@ struct SirkiyeBilesenlerView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 15))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(sub)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             Spacer()
             Text(status)
@@ -460,7 +460,7 @@ struct SirkiyeBilesenlerView: View {
 
     private var divider: some View {
         Rectangle()
-            .fill(InstitutionalTheme.Colors.borderSubtle)
+            .fill(DesignTokens.Colors.borderSubtle)
             .frame(height: 0.5)
             .padding(.leading, 14)
     }
@@ -471,7 +471,7 @@ struct SirkiyeBilesenlerView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Detay bileşenler")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 2)
 
             VStack(spacing: 0) {
@@ -480,10 +480,10 @@ struct SirkiyeBilesenlerView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(component.name)
                                 .font(DesignTokens.Fonts.custom(size: 14))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                             Text(formatComponentValue(component))
                                 .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                         }
                         Spacer()
                         Text("\(Int(component.score))")
@@ -499,7 +499,7 @@ struct SirkiyeBilesenlerView: View {
                     }
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .padding(.bottom, 14)
@@ -513,7 +513,7 @@ struct SirkiyeBilesenlerView: View {
     private var footer: some View {
         Text("Boyutlar TCMB ve makro veri akışından her 5 dakikada güncellenir.")
             .font(DesignTokens.Fonts.custom(size: 12))
-            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+            .foregroundColor(DesignTokens.Colors.textTertiary)
             .lineSpacing(2)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 4)
@@ -533,7 +533,7 @@ struct SirkiyeBilesenlerView: View {
     private func momentumColor(_ m: SirkiyeAetherEngine.Momentum) -> Color {
         switch m {
         case .accelerating: return InstitutionalTheme.Colors.aurora
-        case .stable: return InstitutionalTheme.Colors.textSecondary
+        case .stable: return DesignTokens.Colors.textSecondary
         case .decelerating: return InstitutionalTheme.Colors.titan
         }
     }
@@ -541,7 +541,7 @@ struct SirkiyeBilesenlerView: View {
     private func riskColor(_ r: SirkiyeAetherEngine.RiskLevel) -> Color {
         switch r {
         case .low: return InstitutionalTheme.Colors.aurora
-        case .medium: return InstitutionalTheme.Colors.textSecondary
+        case .medium: return DesignTokens.Colors.textSecondary
         case .high: return InstitutionalTheme.Colors.titan
         case .critical: return InstitutionalTheme.Colors.crimson
         }
@@ -550,7 +550,7 @@ struct SirkiyeBilesenlerView: View {
     private func pressureColor(_ p: SirkiyeAetherEngine.Pressure) -> Color {
         switch p {
         case .low: return InstitutionalTheme.Colors.aurora
-        case .medium: return InstitutionalTheme.Colors.textSecondary
+        case .medium: return DesignTokens.Colors.textSecondary
         case .high: return InstitutionalTheme.Colors.titan
         case .severe: return InstitutionalTheme.Colors.crimson
         }
@@ -574,7 +574,7 @@ struct SirkiyeSektorView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             VStack(spacing: 0) {
                 topNav
                 ScrollView {
@@ -600,22 +600,22 @@ struct SirkiyeSektorView: View {
             Button(action: { dismiss() }) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             Text("Sektör rotasyonu")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -626,7 +626,7 @@ struct SirkiyeSektorView: View {
         let rotation = result.rotation.rawValue.lowercased()
         return Text("\(rotation.capitalized) eğilimi öne çıkıyor. \(strongest) güçleniyor, \(weakest) zayıf seyrediyor.")
             .font(DesignTokens.Fonts.custom(size: 14))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .lineSpacing(3)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.bottom, 22)
@@ -637,7 +637,7 @@ struct SirkiyeSektorView: View {
         return VStack(alignment: .leading, spacing: 8) {
             Text("Bugün")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 2)
 
             VStack(spacing: 0) {
@@ -645,7 +645,7 @@ struct SirkiyeSektorView: View {
                     HStack(spacing: 0) {
                         Text(sector.name)
                             .font(DesignTokens.Fonts.custom(size: 14))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Spacer()
                         Text(formattedChange(sector.dailyChange))
                             .font(DesignTokens.Fonts.custom(size: 14, design: .monospaced))
@@ -656,13 +656,13 @@ struct SirkiyeSektorView: View {
                     .padding(.vertical, 12)
                     if idx < sorted.count - 1 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
                             .padding(.leading, 14)
                     }
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
     }
@@ -673,14 +673,14 @@ struct SirkiyeSektorView: View {
     }
 
     private func changeColor(_ value: Double) -> Color {
-        if abs(value) < 0.05 { return InstitutionalTheme.Colors.textSecondary }
+        if abs(value) < 0.05 { return DesignTokens.Colors.textSecondary }
         return value >= 0 ? InstitutionalTheme.Colors.aurora : InstitutionalTheme.Colors.crimson
     }
 
     private var emptyState: some View {
         Text("Sektör rotasyonu verisi bekleniyor.")
             .font(DesignTokens.Fonts.custom(size: 14))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .padding(.vertical, 22)
     }
 }
@@ -697,7 +697,7 @@ struct SirkiyeTCMBView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             VStack(spacing: 0) {
                 topNav
                 ScrollView {
@@ -720,22 +720,22 @@ struct SirkiyeTCMBView: View {
             Button(action: { dismiss() }) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             Text("TCMB verileri")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -752,7 +752,7 @@ struct SirkiyeTCMBView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .padding(.leading, 2)
 
                 VStack(spacing: 0) {
@@ -760,24 +760,24 @@ struct SirkiyeTCMBView: View {
                         HStack {
                             Text(row.label)
                                 .font(DesignTokens.Fonts.custom(size: 14))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                             Spacer()
                             Text(row.value)
                                 .font(DesignTokens.Fonts.custom(size: 14, design: .monospaced))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                                 .monospacedDigit()
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 11)
                         if idx < valid.count - 1 {
                             Rectangle()
-                                .fill(InstitutionalTheme.Colors.borderSubtle)
+                                .fill(DesignTokens.Colors.borderSubtle)
                                 .frame(height: 0.5)
                                 .padding(.leading, 14)
                         }
                     }
                 }
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             .padding(.bottom, 18)

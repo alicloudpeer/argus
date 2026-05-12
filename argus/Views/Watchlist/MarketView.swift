@@ -44,89 +44,79 @@ struct MarketView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+        ZStack {
+            DesignTokens.Colors.background.ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    topBar
+            VStack(spacing: 0) {
+                topBar
 
-                    ScrollView {
-                        LazyVStack(spacing: 24) {
-                            switch selectedMarket {
-                            case .global:
-                                GlobalCockpitView(
-                                    watchlist: filteredWatchlist,
-                                    showAetherDetail: $showAetherDetail,
-                                    showEducation: $showEducation,
-                                    deleteAction: { symbol in deleteSymbol(symbol) }
-                                )
-                            case .bist:
-                                BistCockpitView(
-                                    watchlist: filteredWatchlist,
-                                    deleteAction: { symbol in deleteSymbol(symbol) }
-                                )
-                            }
-
-                            Spacer(minLength: 100)
+                ScrollView {
+                    LazyVStack(spacing: 24) {
+                        switch selectedMarket {
+                        case .global:
+                            GlobalCockpitView(
+                                watchlist: filteredWatchlist,
+                                showAetherDetail: $showAetherDetail,
+                                showEducation: $showEducation,
+                                deleteAction: { symbol in deleteSymbol(symbol) }
+                            )
+                        case .bist:
+                            BistCockpitView(
+                                watchlist: filteredWatchlist,
+                                deleteAction: { symbol in deleteSymbol(symbol) }
+                            )
                         }
-                    }
-                }
 
-                if showDrawer {
-                    ArgusDrawerView(isPresented: $showDrawer) { openSheet in
-                        drawerSections(openSheet: openSheet)
+                        Spacer(minLength: 100)
                     }
-                    .zIndex(200)
                 }
+            }
 
-            }
-            .navigationBarHidden(true)
-            // Programmatic Navigation (DeepLinkManager)
-            // Modern API: navigationDestination(isPresented:) — iOS 16'da
-            // NavigationLink(isActive:) deprecated. Hidden EmptyView trick'i
-            // de gerekmiyor.
-            .navigationDestination(
-                isPresented: Binding(
-                    get: { deepLinkManager.selectedStockSymbol != nil },
-                    set: { if !$0 { deepLinkManager.selectedStockSymbol = nil } }
-                )
-            ) {
-                ArgusSanctumView(
-                    symbol: deepLinkManager.selectedStockSymbol ?? ""
-                )
-            }
-            .sheet(isPresented: $showSearch) {
-                AddSymbolSheet()
-                    .preferredColorScheme(.dark)
-            }
-            .sheet(isPresented: $showAetherDetail) {
-                // 2026-05-05 H-65: NavigationStack wrapper eklendi.
-                // ArgusAetherDetailView içindeki "Yaklaşan veriler /
-                // Tahminlerim / Tüm göstergeler" NavigationLink'leri
-                // push yapamıyordu çünkü sheet'te NavigationStack yoktu.
-                NavigationStack {
-                    if let macro = analysis.macroRating {
-                        ArgusAetherDetailView(rating: macro)
-                    }
+            if showDrawer {
+                ArgusDrawerView(isPresented: $showDrawer) { openSheet in
+                    drawerSections(openSheet: openSheet)
                 }
-                .preferredColorScheme(.dark)
+                .zIndex(200)
             }
-            .sheet(isPresented: $showEducation) {
-                ChironEducationCard(result: ChironRegimeEngine.shared.lastResult, isPresented: $showEducation)
-                    .preferredColorScheme(.dark)
-            }
-            .sheet(isPresented: $showDiscover) {
-                DiscoverView()
-                    .preferredColorScheme(.dark)
-            }
-            .sheet(isPresented: $showNotifications) {
-                NotificationsView()
-                    .preferredColorScheme(.dark)
-            }
-            .onAppear { applyLaunchOverrideIfNeeded() }
-            .frame(maxWidth: .infinity)
+
         }
+        .navigationBarHidden(true)
+        .navigationDestination(
+            isPresented: Binding(
+                get: { deepLinkManager.selectedStockSymbol != nil },
+                set: { if !$0 { deepLinkManager.selectedStockSymbol = nil } }
+            )
+        ) {
+            ArgusSanctumView(
+                symbol: deepLinkManager.selectedStockSymbol ?? ""
+            )
+        }
+        .sheet(isPresented: $showSearch) {
+            AddSymbolSheet()
+                .preferredColorScheme(.dark)
+        }
+        .sheet(isPresented: $showAetherDetail) {
+            NavigationStack {
+                if let macro = analysis.macroRating {
+                    ArgusAetherDetailView(rating: macro)
+                }
+            }
+            .preferredColorScheme(.dark)
+        }
+        .sheet(isPresented: $showEducation) {
+            ChironEducationCard(result: ChironRegimeEngine.shared.lastResult, isPresented: $showEducation)
+                .preferredColorScheme(.dark)
+        }
+        .sheet(isPresented: $showDiscover) {
+            DiscoverView()
+                .preferredColorScheme(.dark)
+        }
+        .sheet(isPresented: $showNotifications) {
+            NotificationsView()
+                .preferredColorScheme(.dark)
+        }
+        .onAppear { applyLaunchOverrideIfNeeded() }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Top Bar (Tab row + command header)
@@ -139,7 +129,7 @@ struct MarketView: View {
             HStack(alignment: .center) {
                 Text("Piyasa")
                     .font(DesignTokens.Fonts.custom(size: 22, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 HStack(spacing: 0) {
                     headerIconButton(icon: "line.3.horizontal", label: "Menü") {
@@ -160,22 +150,22 @@ struct MarketView: View {
                     .frame(width: 6, height: 6)
                 Text("Açık")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.leading, 6)
                     .padding(.trailing, 8)
                 Text(Date().formatted(.dateTime.hour().minute()))
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .lineLimit(1)
             }
         }
         .padding(.horizontal, 14)
         .padding(.top, 12)
         .padding(.bottom, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -185,7 +175,7 @@ struct MarketView: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .regular))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 36, height: 36)
                 .contentShape(Rectangle())
         }
@@ -206,11 +196,11 @@ struct MarketView: View {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 13, weight: isSelected ? .medium : .regular))
                     .foregroundColor(isSelected
-                                     ? InstitutionalTheme.Colors.textPrimary
-                                     : InstitutionalTheme.Colors.textSecondary)
+                                     ? DesignTokens.Colors.textPrimary
+                                     : DesignTokens.Colors.textSecondary)
                 Rectangle()
                     .fill(isSelected
-                          ? InstitutionalTheme.Colors.textPrimary
+                          ? DesignTokens.Colors.textPrimary
                           : Color.clear)
                     .frame(height: 1.5)
                     .matchedGeometryEffect(id: isSelected ? "TabUnderline" : "TabUnderlineHidden_\(mode.rawValue)", in: animation)
@@ -351,7 +341,9 @@ struct GlobalCockpitView: View {
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(watchlist, id: \.self) { symbol in
-                        NavigationLink(destination: ArgusSanctumView(symbol: symbol)) {
+                        Button {
+                            NavigationRouter.shared.navigate(to: .stockDetail(symbol: symbol))
+                        } label: {
                             CrystalWatchlistRow(
                                 symbol: symbol,
                                 quote: watchlistVM.quotes[symbol],
@@ -406,7 +398,9 @@ struct BistCockpitView: View {
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(watchlist, id: \.self) { symbol in
-                        NavigationLink(destination: ArgusSanctumView(symbol: symbol)) {
+                        Button {
+                            NavigationRouter.shared.navigate(to: .stockDetail(symbol: symbol))
+                        } label: {
                             BistCrystalRow(
                                 symbol: symbol,
                                 quote: watchlistVM.quotes[symbol],
@@ -439,7 +433,7 @@ private struct LiveStatusPill: View {
     let isLive: Bool
 
     private var tint: Color {
-        isLive ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.neutral
+        isLive ? DesignTokens.Colors.success : InstitutionalTheme.Colors.neutral
     }
 
     var body: some View {
@@ -477,16 +471,16 @@ struct AddSymbolSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
 
                 VStack(spacing: 16) {
                     // Search Bar
                     HStack(spacing: 8) {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         TextField("Sembol ara (Örn: \(searchBist ? "THYAO.IS" : "PLTR"))", text: $symbol)
                             .font(.system(.callout, design: .monospaced))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .disableAutocorrection(true)
                             .focused($isFocused)
                             .onChange(of: symbol) { _, newValue in
@@ -500,7 +494,7 @@ struct AddSymbolSheet: View {
                                 watchlistVM.searchResults = []
                             }) {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                    .foregroundColor(DesignTokens.Colors.textSecondary)
                                     .frame(width: 32, height: 32)
                                     .contentShape(Rectangle())
                             }
@@ -512,11 +506,11 @@ struct AddSymbolSheet: View {
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                            .fill(InstitutionalTheme.Colors.surface1)
+                            .fill(DesignTokens.Colors.surface)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                            .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                            .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
                     )
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
@@ -538,30 +532,30 @@ struct AddSymbolSheet: View {
                                         Text(result.symbol)
                                             .font(.system(.callout, design: .monospaced))
                                             .fontWeight(.bold)
-                                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                            .foregroundColor(DesignTokens.Colors.textPrimary)
                                         Text(result.description)
                                             .font(.caption)
-                                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                            .foregroundColor(DesignTokens.Colors.textSecondary)
                                             .lineLimit(1)
                                     }
                                     Spacer()
                                     Image(systemName: "plus.circle")
-                                        .foregroundColor(InstitutionalTheme.Colors.primary)
+                                        .foregroundColor(DesignTokens.Colors.primary)
                                 }
                                 .frame(minHeight: 44)
                             }
-                            .listRowBackground(InstitutionalTheme.Colors.surface1)
+                            .listRowBackground(DesignTokens.Colors.surface)
                         }
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
-                        .background(InstitutionalTheme.Colors.background)
+                        .background(DesignTokens.Colors.background)
                     } else {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Popüler (\(searchBist ? "BIST" : "Global"))")
                                 .font(.system(.caption, design: .monospaced))
                                 .fontWeight(.bold)
                                 .tracking(1.2)
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                                 .padding(.horizontal, 16)
 
                             ScrollView(.horizontal, showsIndicators: false) {
@@ -576,12 +570,12 @@ struct AddSymbolSheet: View {
                                                 .padding(.vertical, 10)
                                                 .frame(minHeight: 44)
                                                 .background(
-                                                    Capsule().fill(InstitutionalTheme.Colors.surface1)
+                                                    Capsule().fill(DesignTokens.Colors.surface)
                                                 )
                                                 .overlay(
-                                                    Capsule().stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                                                    Capsule().stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
                                                 )
-                                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                         }
                                         .buttonStyle(.plain)
                                     }
@@ -598,7 +592,7 @@ struct AddSymbolSheet: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Kapat") { presentationMode.wrappedValue.dismiss() }
-                        .foregroundColor(InstitutionalTheme.Colors.primary)
+                        .foregroundColor(DesignTokens.Colors.primary)
                 }
             }
             .onAppear {
@@ -683,16 +677,16 @@ struct BistCrystalRow: View {
             // Kimlik
             HStack(spacing: 12) {
                 CompanyLogoView(symbol: symbol, size: 36, cornerRadius: 18)
-                    .overlay(Circle().stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1))
+                    .overlay(Circle().stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(companyName)
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .semibold))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .lineLimit(1)
                     Text(cleanSymbol)
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .medium, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .lineLimit(1)
                 }
             }
@@ -704,7 +698,7 @@ struct BistCrystalRow: View {
             } else {
                 Text("—")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             // Fiyat + % Değişim
@@ -713,7 +707,7 @@ struct BistCrystalRow: View {
                     Text(String(format: "₺%.2f", q.currentPrice))
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .semibold, design: .monospaced))
                         .monospacedDigit()
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(String(format: "%+.2f%%", q.percentChange))
                         .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
                         .foregroundColor(q.percentChange >= 0
@@ -724,10 +718,10 @@ struct BistCrystalRow: View {
             } else {
                 VStack(alignment: .trailing, spacing: 4) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(InstitutionalTheme.Colors.surface2)
+                        .fill(DesignTokens.Colors.surfaceElevated)
                         .frame(width: 56, height: 14)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(InstitutionalTheme.Colors.surface2)
+                        .fill(DesignTokens.Colors.surfaceElevated)
                         .frame(width: 44, height: 12)
                 }
                 .frame(minWidth: 82, alignment: .trailing)
@@ -747,8 +741,8 @@ struct OrionSignalBadge: View {
 
     private var tint: Color {
         let v = result.verdict.lowercased()
-        if v.contains("al") || v.contains("buy")  { return InstitutionalTheme.Colors.positive }
-        if v.contains("sat") || v.contains("sell") { return InstitutionalTheme.Colors.negative }
+        if v.contains("al") || v.contains("buy")  { return DesignTokens.Colors.success }
+        if v.contains("sat") || v.contains("sell") { return DesignTokens.Colors.error }
         return InstitutionalTheme.Colors.neutral
     }
 
@@ -777,7 +771,7 @@ struct OrionSignalBadge: View {
         let isHold = shortVerdict == "Tut"
         return Text("%\(Int(result.score))")
             .font(DesignTokens.Fonts.custom(size: 12, design: .monospaced))
-            .foregroundColor(isHold ? InstitutionalTheme.Colors.textTertiary : tint)
+            .foregroundColor(isHold ? DesignTokens.Colors.textTertiary : tint)
             .monospacedDigit()
             .accessibilityLabel(Text("Orion sinyali \(shortVerdict), skor \(Int(result.score))"))
     }

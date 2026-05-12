@@ -21,7 +21,7 @@ struct ModuleSummaryCard: View {
                 Text("SİSTEM ANALİZİ")
                     .font(.caption)
                     .bold()
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.horizontal)
                     .padding(.top, 12)
                     .padding(.bottom, 8)
@@ -139,7 +139,7 @@ struct ModuleSummaryCard: View {
                     .onTapGesture { onDemeterTap?() }
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .cornerRadius(12)
             .padding(.horizontal)
             .padding(.bottom, 12)
@@ -186,7 +186,7 @@ struct CompactModuleRow: View {
             Text(name)
                 .font(.subheadline)
                 .bold()
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .frame(width: 60, alignment: .leading)
             
             // Score + Tag
@@ -196,7 +196,7 @@ struct CompactModuleRow: View {
                         Text(String(format: "%.2f", score / 100.0))
                             .font(.custom("Menlo", size: 12))
                             .bold()
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                     } else {
                         Text("\(Int(score))")
                             .font(.custom("Menlo", size: 12))

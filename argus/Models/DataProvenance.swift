@@ -4,11 +4,11 @@ import Foundation
 
 /// Where did this data come from?
 public struct DataProvenance: Codable, Sendable {
-    public let source: String            // "Yahoo", "FRED", "Mimir", "Cache"
+    public let source: String            // "Yahoo", "FRED", "BorsaPy", "Cache" vb.
     public let fetchedAt: Date
     public let confidence: Double        // 0.0 - 1.0 (Low -> High)
     public let evidence: String?         // URL or Explanation
-    public let isEstimate: Bool          // True if Mimir inferred it
+    public let isEstimate: Bool          // True if heuristic-inferred (provider returned partial)
     
     public init(source: String, fetchedAt: Date, confidence: Double, evidence: String? = nil, isEstimate: Bool = false) {
         self.source = source
@@ -33,7 +33,8 @@ public struct DataProvenance: Codable, Sendable {
 /// Conforms to Codable if T is Codable
 
 
-/// Represents a specific missing data point for Mimir to hunt
+/// Represents a specific missing data point — used by stores to flag
+/// gaps that may be filled by secondary providers (SEC EDGAR, FMP, vb.)
 public struct MissingField: Identifiable, Sendable {
     public let id: UUID = UUID()
     public let symbol: String

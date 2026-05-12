@@ -32,7 +32,7 @@ struct SanctumHeader: View {
                 Text(String(format: "\(currency)%.2f", quote.currentPrice))
                     .font(DesignTokens.Fonts.custom(size: 32, weight: .semibold, design: .monospaced))
                     .monospacedDigit()
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
 
                 HStack(spacing: 8) {
                     Text(String(format: "%@%.2f", change >= 0 ? "+" : "", quote.change))
@@ -46,7 +46,7 @@ struct SanctumHeader: View {
                     Spacer()
                     Text("Son · \(formattedTime)")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
             }
             .padding(.horizontal, 16)
@@ -61,7 +61,7 @@ struct SanctumHeader: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("—")
                     .font(DesignTokens.Fonts.custom(size: 32, weight: .semibold, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .padding(.horizontal, 16)
             .padding(.top, 14)

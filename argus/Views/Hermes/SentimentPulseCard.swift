@@ -35,7 +35,7 @@ struct SentimentPulseCard: View {
                 heroRow(s)
 
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
 
                 commentaryLine
@@ -53,10 +53,10 @@ struct SentimentPulseCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .task { await loadSentiment() }
@@ -68,11 +68,11 @@ struct SentimentPulseCard: View {
         HStack {
             Text("Duygu nabzı")
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             Text(sourceBadgeText())
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
     }
 
@@ -114,7 +114,7 @@ struct SentimentPulseCard: View {
             VStack(spacing: 2) {
                 Text("\(Int(score))")
                     .font(DesignTokens.Fonts.custom(size: 22, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .monospacedDigit()
                 Text(interpretation.lowercased())
                     .font(DesignTokens.Fonts.custom(size: 10))
@@ -132,11 +132,11 @@ struct SentimentPulseCard: View {
             HStack {
                 Text(label)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Spacer()
                 Text("%\(Int(value))")
                     .font(DesignTokens.Fonts.custom(size: 12, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .monospacedDigit()
             }
             ArgusBar(value: max(0, min(1, value / 100)), color: color, height: 4)
@@ -146,7 +146,7 @@ struct SentimentPulseCard: View {
     private var commentaryLine: some View {
         Text(commentary)
             .font(DesignTokens.Fonts.custom(size: 12))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .lineSpacing(2)
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -155,7 +155,7 @@ struct SentimentPulseCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Son analizler")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
 
             VStack(spacing: 0) {
                 ForEach(Array(cachedNews.prefix(2).enumerated()), id: \.offset) { idx, item in
@@ -166,7 +166,7 @@ struct SentimentPulseCard: View {
                             .padding(.top, 6)
                         Text(item.summaryTR)
                             .font(DesignTokens.Fonts.custom(size: 12))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)
@@ -174,7 +174,7 @@ struct SentimentPulseCard: View {
                     .padding(.vertical, 7)
                     if idx < min(cachedNews.count, 2) - 1 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
                     }
                 }
@@ -193,7 +193,7 @@ struct SentimentPulseCard: View {
             ProgressView().scaleEffect(0.7)
             Text("Haber taranıyor…")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Spacer()
         }
         .frame(maxWidth: .infinity, minHeight: 60, alignment: .leading)
@@ -203,10 +203,10 @@ struct SentimentPulseCard: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Haber taraması bekleniyor")
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text("Haber modülünden \"Haberleri tara\" deyince burada görünür.")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 8)
@@ -235,7 +235,7 @@ struct SentimentPulseCard: View {
 
     private func sentimentColor(_ score: Double) -> Color {
         if score >= 65 { return InstitutionalTheme.Colors.aurora }
-        if score >= 45 { return InstitutionalTheme.Colors.textPrimary }
+        if score >= 45 { return DesignTokens.Colors.textPrimary }
         if score >= 30 { return InstitutionalTheme.Colors.titan }
         return InstitutionalTheme.Colors.crimson
     }
@@ -243,7 +243,7 @@ struct SentimentPulseCard: View {
     private func impactColor(for impact: Int) -> Color {
         let v = Double(impact)
         if v >= 65 { return InstitutionalTheme.Colors.aurora }
-        if v >= 45 { return InstitutionalTheme.Colors.textSecondary }
+        if v >= 45 { return DesignTokens.Colors.textSecondary }
         if v >= 30 { return InstitutionalTheme.Colors.titan }
         return InstitutionalTheme.Colors.crimson
     }
@@ -331,7 +331,7 @@ struct SentimentPulseCard: View {
 
 #Preview {
     ZStack {
-        InstitutionalTheme.Colors.background.ignoresSafeArea()
+        DesignTokens.Colors.background.ignoresSafeArea()
         SentimentPulseCard(symbol: "AAPL")
             .padding()
     }

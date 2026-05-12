@@ -5,7 +5,7 @@ struct SelfQuestionAlertCard: View {
     
     private var severityColor: Color {
         switch analysis.severity {
-        case .high: return InstitutionalTheme.Colors.negative
+        case .high: return DesignTokens.Colors.error
         case .medium: return InstitutionalTheme.Colors.warning
         case .low: return InstitutionalTheme.Colors.neutral
         }
@@ -28,13 +28,13 @@ struct SelfQuestionAlertCard: View {
                 
                 Text("Modul Celiskisi")
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 
                 Spacer()
                 
                 Text(analysis.severity.rawValue)
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(
@@ -52,10 +52,10 @@ struct SelfQuestionAlertCard: View {
                     HStack {
                         Image(systemName: "clock.arrow.circlepath")
                             .font(DesignTokens.Fonts.custom(size: 12))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Text(outcome.summary)
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     .padding(8)
                     .background(
@@ -68,7 +68,7 @@ struct SelfQuestionAlertCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Onerilen Guven Dususu")
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Text("%\(Int(analysis.suggestedConfidenceDrop * 100))")
                             .font(InstitutionalTheme.Typography.caption)
                             .foregroundColor(severityColor)
@@ -78,17 +78,17 @@ struct SelfQuestionAlertCard: View {
                     
                     Text(analysis.recommendation)
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .multilineTextAlignment(.trailing)
                 }
             } else {
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.positive)
+                        .foregroundColor(DesignTokens.Colors.success)
                     Text(analysis.recommendation)
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
         }
@@ -109,10 +109,10 @@ struct ContradictionRow: View {
             VStack(spacing: 2) {
                 Text(contradiction.module1)
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(contradiction.stance1)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.positive)
+                    .foregroundColor(DesignTokens.Colors.success)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 6)
@@ -123,15 +123,15 @@ struct ContradictionRow: View {
             
             Text("vs")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             
             VStack(spacing: 2) {
                 Text(contradiction.module2)
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(contradiction.stance2)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.negative)
+                    .foregroundColor(DesignTokens.Colors.error)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 6)
@@ -143,7 +143,7 @@ struct ContradictionRow: View {
         
         Text(contradiction.description)
             .font(InstitutionalTheme.Typography.caption)
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .padding(.top, 4)
     }
 }
@@ -185,5 +185,5 @@ struct ContradictionRow: View {
         )
     }
     .padding()
-    .background(InstitutionalTheme.Colors.background)
+    .background(DesignTokens.Colors.background)
 }

@@ -364,7 +364,7 @@ class TradeBrainExecutor: ObservableObject {
                     continue
                 }
 
-                let dataQualityPenalty: Double = (isBistSym && BorsaPyProvider.shared.isCircuitOpen()) ? 0.70 : 1.0
+                let dataQualityPenalty: Double = (isBistSym && BorsaPyProvider.shared.isCircuitOpen()) ? 0.85 : 1.0
 
                 let coreScore = decision.finalScoreCore
                 let pulseScore = decision.finalScorePulse
@@ -378,7 +378,7 @@ class TradeBrainExecutor: ObservableObject {
 
                 let effectiveConfidence = min(0.99, decision.confidence * dataQualityPenalty * horizonAgreementMultiplier)
                 if dataQualityPenalty < 1.0 {
-                    debugSkip(symbol: symbol, reason: "BorsaPy circuit açık → BIST confidence %30 düşürüldü")
+                    debugSkip(symbol: symbol, reason: "BorsaPy circuit açık → BIST confidence %15 düşürüldü")
                 }
                 if horizonAgreementMultiplier != 1.10 && horizonAgreementMultiplier != 1.0 {
                     ArgusLogger.info("TradeBrainExecutor: \(symbol) horizon \(horizonAgreementMultiplier < 0.85 ? "ÇELİŞKİ" : "uyumsuzluk") (Core=\(Int(coreScore)) Pulse=\(Int(pulseScore)) → ×\(String(format: "%.2f", horizonAgreementMultiplier)))", category: "TRADEBRAIN")

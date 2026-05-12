@@ -72,17 +72,17 @@ struct DisabledModuleCard: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(ArgusScoreSystem.moduleTitle(module))
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(reason)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.5))
+        .background(DesignTokens.Colors.surface.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
@@ -99,11 +99,11 @@ struct ModuleCard: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(ArgusScoreSystem.moduleTitle(module))
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .lineLimit(1)
                     Text(ArgusScoreSystem.moduleSubtitle(module))
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
 
@@ -121,16 +121,16 @@ struct ModuleCard: View {
                 } else {
                     Text("—")
                         .font(DesignTokens.Fonts.custom(size: 16, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }

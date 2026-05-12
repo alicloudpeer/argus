@@ -20,9 +20,6 @@ struct PhoenixDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    @State private var institutionRates: [InstitutionRate] = []
-    @State private var showInstitutionRates = false
-
     var body: some View {
         ModuleSheetShell(title: "Risk fırsatı", motor: .phoenix) {
             heroCard
@@ -41,9 +38,6 @@ struct PhoenixDetailView: View {
 
             pedagogyFooter
         }
-        .task {
-            await loadInstitutionRates()
-        }
     }
 
     // MARK: - Hero (sade)
@@ -55,7 +49,7 @@ struct PhoenixDetailView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Güven skoru")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(Int(conf))")
                         .font(DesignTokens.Fonts.custom(size: 32, weight: .medium))
@@ -63,11 +57,11 @@ struct PhoenixDetailView: View {
                         .monospacedDigit()
                     Text("/ 100")
                         .font(DesignTokens.Fonts.custom(size: 13))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Text(symbol.uppercased())
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.top, 2)
             }
 
@@ -79,15 +73,15 @@ struct PhoenixDetailView: View {
                     .foregroundColor(scoreColor(conf))
                 Text("Ufuk · \(advice.timeframe.localizedName)")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
     }
@@ -98,7 +92,7 @@ struct PhoenixDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Regresyon kanalı")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             ZStack {
                 if candles.count > 20 {
@@ -108,10 +102,10 @@ struct PhoenixDetailView: View {
                     VStack(spacing: 8) {
                         Image(systemName: "chart.line.uptrend.xyaxis")
                             .font(DesignTokens.Fonts.custom(size: 18))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         Text("Grafik için yetersiz veri (en az 20 mum gerekli)")
                             .font(DesignTokens.Fonts.custom(size: 12))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     .frame(height: 160)
                     .frame(maxWidth: .infinity)
@@ -120,10 +114,10 @@ struct PhoenixDetailView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -134,19 +128,19 @@ struct PhoenixDetailView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Analiz")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text(advice.reasonShort)
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -157,7 +151,7 @@ struct PhoenixDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("İstatistik")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             LazyVGrid(
                 columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
@@ -180,10 +174,10 @@ struct PhoenixDetailView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -192,15 +186,15 @@ struct PhoenixDetailView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(color ?? InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(color ?? DesignTokens.Colors.textPrimary)
                 .monospacedDigit()
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
@@ -222,7 +216,7 @@ struct PhoenixDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Sinyal kontrol listesi")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             VStack(alignment: .leading, spacing: 8) {
                 checkRow("Kanal dibi teması", advice.triggers.touchLowerBand)
@@ -233,10 +227,10 @@ struct PhoenixDetailView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -247,17 +241,17 @@ struct PhoenixDetailView: View {
                 .font(DesignTokens.Fonts.custom(size: 13))
                 .foregroundColor(isActive
                                  ? InstitutionalTheme.Colors.aurora
-                                 : InstitutionalTheme.Colors.textTertiary)
+                                 : DesignTokens.Colors.textTertiary)
                 .frame(width: 18)
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             Text(isActive ? "evet" : "bekliyor")
                 .font(DesignTokens.Fonts.custom(size: 11))
                 .foregroundColor(isActive
                                  ? InstitutionalTheme.Colors.aurora
-                                 : InstitutionalTheme.Colors.textTertiary)
+                                 : DesignTokens.Colors.textTertiary)
         }
         .padding(.vertical, 2)
     }
@@ -268,15 +262,15 @@ struct PhoenixDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("BIST seans tetikleri")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             BistSessionTriggers(advice: advice)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -298,15 +292,15 @@ struct PhoenixDetailView: View {
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
-            .background(InstitutionalTheme.Colors.surface1)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
+            .background(DesignTokens.Colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
         }
@@ -319,20 +313,20 @@ struct PhoenixDetailView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Bu nedir?")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("Risk fırsatı bir dip dedektörüdür. Fiyat regresyon kanalının dibine değdiğinde, RSI toparlandığında ve hacim dönüş mumu geldiğinde güven skoru yükselir. Sadece teknik sinyal — temel analiz bilanço motorunun işidir.")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.6))
+        .background(DesignTokens.Colors.surface.opacity(0.6))
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
                 .strokeBorder(
-                    InstitutionalTheme.Colors.borderSubtle,
+                    DesignTokens.Colors.borderSubtle,
                     style: StrokeStyle(lineWidth: 0.5, dash: [4, 3])
                 )
         )
@@ -356,33 +350,9 @@ struct PhoenixDetailView: View {
         return InstitutionalTheme.Colors.crimson
     }
 
-    // MARK: - Data loading
-
-    private func loadInstitutionRates() async {
-        let slug: String?
-        if symbol.contains("ALTIN") || symbol == "GRAM" || symbol == "GLD" {
-            slug = "gram-altin"
-        } else if symbol.contains("GUMUS") {
-            slug = "gram-gumus"
-        } else if symbol == "USD" || symbol == "USDTRY" {
-            slug = "USD"
-        } else {
-            slug = nil
-        }
-
-        if let asset = slug,
-           ["gram-altin", "gram-gumus", "ons-altin"].contains(asset) {
-            do {
-                let rates = try await DovizComService.shared.fetchMetalInstitutionRates(asset: asset)
-                await MainActor.run {
-                    self.institutionRates = rates
-                    self.showInstitutionRates = true
-                }
-            } catch {
-                print("Failed to load rates: \(error)")
-            }
-        }
-    }
+    // 2026-05-11: DovizCom kaldırıldı (`.phoenixDetail` route hiç tetiklenmiyordu).
+    // Gram altın/gümüş/USD için kurum bazlı kur karşılaştırması Faz 1'de
+    // FrankfurterProvider (XAU/USD/TRY) üzerinden yeniden inşa edilecek.
 }
 
 // MARK: - BIST Session Triggers
@@ -421,29 +391,29 @@ struct BistSessionTriggers: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(caption)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
 
             ForEach(items) { item in
                 HStack(alignment: .top, spacing: 8) {
                     Circle()
                         .fill(item.isActive
                               ? InstitutionalTheme.Colors.aurora
-                              : InstitutionalTheme.Colors.textTertiary)
+                              : DesignTokens.Colors.textTertiary)
                         .frame(width: 5, height: 5)
                         .padding(.top, 6)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.condition)
                             .font(DesignTokens.Fonts.custom(size: 12))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text(item.action)
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     Spacer()
                 }
                 .padding(.vertical, 4)
                 .padding(.horizontal, 8)
-                .background(InstitutionalTheme.Colors.surface2.opacity(0.4))
+                .background(DesignTokens.Colors.surfaceElevated.opacity(0.4))
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
         }
@@ -512,7 +482,7 @@ struct PhoenixChannelChart: View {
                     yEnd: .value("High", candle.high)
                 )
                 .lineStyle(StrokeStyle(lineWidth: 1))
-                .foregroundStyle(InstitutionalTheme.Colors.textTertiary)
+                .foregroundStyle(DesignTokens.Colors.textTertiary)
             }
 
             // 2. Channel Lines (sade — orta çizgi nötr, kanal hatları nötr)
@@ -526,14 +496,14 @@ struct PhoenixChannelChart: View {
                         let lowerY = midY - (2.0 * (advice.sigma ?? 0.0))
 
                         LineMark(x: .value("Tarih", candle.date), y: .value("Mid", midY))
-                            .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundStyle(DesignTokens.Colors.textSecondary)
                             .lineStyle(StrokeStyle(lineWidth: 1, dash: [4]))
 
                         LineMark(x: .value("Tarih", candle.date), y: .value("Upper", upperY))
-                            .foregroundStyle(InstitutionalTheme.Colors.textTertiary.opacity(0.55))
+                            .foregroundStyle(DesignTokens.Colors.textTertiary.opacity(0.55))
 
                         LineMark(x: .value("Tarih", candle.date), y: .value("Lower", lowerY))
-                            .foregroundStyle(InstitutionalTheme.Colors.textTertiary.opacity(0.55))
+                            .foregroundStyle(DesignTokens.Colors.textTertiary.opacity(0.55))
                     }
                 }
             }

@@ -41,7 +41,7 @@ struct ArgusStatusConsoleView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                InstitutionalTheme.Colors.background.edgesIgnoringSafeArea(.all)
+                DesignTokens.Colors.background.edgesIgnoringSafeArea(.all)
                 ScrollView {
                     VStack(spacing: 16) {
                         autoPilotSection
@@ -59,7 +59,7 @@ struct ArgusStatusConsoleView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Kapat") { dismiss() }
-                        .foregroundColor(InstitutionalTheme.Colors.primary)
+                        .foregroundColor(DesignTokens.Colors.primary)
                 }
             }
             .preferredColorScheme(.dark)
@@ -74,29 +74,29 @@ struct ArgusStatusConsoleView: View {
             HStack(spacing: 12) {
                 Image(systemName: autoPilotStore.isAutoPilotEnabled ? "bolt.fill" : "bolt.slash.fill")
                     .font(DesignTokens.Fonts.custom(size: 14))
-                    .foregroundColor(autoPilotStore.isAutoPilotEnabled ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative)
+                    .foregroundColor(autoPilotStore.isAutoPilotEnabled ? DesignTokens.Colors.success : DesignTokens.Colors.error)
                     .frame(width: 20)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Otopilot")
                         .font(InstitutionalTheme.Typography.body)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(autoPilotStore.isAutoPilotEnabled ? "Aktif — sinyaller takip ediliyor" : "Kapalı — hiçbir alım/satım yapılmaz")
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Spacer()
                 Toggle("", isOn: $autoPilotStore.isAutoPilotEnabled)
                     .labelsHidden()
-                    .tint(InstitutionalTheme.Colors.positive)
+                    .tint(DesignTokens.Colors.success)
             }
             .padding(.vertical, 8)
 
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
 
             // HARMONY paneli
             harmonyPanel
 
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
 
             // Diagnostic satırları
             VStack(spacing: 6) {
@@ -127,11 +127,11 @@ struct ArgusStatusConsoleView: View {
 
             // Blocker özeti
             if !tradeBlockReasons.isEmpty {
-                Divider().background(InstitutionalTheme.Colors.borderSubtle)
+                Divider().background(DesignTokens.Colors.borderSubtle)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Neden trade etmiyor")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .padding(.top, 6)
                     ForEach(tradeBlockReasons, id: \.self) { reason in
                         HStack(spacing: 8) {
@@ -140,7 +140,7 @@ struct ArgusStatusConsoleView: View {
                                 .foregroundColor(.orange)
                             Text(reason)
                                 .font(InstitutionalTheme.Typography.caption)
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
                         }
@@ -156,12 +156,12 @@ struct ArgusStatusConsoleView: View {
         let snap = marketContext.snapshot
         let (modeLabel, modeColor, modeIcon): (String, Color, String) = {
             if snap.opportunityMode {
-                return ("FIRSAT MODU", InstitutionalTheme.Colors.positive, "bolt.fill")
+                return ("FIRSAT MODU", DesignTokens.Colors.success, "bolt.fill")
             }
             if snap.protectiveMode {
-                return ("KORUYUCU MOD", InstitutionalTheme.Colors.negative, "shield.lefthalf.filled")
+                return ("KORUYUCU MOD", DesignTokens.Colors.error, "shield.lefthalf.filled")
             }
-            return ("NORMAL SEYİR", InstitutionalTheme.Colors.primary, "gauge.medium")
+            return ("NORMAL SEYİR", DesignTokens.Colors.primary, "gauge.medium")
         }()
 
         return VStack(alignment: .leading, spacing: 8) {
@@ -178,11 +178,11 @@ struct ArgusStatusConsoleView: View {
                             .foregroundColor(modeColor)
                         Text("×\(String(format: "%.2f", snap.positionMultiplier))")
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     Text(snap.humanSummary)
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
@@ -192,10 +192,10 @@ struct ArgusStatusConsoleView: View {
                 miniStat(
                     label: "Rejim",
                     value: snap.regimeDirection == "STABLE" ? "stabil" : snap.regimeDirection == "RISING" ? "↑ %\(Int(snap.regimeConfidence * 100))" : "↓ %\(Int(snap.regimeConfidence * 100))",
-                    color: snap.regimeDirection == "RISING" ? InstitutionalTheme.Colors.positive : (snap.regimeDirection == "FALLING" ? InstitutionalTheme.Colors.negative : InstitutionalTheme.Colors.textSecondary)
+                    color: snap.regimeDirection == "RISING" ? DesignTokens.Colors.success : (snap.regimeDirection == "FALLING" ? DesignTokens.Colors.error : DesignTokens.Colors.textSecondary)
                 )
                 miniStat(label: "Nabız", value: snap.pulseIntensity, color: pulseMiniColor(snap: snap))
-                miniStat(label: "Haber", value: "+\(snap.hermesPositive)/-\(snap.hermesNegative)", color: InstitutionalTheme.Colors.textPrimary)
+                miniStat(label: "Haber", value: "+\(snap.hermesPositive)/-\(snap.hermesNegative)", color: DesignTokens.Colors.textPrimary)
             }
             .padding(.leading, 30)
         }
@@ -223,10 +223,10 @@ struct ArgusStatusConsoleView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("İlk tarama bekleniyor")
                             .font(InstitutionalTheme.Typography.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text("Otopilot henüz bir tur çalıştırmadı — 60 saniyeye kadar sürebilir")
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer()
@@ -237,22 +237,22 @@ struct ArgusStatusConsoleView: View {
                 HStack(spacing: 10) {
                     Image(systemName: summary.signalCount > 0 ? "bolt.horizontal.fill" : "bolt.horizontal")
                         .font(DesignTokens.Fonts.custom(size: 14))
-                        .foregroundColor(summary.signalCount > 0 ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(summary.signalCount > 0 ? DesignTokens.Colors.success : DesignTokens.Colors.textSecondary)
                         .frame(width: 20)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("\(summary.scannedCount) sembol tarandı")
                             .font(InstitutionalTheme.Typography.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text("\(ageText(summary.ageSeconds)) · \(summary.signalCount) sinyal · \(summary.skippedCount) atlandı")
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     Spacer()
                 }
                 .padding(.vertical, 8)
 
                 // Bakiye + pozisyon
-                Divider().background(InstitutionalTheme.Colors.borderSubtle)
+                Divider().background(DesignTokens.Colors.borderSubtle)
                 HStack(spacing: 16) {
                     balanceCell(label: "Global", value: "$\(String(format: "%.0f", summary.globalBalance))", ok: summary.globalBalance > 100)
                     balanceCell(label: "BIST", value: "₺\(String(format: "%.0f", summary.bistBalance))", ok: summary.bistBalance > 100)
@@ -262,12 +262,12 @@ struct ArgusStatusConsoleView: View {
 
                 // En sık skip sebepleri
                 if !summary.topSkipReasons.isEmpty {
-                    Divider().background(InstitutionalTheme.Colors.borderSubtle)
+                    Divider().background(DesignTokens.Colors.borderSubtle)
                     VStack(alignment: .leading, spacing: 6) {
                         Text("EN SIK ATLAMA SEBEPLERİ")
                             .font(InstitutionalTheme.Typography.micro)
                             .tracking(1.5)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                             .padding(.top, 6)
                         ForEach(summary.topSkipReasons, id: \.self) { reason in
                             HStack(alignment: .top, spacing: 6) {
@@ -276,7 +276,7 @@ struct ArgusStatusConsoleView: View {
                                     .foregroundColor(.orange.opacity(0.8))
                                 Text(reason)
                                     .font(InstitutionalTheme.Typography.caption)
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                    .foregroundColor(DesignTokens.Colors.textPrimary)
                                     .fixedSize(horizontal: false, vertical: true)
                                 Spacer()
                             }
@@ -287,14 +287,14 @@ struct ArgusStatusConsoleView: View {
 
                 // Sinyal yoksa özel uyarı
                 if summary.signalCount == 0 && summary.skippedCount == 0 {
-                    Divider().background(InstitutionalTheme.Colors.borderSubtle)
+                    Divider().background(DesignTokens.Colors.borderSubtle)
                     HStack(spacing: 8) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(DesignTokens.Fonts.custom(size: 12))
                             .foregroundColor(.orange)
                         Text("Tarama çalıştı ama ne sinyal üretildi ne atlama kaydedildi — Council eşikleri veya veri akışı kontrol edilmeli.")
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer()
                     }
@@ -310,10 +310,10 @@ struct ArgusStatusConsoleView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text(value)
                 .font(InstitutionalTheme.Typography.body)
-                .foregroundColor(ok ? InstitutionalTheme.Colors.textPrimary : .orange)
+                .foregroundColor(ok ? DesignTokens.Colors.textPrimary : .orange)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -335,7 +335,7 @@ struct ArgusStatusConsoleView: View {
                     title: "REJİM DÖNÜŞÜMÜ — YUKARI",
                     summary: regimeSummary ?? "Korku geri çekiliyor",
                     evidence: regimeEvidence,
-                    color: InstitutionalTheme.Colors.positive,
+                    color: DesignTokens.Colors.success,
                     icon: "arrow.up.forward.app.fill"
                 )
             } else if regimeDirection == "FALLING" {
@@ -343,7 +343,7 @@ struct ArgusStatusConsoleView: View {
                     title: "REJİM BOZULMASI — AŞAĞI",
                     summary: regimeSummary ?? "Korku yayılıyor",
                     evidence: regimeEvidence,
-                    color: InstitutionalTheme.Colors.negative,
+                    color: DesignTokens.Colors.error,
                     icon: "arrow.down.forward.app.fill"
                 )
             }
@@ -357,7 +357,7 @@ struct ArgusStatusConsoleView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Skor: \(Int(aetherCurrent)) · Hız: \(String(format: "%+.1f", aetherVelocity))/gün")
                         .font(InstitutionalTheme.Typography.body)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(aetherSignal)
                         .font(InstitutionalTheme.Typography.caption)
                         .foregroundColor(signalColor.opacity(0.9))
@@ -370,16 +370,16 @@ struct ArgusStatusConsoleView: View {
                 HStack {
                     Image(systemName: "arrow.up.forward.circle.fill")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.positive)
+                        .foregroundColor(DesignTokens.Colors.success)
                     Text(cross)
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Spacer()
                 }
                 .padding(.vertical, 6)
             }
 
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
 
             // Nabız
             HStack(spacing: 10) {
@@ -390,10 +390,10 @@ struct ArgusStatusConsoleView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Nabız")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text(pulseSummary)
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
@@ -440,7 +440,7 @@ struct ArgusStatusConsoleView: View {
                         .foregroundColor(color)
                     Text(summary)
                         .font(InstitutionalTheme.Typography.body)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
@@ -458,7 +458,7 @@ struct ArgusStatusConsoleView: View {
                                 .foregroundColor(color.opacity(0.8))
                             Text(e)
                                 .font(InstitutionalTheme.Typography.caption)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
@@ -482,20 +482,20 @@ struct ArgusStatusConsoleView: View {
     private func diagnosticRow(label: String, value: String, ok: Bool, warnDetail: String? = nil) -> some View {
         HStack(spacing: 10) {
             Circle()
-                .fill(ok ? InstitutionalTheme.Colors.positive : .orange)
+                .fill(ok ? DesignTokens.Colors.success : .orange)
                 .frame(width: 6, height: 6)
             Text(label)
                 .font(InstitutionalTheme.Typography.body)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             VStack(alignment: .trailing, spacing: 1) {
                 Text(value)
                     .font(InstitutionalTheme.Typography.body)
-                    .foregroundColor(ok ? InstitutionalTheme.Colors.positive : .orange)
+                    .foregroundColor(ok ? DesignTokens.Colors.success : .orange)
                 if let d = ok ? nil : warnDetail {
                     Text(d)
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
         }
@@ -506,7 +506,7 @@ struct ArgusStatusConsoleView: View {
         VStack(alignment: .leading, spacing: 1) {
             Text(label)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text(value)
                 .font(InstitutionalTheme.Typography.caption)
                 .foregroundColor(color)
@@ -514,7 +514,7 @@ struct ArgusStatusConsoleView: View {
     }
 
     private func moduleRow(name: String, role: String, active: Bool = false, degraded: Bool = false, detail: String, isLast: Bool = false) -> some View {
-        let statusColor: Color = degraded ? .orange : (active ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.textSecondary)
+        let statusColor: Color = degraded ? .orange : (active ? DesignTokens.Colors.success : DesignTokens.Colors.textSecondary)
         let statusLabel = degraded ? "AZALTILMIŞ" : (active ? "AKTİF" : "BEKLEME")
 
         return VStack(spacing: 0) {
@@ -524,14 +524,14 @@ struct ArgusStatusConsoleView: View {
                     HStack(spacing: 6) {
                         Text(name)
                             .font(InstitutionalTheme.Typography.body)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text(role)
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     Text(detail)
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
                 Spacer()
@@ -543,7 +543,7 @@ struct ArgusStatusConsoleView: View {
             .padding(.vertical, 10)
             if !isLast {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle.opacity(0.4))
+                    .fill(DesignTokens.Colors.borderSubtle.opacity(0.4))
                     .frame(height: 0.5)
             }
         }
@@ -561,9 +561,9 @@ struct ArgusStatusConsoleView: View {
 
     private var signalColor: Color {
         switch aetherSignal {
-        case let s where s.contains("RECOVERING"):    return InstitutionalTheme.Colors.positive
-        case let s where s.contains("DETERIORATING"): return InstitutionalTheme.Colors.negative
-        default:                                       return InstitutionalTheme.Colors.textSecondary
+        case let s where s.contains("RECOVERING"):    return DesignTokens.Colors.success
+        case let s where s.contains("DETERIORATING"): return DesignTokens.Colors.error
+        default:                                       return DesignTokens.Colors.textSecondary
         }
     }
 
@@ -580,21 +580,21 @@ struct ArgusStatusConsoleView: View {
     private var pulseColor: Color {
         switch pulseIntensity {
         case "EXTREME", "SURGING":
-            return pulseDirection == "UP" ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+            return pulseDirection == "UP" ? DesignTokens.Colors.success : DesignTokens.Colors.error
         case "STIRRING": return .orange
-        case "NORMAL":   return InstitutionalTheme.Colors.primary
-        default:         return InstitutionalTheme.Colors.textSecondary
+        case "NORMAL":   return DesignTokens.Colors.primary
+        default:         return DesignTokens.Colors.textSecondary
         }
     }
 
     private func pulseMiniColor(snap: MarketContextCoordinator.Snapshot) -> Color {
         switch snap.pulseIntensity {
         case "EXTREME", "SURGING":
-            return snap.pulseDirection == "UP" ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+            return snap.pulseDirection == "UP" ? DesignTokens.Colors.success : DesignTokens.Colors.error
         case "STIRRING":
             return .orange
         default:
-            return InstitutionalTheme.Colors.textSecondary
+            return DesignTokens.Colors.textSecondary
         }
     }
 

@@ -144,7 +144,7 @@ struct MotorReasoning {
 // köprü. Demeter ve Chiron için struct'a henüz alan eklenmediğinden boş
 // dönüyor → ilgili kartlar `score == 0` veya `nil` koşuluyla gizleniyor.
 extension ArgusGrandDecision {
-    var orionScore: Double { orionDecision.netSupport * 100 }
+    var orionScore: Double { orionV2TotalScore ?? orionDecision.netSupport * 100 }
 
     /// Atlas: council kararında varsa onu kullan; yoksa
     /// `FundamentalScoreStore`'dan symbol için cache'lenmiş skoru çek.
@@ -202,10 +202,7 @@ extension ArgusGrandDecision {
         ChironRegimeEngine.shared.globalResult
     }
 
-    /// Sanctum başlığı için "konsey skoru" — şu an `confidence` üzerinden okuyoruz.
-    /// Yarım kalan iş tamamlandığında (skor + güven ayrımı yapıldığında) bu
-    /// köprü silinir, gerçek skor alanı kullanılır.
-    var finalScoreCore: Double { confidence }
+    var finalScoreCore: Double { confidence * 100 }
 
     /// Pulse skoru: Orion ağırlıklı (teknik-önce) formülü mirror'lar.
     /// ArgusDecisionEngine finalScorePulse = orion*0.60 + demeter*0.20 + aether*0.20

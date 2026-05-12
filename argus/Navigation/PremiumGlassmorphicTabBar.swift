@@ -52,14 +52,14 @@ struct PremiumGlassmorphicTabBar: View {
                                        bottomTrailing: 0, topTrailing: 18),
                     style: .continuous
                 )
-                .fill(InstitutionalTheme.Colors.surface1)
+                .fill(DesignTokens.Colors.surface)
                 .overlay(
                     UnevenRoundedRectangle(
                         cornerRadii: .init(topLeading: 18, bottomLeading: 0,
                                            bottomTrailing: 0, topTrailing: 18),
                         style: .continuous
                     )
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
                 )
                 .ignoresSafeArea(edges: .bottom)
             )
@@ -119,7 +119,7 @@ struct PremiumTabBarButton: View {
             .frame(maxWidth: .infinity)
             .foregroundColor(isSelected
                              ? InstitutionalTheme.Colors.holo
-                             : InstitutionalTheme.Colors.textSecondary)
+                             : DesignTokens.Colors.textSecondary)
         }
         .buttonStyle(.plain)
     }
@@ -127,7 +127,7 @@ struct PremiumTabBarButton: View {
 
 #Preview {
     ZStack {
-        InstitutionalTheme.Colors.backgroundDeep.ignoresSafeArea()
+        DesignTokens.Colors.backgroundDeep.ignoresSafeArea()
         VStack {
             Spacer()
             PremiumGlassmorphicTabBar()

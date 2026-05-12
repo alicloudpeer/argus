@@ -28,10 +28,10 @@ struct AetherHUDView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Makro")
                             .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text(r.regime.rawValue)
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     
                     Spacer()
@@ -45,12 +45,12 @@ struct AetherHUDView: View {
                     
                     Image(systemName: "chevron.right")
                         .font(.caption2)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary.opacity(0.5))
+                        .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.5))
                 }
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(InstitutionalTheme.Colors.surface1)
+                        .fill(DesignTokens.Colors.surface)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(scoreColor(r.numericScore).opacity(0.3), lineWidth: 1)
@@ -64,11 +64,11 @@ struct AetherHUDView: View {
                         .tint(.cyan)
                     Text("Aether Yükleniyor...")
                         .font(.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 .frame(height: 50)
                 .frame(maxWidth: .infinity)
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .cornerRadius(12)
                 .padding(.horizontal)
             }

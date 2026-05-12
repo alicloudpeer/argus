@@ -28,10 +28,10 @@ struct RejimView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Rejim")
                         .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text("Piyasa, makro, sektör")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Spacer()
                 regimeBadge
@@ -41,7 +41,7 @@ struct RejimView: View {
             .padding(.bottom, 10)
 
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
                 .padding(.horizontal, 16)
 
@@ -50,7 +50,7 @@ struct RejimView: View {
                     ProgressView()
                     Text("Rejim verileri yükleniyor")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 .padding(40)
             } else {
@@ -89,7 +89,7 @@ struct RejimView: View {
             if isLoading {
                 Text("Yükleniyor")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             } else {
                 HStack(spacing: 6) {
                     Text(rejimLabel)
@@ -97,7 +97,7 @@ struct RejimView: View {
                         .foregroundColor(stanceColor)
                     Text("\(Int(rejimScore))")
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .monospacedDigit()
                 }
             }
@@ -109,7 +109,7 @@ struct RejimView: View {
         case "riskOn":    return InstitutionalTheme.Colors.aurora
         case "riskOff":   return InstitutionalTheme.Colors.crimson
         case "defensive": return InstitutionalTheme.Colors.titan
-        default:          return InstitutionalTheme.Colors.textSecondary
+        default:          return DesignTokens.Colors.textSecondary
         }
     }
 
@@ -119,10 +119,10 @@ struct RejimView: View {
         HStack(spacing: 6) {
             Image(systemName: "info.circle")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text("Eğitim amaçlıdır, yatırım tavsiyesi değildir.")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(.vertical, 8)
     }
@@ -133,7 +133,7 @@ struct RejimView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Makro mercek")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .padding(.horizontal, 16)
 
             OracleChamberEmbeddedView()

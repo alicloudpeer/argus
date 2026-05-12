@@ -39,7 +39,7 @@ struct NotificationsView: View {
 
     private var headerStatus: ArgusNavHeader.Status {
         if store.notifications.isEmpty {
-            return .custom(dotColor: InstitutionalTheme.Colors.textTertiary,
+            return .custom(dotColor: DesignTokens.Colors.textTertiary,
                            label: "Hazır",
                            trailing: "Sinyal bekleniyor")
         }
@@ -56,7 +56,7 @@ struct NotificationsView: View {
     var body: some View {
         // 2026-05-03 H-59: nested NavigationStack kaldırıldı.
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                     ArgusNavHeader(
@@ -74,14 +74,14 @@ struct NotificationsView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "bell.slash")
                                 .font(DesignTokens.Fonts.custom(size: 28))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                             VStack(spacing: 4) {
                                 Text("Henüz bildirim yok")
                                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                    .foregroundColor(DesignTokens.Colors.textPrimary)
                                 Text("Arka planda fırsat aranıyor.")
                                     .font(DesignTokens.Fonts.custom(size: 12))
-                                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                    .foregroundColor(DesignTokens.Colors.textSecondary)
                                     .multilineTextAlignment(.center)
                             }
                         }
@@ -202,7 +202,7 @@ struct NotificationRow: View {
                 HStack(spacing: 6) {
                     Text(notification.headline)
                         .font(InstitutionalTheme.Typography.bodyStrong)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .lineLimit(1)
                     Spacer(minLength: 0)
                     if !notification.isRead {
@@ -212,7 +212,7 @@ struct NotificationRow: View {
 
                 Text(notification.summary)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
 
                 HStack(spacing: 6) {
@@ -220,7 +220,7 @@ struct NotificationRow: View {
                     Spacer(minLength: 4)
                     Text(notification.timestamp.formatted(date: .abbreviated, time: .shortened))
                         .font(DesignTokens.Fonts.custom(size: 9, weight: .medium, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 .padding(.top, 2)
             }
@@ -228,12 +228,12 @@ struct NotificationRow: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(notification.isRead
-                    ? InstitutionalTheme.Colors.background
-                    : InstitutionalTheme.Colors.surface1)
+                    ? DesignTokens.Colors.background
+                    : DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
                 .stroke(notification.isRead
-                        ? InstitutionalTheme.Colors.border
+                        ? DesignTokens.Colors.border
                         : tone.foreground.opacity(0.3), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
@@ -282,21 +282,21 @@ struct ArgusReportDetailView: View {
                             .bold()
                         Text(notification.timestamp.formatted())
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     Spacer()
                     
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                 }
                 .padding(.bottom)
                 
                 Text(LocalizedStringKey(notification.detailedReport))
                     .font(InstitutionalTheme.Typography.body)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .multilineTextAlignment(.leading)
                     .padding(12)
                     .institutionalCard(scale: .standard, elevated: false)
@@ -316,7 +316,7 @@ struct ArgusReportDetailView: View {
                         .foregroundColor(DesignTokens.Colors.textPrimary)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(notification.type == .buyOpportunity ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative)
+                        .background(notification.type == .buyOpportunity ? DesignTokens.Colors.success : DesignTokens.Colors.error)
                         .cornerRadius(12)
                         .shadow(radius: 5)
                     }
@@ -324,7 +324,7 @@ struct ArgusReportDetailView: View {
             }
             .padding()
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
     }
     
     private func executeAction() {

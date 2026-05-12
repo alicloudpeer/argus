@@ -6,7 +6,7 @@ struct SystemInfoCard: View {
     
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.opacity(0.72).ignoresSafeArea()
+            DesignTokens.Colors.background.opacity(0.72).ignoresSafeArea()
                 .onTapGesture { withAnimation { isPresented = false } }
             
             // Card Container (No GlassCard, use Direct Background)
@@ -19,22 +19,22 @@ struct SystemInfoCard: View {
                         
                         Text(entity.displayName.uppercased())
                             .font(InstitutionalTheme.Typography.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         
                         Spacer()
                         
                         Button { withAnimation { isPresented = false } } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                         }
                     }
                     
-                    Divider().background(InstitutionalTheme.Colors.borderSubtle)
+                    Divider().background(DesignTokens.Colors.borderSubtle)
                     
                     // Description
                     Text(entity.description)
                         .font(InstitutionalTheme.Typography.dataSmall)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .multilineTextAlignment(.leading)
                         .lineSpacing(4)
                     
@@ -51,7 +51,7 @@ struct SystemInfoCard: View {
                     .stroke(color(for: entity).opacity(0.3), lineWidth: 1)
             )
             .frame(maxWidth: 340)
-            .shadow(color: InstitutionalTheme.Colors.background.opacity(0.6), radius: 20, x: 0, y: 10)
+            .shadow(color: DesignTokens.Colors.background.opacity(0.6), radius: 20, x: 0, y: 10)
             .transition(.scale.combined(with: .opacity))
         }
     }
@@ -76,12 +76,12 @@ struct SystemInfoCard: View {
                 .bold()
         }
         .padding(8)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .overlay(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
         )
         .cornerRadius(8)
-        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+        .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 }

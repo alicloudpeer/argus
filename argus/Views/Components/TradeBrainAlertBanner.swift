@@ -31,7 +31,7 @@ struct TradeBrainAlertBanner: View {
                 
                 Text(alert.message)
                     .font(.subheadline)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
                 
                 Text(alert.actionDescription)
@@ -45,13 +45,13 @@ struct TradeBrainAlertBanner: View {
             Button(action: onDismiss) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title2)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary.opacity(0.6))
+                    .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.6))
             }
         }
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(InstitutionalTheme.Colors.surface1)
+                .fill(DesignTokens.Colors.surface)
                 .shadow(color: iconColor.opacity(0.3), radius: 10, x: 0, y: 5)
         )
         .overlay(
@@ -89,21 +89,21 @@ struct TradeBrainAlertListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
 
                 if coordinator.planAlerts.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "bell.slash")
                             .font(DesignTokens.Fonts.custom(size: 60))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary.opacity(0.3))
+                            .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.3))
                         
                         Text("Bildirim Yok")
                             .font(.headline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         
                         Text("Plan tetiklenmesi olduğunda burada görünecek")
                             .font(.subheadline)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary.opacity(0.7))
+                            .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.7))
                             .multilineTextAlignment(.center)
                     }
                     .padding()
@@ -131,7 +131,7 @@ struct TradeBrainAlertListView: View {
                         Button("Tümünü Temizle") {
                             ExecutionStateViewModel.shared.planAlerts.removeAll()
                         }
-                        .foregroundColor(.red)
+                        .foregroundColor(DesignTokens.Colors.error)
                     }
                 }
             }
@@ -151,5 +151,5 @@ struct TradeBrainAlertListView: View {
         onDismiss: {}
     )
     .padding()
-    .background(InstitutionalTheme.Colors.background)
+    .background(DesignTokens.Colors.background)
 }

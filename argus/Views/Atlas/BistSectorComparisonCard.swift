@@ -19,9 +19,9 @@ struct BistSectorComparisonCard: View {
         VStack(spacing: 12) {
             HStack {
                 Image(systemName: "chart.bar.fill")
-                    .foregroundColor(InstitutionalTheme.Colors.primary)
+                    .foregroundColor(DesignTokens.Colors.primary)
                 Text("SEKTÖR KIYASLAMASI")
-                    .font(.caption).bold().foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .font(.caption).bold().foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 
                 if isLoading {
@@ -74,15 +74,15 @@ struct BistSectorComparisonCard: View {
             } else {
                 Text("Sektör kıyas verisi şu an mevcut değil.")
                     .font(.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
         .padding(12)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(InstitutionalTheme.Colors.primary.opacity(0.25), lineWidth: 1)
+                .stroke(DesignTokens.Colors.primary.opacity(0.25), lineWidth: 1)
         )
         .onAppear { loadSectorData() }
     }

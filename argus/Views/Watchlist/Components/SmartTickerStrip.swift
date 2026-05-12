@@ -277,7 +277,7 @@ struct MarqueeTicker: View {
 
     var body: some View {
         ZStack(alignment: .leading) {
-            InstitutionalTheme.Colors.surface1
+            DesignTokens.Colors.surface
 
             // KAYAN İÇERİK — iki yan yana kopya, offset @State ile sola itilir.
             // İlk kopyanın altında GeometryReader contentWidth'i ölçer;
@@ -320,13 +320,13 @@ struct MarqueeTicker: View {
         .clipped()
         .overlay(
             Rectangle()
-                .fill(InstitutionalTheme.Colors.border)
+                .fill(DesignTokens.Colors.border)
                 .frame(height: 1),
             alignment: .top
         )
         .overlay(
             Rectangle()
-                .fill(InstitutionalTheme.Colors.border)
+                .fill(DesignTokens.Colors.border)
                 .frame(height: 1),
             alignment: .bottom
         )
@@ -376,7 +376,7 @@ struct MarqueeTicker: View {
 
     private var tickerSeparator: some View {
         Rectangle()
-            .fill(InstitutionalTheme.Colors.border)
+            .fill(DesignTokens.Colors.border)
             .frame(width: 1, height: 14)
             .padding(.horizontal, 10)
     }
@@ -400,7 +400,7 @@ private struct TickerCell: View {
             if let price = item.price, price > 0 {
                 Text(formatPrice(price))
                     .font(DesignTokens.Fonts.custom(size: 12, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
 
             if let pct = item.percentChange {
@@ -410,7 +410,7 @@ private struct TickerCell: View {
             } else {
                 Text("—")
                     .font(DesignTokens.Fonts.custom(size: 12, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
         }
         .opacity(item.status == .safeContraindicated ? 0.5 : 1.0)
@@ -418,10 +418,10 @@ private struct TickerCell: View {
 
     private var labelColor: Color {
         switch item.status {
-        case .index:                return InstitutionalTheme.Colors.textPrimary
+        case .index:                return DesignTokens.Colors.textPrimary
         case .safeRecommended:      return InstitutionalTheme.Colors.aurora
-        case .safeContraindicated:  return InstitutionalTheme.Colors.textTertiary
-        default:                    return InstitutionalTheme.Colors.textSecondary
+        case .safeContraindicated:  return DesignTokens.Colors.textTertiary
+        default:                    return DesignTokens.Colors.textSecondary
         }
     }
 
@@ -430,7 +430,7 @@ private struct TickerCell: View {
         case .safeRecommended:
             return pct >= 0 ? InstitutionalTheme.Colors.aurora : InstitutionalTheme.Colors.crimson
         case .safeContraindicated:
-            return InstitutionalTheme.Colors.textTertiary
+            return DesignTokens.Colors.textTertiary
         case .index where item.label == "VIX":
             // VIX için yön-tersi: yükseliş korku demek, turuncu/crimson
             return pct >= 0 ? InstitutionalTheme.Colors.titan : InstitutionalTheme.Colors.aurora

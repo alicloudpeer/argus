@@ -14,7 +14,7 @@ struct HermesFeedView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 ArgusNavHeader(
@@ -33,7 +33,7 @@ struct HermesFeedView: View {
 
                 ScopeSelectorBar(selectedScope: $selectedScope)
                     .padding(.vertical, 12)
-                    .background(InstitutionalTheme.Colors.background)
+                    .background(DesignTokens.Colors.background)
                     .onChange(of: selectedScope) { _, newValue in
                         Task { await feedState.loadFeed(scope: newValue, watchlist: market.watchlist) }
                     }
@@ -61,7 +61,7 @@ struct HermesFeedView: View {
 
     private var headerStatus: ArgusNavHeader.Status {
         if feedState.isLoading {
-            return .custom(dotColor: InstitutionalTheme.Colors.textTertiary,
+            return .custom(dotColor: DesignTokens.Colors.textTertiary,
                            label: "Taranıyor",
                            trailing: scopeLabel)
         }
@@ -72,7 +72,7 @@ struct HermesFeedView: View {
         }
         let total = feedState.events.count + feedState.insights.count + feedState.rawArticles.count
         if total == 0 {
-            return .custom(dotColor: InstitutionalTheme.Colors.textTertiary,
+            return .custom(dotColor: DesignTokens.Colors.textTertiary,
                            label: "Akış boş",
                            trailing: scopeLabel)
         }
@@ -98,7 +98,7 @@ struct HermesFeedView: View {
                 if !feedState.insights.isEmpty && feedState.events.isEmpty {
                     ForEach(feedState.insights) { insight in
                         if insight.symbol != "MARKET" && insight.symbol != "GENERAL" {
-                            NavigationLink(destination: ArgusSanctumView(symbol: insight.symbol)) {
+                            Button { NavigationRouter.shared.navigate(to: .stockDetail(symbol: insight.symbol)) } label: {
                                 HermesInsightCard(insight: insight)
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -278,19 +278,19 @@ struct HermesEventCompactCard: View {
                 Spacer()
                 Text(timeAgo(event.publishedAt))
                     .font(DesignTokens.Fonts.custom(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             Text(event.headline)
                 .font(InstitutionalTheme.Typography.body)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineLimit(2)
 
             HStack(spacing: 8) {
                 Text(event.eventType.displayTitleTR.uppercased())
                     .font(DesignTokens.Fonts.custom(size: 9, weight: .bold, design: .monospaced))
                     .tracking(0.7)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 HStack(spacing: 5) {
                     ArgusDot(color: tone.foreground, size: 5)
@@ -303,7 +303,7 @@ struct HermesEventCompactCard: View {
 
             Text(event.summaryTRShort ?? event.rationaleShort)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .lineLimit(3)
 
             HStack(spacing: 6) {
@@ -314,7 +314,7 @@ struct HermesEventCompactCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
                 .stroke(tone.foreground.opacity(0.3), lineWidth: 1)
@@ -352,18 +352,18 @@ struct HermesInsightCard: View {
                 Spacer()
                 Text(timeAgo(insight.createdAt))
                     .font(DesignTokens.Fonts.custom(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             Text(insight.headline)
                 .font(InstitutionalTheme.Typography.body)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineLimit(2)
 
             if !insight.impactSentenceTR.isEmpty {
                 Text(insight.impactSentenceTR)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
             }
 
@@ -390,7 +390,7 @@ struct HermesInsightCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
                 .stroke(InstitutionalTheme.Colors.Motors.hermes.opacity(0.25), lineWidth: 1)
@@ -411,7 +411,7 @@ struct HermesInsightCard: View {
     private func impactColor(_ score: Double) -> Color {
         if score > 60 { return InstitutionalTheme.Colors.aurora }
         if score < 40 { return InstitutionalTheme.Colors.crimson }
-        return InstitutionalTheme.Colors.textSecondary
+        return DesignTokens.Colors.textSecondary
     }
 
     private func timeAgo(_ date: Date) -> String {
@@ -431,30 +431,30 @@ struct RawNewsCard: View {
                 Spacer()
                 Text(timeAgo(article.publishedAt))
                     .font(DesignTokens.Fonts.custom(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             Text(article.headline)
                 .font(InstitutionalTheme.Typography.body)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineLimit(3)
 
             HStack(spacing: 6) {
                 Image(systemName: "dot.radiowaves.left.and.right")
                     .font(DesignTokens.Fonts.custom(size: 10, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(article.source.uppercased())
                     .font(DesignTokens.Fonts.custom(size: 9, weight: .bold, design: .monospaced))
                     .tracking(0.6)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.border, lineWidth: 1)
+                .stroke(DesignTokens.Colors.border, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
@@ -473,7 +473,7 @@ struct LoadingStateView: View {
             ProgressView()
             Text("Haber akışı taranıyor")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Spacer()
         }
     }
@@ -493,7 +493,7 @@ struct ErrorStateView: View {
 
             Text(message)
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
@@ -516,16 +516,16 @@ struct EmptyFeedView: View {
 
             Image(systemName: "newspaper")
                 .font(DesignTokens.Fonts.custom(size: 28))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
 
             VStack(spacing: 4) {
                 Text(scope == 0 ? "Takip listesi boş" : "Haber bulunamadı")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(scope == 0 ? "Takip listenizdeki hisseler için haber bulunamadı."
                                 : "Genel piyasa haberi bulunamadı.")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
@@ -553,10 +553,10 @@ private struct sadeFeedActionButton: View {
                 Text(label)
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
             }
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
-            .background(InstitutionalTheme.Colors.surface2)
+            .background(DesignTokens.Colors.surfaceElevated)
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -577,7 +577,7 @@ struct ScopeSelectorBar: View {
         }
         .padding(2)
         .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(InstitutionalTheme.Colors.surface2)
+            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(DesignTokens.Colors.surfaceElevated)
         )
         .padding(.horizontal)
     }
@@ -593,13 +593,13 @@ struct ScopeButton: View {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 13, weight: isSelected ? .medium : .regular))
                 .foregroundColor(isSelected
-                                 ? InstitutionalTheme.Colors.textPrimary
-                                 : InstitutionalTheme.Colors.textSecondary)
+                                 ? DesignTokens.Colors.textPrimary
+                                 : DesignTokens.Colors.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 7)
                 .background(
                     isSelected
-                        ? InstitutionalTheme.Colors.surface1
+                        ? DesignTokens.Colors.surface
                         : Color.clear
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))

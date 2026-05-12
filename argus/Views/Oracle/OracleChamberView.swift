@@ -55,11 +55,11 @@ struct OracleChamberView: View {
         VStack(spacing: 4) {
             Text("Makro mercek")
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             Text("Makro veri → sektör etkisi")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
     }
     
@@ -126,7 +126,7 @@ struct OracleChamberView: View {
         VStack(spacing: 12) {
             Text("Sektör etkileri")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -159,7 +159,7 @@ struct OracleChamberView: View {
                     .foregroundColor(.orange)
                 Text("Zincir reaksiyon")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
             }
             
@@ -189,7 +189,7 @@ struct OracleChamberView: View {
             HStack {
                 Text("Simülasyon modu")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Button(action: { withAnimation { showSimulator = false } }) {
                     Image(systemName: "xmark.circle.fill")
@@ -231,10 +231,10 @@ struct OracleChamberView: View {
                     Text("Etkiyi hesapla")
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
                 }
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
-                .background(InstitutionalTheme.Colors.surface2)
+                .background(DesignTokens.Colors.surfaceElevated)
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
         }
@@ -626,11 +626,11 @@ struct OracleChamberEmbeddedView: View {
             VStack(spacing: 4) {
                 Text("Makro mercek")
                     .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
 
                 Text("Makro veri → sektör etkisi")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             // Merkezi Ekonomi Skoru

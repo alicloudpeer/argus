@@ -9,11 +9,11 @@ struct MultiHorizonDecisionCard: View {
     
     private func actionColor(for action: ArgusAction) -> Color {
         switch action {
-        case .aggressiveBuy: return InstitutionalTheme.Colors.positive
-        case .accumulate: return InstitutionalTheme.Colors.primary
+        case .aggressiveBuy: return DesignTokens.Colors.success
+        case .accumulate: return DesignTokens.Colors.primary
         case .neutral: return InstitutionalTheme.Colors.neutral
         case .trim: return InstitutionalTheme.Colors.warning
-        case .liquidate: return InstitutionalTheme.Colors.negative
+        case .liquidate: return DesignTokens.Colors.error
         }
     }
     
@@ -22,13 +22,13 @@ struct MultiHorizonDecisionCard: View {
             HStack {
                 Text(decision.symbol)
                     .font(InstitutionalTheme.Typography.headline)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 
                 Spacer()
                 
                 Text(decision.primaryRecommendation.action.rawValue)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(
@@ -60,7 +60,7 @@ struct MultiHorizonDecisionCard: View {
             
             Text(decision.primaryRecommendation.reasoning)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .lineLimit(3)
             
             ConfidenceBar(
@@ -72,11 +72,11 @@ struct MultiHorizonDecisionCard: View {
             HStack {
                 Text(decision.primaryRecommendation.timeframe.displayTitle)
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Spacer()
                 Text(decision.timestamp.formatted(.dateTime.hour().minute()))
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
         }
         .padding(InstitutionalCardScale.standard.padding)
@@ -92,9 +92,9 @@ struct HorizonBadge: View {
     
     private var actionColor: Color {
         switch action {
-        case .aggressiveBuy, .accumulate: return InstitutionalTheme.Colors.positive
+        case .aggressiveBuy, .accumulate: return DesignTokens.Colors.success
         case .neutral: return InstitutionalTheme.Colors.neutral
-        case .trim, .liquidate: return InstitutionalTheme.Colors.negative
+        case .trim, .liquidate: return DesignTokens.Colors.error
         }
     }
     
@@ -102,15 +102,15 @@ struct HorizonBadge: View {
         VStack(spacing: 4) {
             Text(title)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(isPrimary ? InstitutionalTheme.Colors.textPrimary : InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(isPrimary ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textTertiary)
             
             Text(action.rawValue.prefix(1))
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .bold))
-                .foregroundColor(isPrimary ? actionColor : InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(isPrimary ? actionColor : DesignTokens.Colors.textSecondary)
             
             Text("%\(Int(confidence * 100))")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -135,10 +135,10 @@ struct HorizonIndicatorRow: View {
                 VStack(spacing: 2) {
                     Text(key)
                         .font(InstitutionalTheme.Typography.micro)
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text(value)
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -195,5 +195,5 @@ struct HorizonIndicatorRow: View {
         )
     }
     .padding()
-    .background(InstitutionalTheme.Colors.background)
+    .background(DesignTokens.Colors.background)
 }

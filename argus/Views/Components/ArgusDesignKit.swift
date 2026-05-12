@@ -60,13 +60,13 @@ struct ArgusCard<Content: View>: View {
         switch style {
         case .flat:
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(InstitutionalTheme.Colors.surface1)
+                .fill(DesignTokens.Colors.surface)
         case .elevated:
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(InstitutionalTheme.Colors.surface2)
+                .fill(DesignTokens.Colors.surfaceElevated)
         case .inset:
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(InstitutionalTheme.Colors.background)
+                .fill(DesignTokens.Colors.background)
         case .outlined:
             Color.clear
         }
@@ -76,8 +76,8 @@ struct ArgusCard<Content: View>: View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .stroke(
                 style == .elevated
-                    ? InstitutionalTheme.Colors.borderStrong
-                    : InstitutionalTheme.Colors.borderSubtle,
+                    ? DesignTokens.Colors.borderStrong
+                    : DesignTokens.Colors.borderSubtle,
                 lineWidth: 1
             )
     }
@@ -122,13 +122,13 @@ struct ArgusSectionHeader<Trailing: View>: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .accessibilityAddTraits(.isHeader)
 
                 if let subtitle, !subtitle.isEmpty {
                     Text(subtitle)
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -178,14 +178,14 @@ struct ArgusKPI: View {
                 .font(.system(.caption2, design: .monospaced))
                 .fontWeight(.bold)
                 .tracking(1.1)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .lineLimit(1)
 
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(value)
                     .font(.system(.title3, design: .monospaced))
                     .fontWeight(.heavy)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -220,7 +220,7 @@ struct ArgusDeltaPill: View {
 
     private var isPositive: Bool { delta >= 0 }
     private var tint: Color {
-        isPositive ? InstitutionalTheme.Colors.positive : InstitutionalTheme.Colors.negative
+        isPositive ? DesignTokens.Colors.success : DesignTokens.Colors.error
     }
     private var text: String {
         let sign = isPositive ? "+" : ""
@@ -273,10 +273,10 @@ enum ArgusSignal {
 
     var tint: Color {
         switch self {
-        case .aggressiveBuy, .buy, .accumulate: return InstitutionalTheme.Colors.positive
-        case .wait, .hold:                      return InstitutionalTheme.Colors.primary
+        case .aggressiveBuy, .buy, .accumulate: return DesignTokens.Colors.success
+        case .wait, .hold:                      return DesignTokens.Colors.primary
         case .reduce:                           return InstitutionalTheme.Colors.neutral
-        case .sell, .exit:                      return InstitutionalTheme.Colors.negative
+        case .sell, .exit:                      return DesignTokens.Colors.error
         }
     }
 
@@ -361,17 +361,17 @@ struct ArgusEmptyState: View {
         VStack(spacing: 16) {
             Image(systemName: icon)
                 .font(DesignTokens.Fonts.custom(size: 40, weight: .light))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.bottom, 4)
 
             Text(title)
                 .font(.headline)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .multilineTextAlignment(.center)
 
             Text(message)
                 .font(.subheadline)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 24)
@@ -382,15 +382,15 @@ struct ArgusEmptyState: View {
                         .font(.system(.callout, design: .monospaced))
                         .fontWeight(.semibold)
                         .tracking(1)
-                        .foregroundColor(InstitutionalTheme.Colors.primary)
+                        .foregroundColor(DesignTokens.Colors.primary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
                         .frame(minHeight: 44)
                         .background(
-                            Capsule().fill(InstitutionalTheme.Colors.primary.opacity(0.14))
+                            Capsule().fill(DesignTokens.Colors.primary.opacity(0.14))
                         )
                         .overlay(
-                            Capsule().stroke(InstitutionalTheme.Colors.primary.opacity(0.4), lineWidth: 1)
+                            Capsule().stroke(DesignTokens.Colors.primary.opacity(0.4), lineWidth: 1)
                         )
                 }
                 .buttonStyle(.plain)
@@ -421,7 +421,7 @@ struct ArgusLoadingState: View {
                 Text(message)
                     .font(.system(.caption, design: .monospaced))
                     .tracking(1.2)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             ForEach(0..<max(1, rows), id: \.self) { i in
                 skeletonBar(widthFactor: i == 0 ? 0.9 : (i == 1 ? 0.7 : 0.8))
@@ -441,7 +441,7 @@ struct ArgusLoadingState: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(InstitutionalTheme.Colors.surface2)
+                    .fill(DesignTokens.Colors.surfaceElevated)
                 LinearGradient(
                     colors: [
                         Color.clear,
@@ -487,16 +487,16 @@ struct ArgusErrorState: View {
         VStack(spacing: 14) {
             Image(systemName: icon)
                 .font(DesignTokens.Fonts.custom(size: 34, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.negative)
+                .foregroundColor(DesignTokens.Colors.error)
 
             Text(title)
                 .font(.headline)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .multilineTextAlignment(.center)
 
             Text(message)
                 .font(.subheadline)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 24)
@@ -511,12 +511,12 @@ struct ArgusErrorState: View {
                             .fontWeight(.semibold)
                             .tracking(1)
                     }
-                    .foregroundColor(InstitutionalTheme.Colors.negative)
+                    .foregroundColor(DesignTokens.Colors.error)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 9)
                     .frame(minHeight: 44)
-                    .background(Capsule().fill(InstitutionalTheme.Colors.negative.opacity(0.12)))
-                    .overlay(Capsule().stroke(InstitutionalTheme.Colors.negative.opacity(0.45), lineWidth: 1))
+                    .background(Capsule().fill(DesignTokens.Colors.error.opacity(0.12)))
+                    .overlay(Capsule().stroke(DesignTokens.Colors.error.opacity(0.45), lineWidth: 1))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(retryTitle))
@@ -582,10 +582,10 @@ struct ArgusDataGrid: View {
                             .frame(width: 72, alignment: .trailing)
                     }
                 }
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(InstitutionalTheme.Colors.surface2)
+                .background(DesignTokens.Colors.surfaceElevated)
             }
 
             if rows.isEmpty {
@@ -599,14 +599,14 @@ struct ArgusDataGrid: View {
                     HStack {
                         Text(row.label)
                             .font(.callout)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .lineLimit(1)
                         Spacer()
                         Text(row.value)
                             .font(.system(.callout, design: .monospaced))
                             .fontWeight(.semibold)
                             .monospacedDigit()
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                             .lineLimit(1)
                         if let d = row.delta {
                             ArgusDeltaPill(delta: d, isPercent: row.isPercentDelta, compact: true)
@@ -618,7 +618,7 @@ struct ArgusDataGrid: View {
                     .frame(minHeight: 44)
                     .overlay(
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5),
                         alignment: .bottom
                     )
@@ -628,7 +628,7 @@ struct ArgusDataGrid: View {
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 1)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 1)
         )
     }
 }
@@ -648,10 +648,10 @@ struct ArgusMiniSparkline: View {
 
     private var effectiveTint: Color {
         if let tint { return tint }
-        guard data.count >= 2 else { return InstitutionalTheme.Colors.textSecondary }
+        guard data.count >= 2 else { return DesignTokens.Colors.textSecondary }
         return data.last! >= data.first!
-            ? InstitutionalTheme.Colors.positive
-            : InstitutionalTheme.Colors.negative
+            ? DesignTokens.Colors.success
+            : DesignTokens.Colors.error
     }
 
     var body: some View {

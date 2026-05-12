@@ -22,7 +22,7 @@ struct CouncilDebateCard: View {
                     .foregroundColor(accentColor)
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 
                 Spacer()
                 
@@ -34,7 +34,7 @@ struct CouncilDebateCard: View {
                 Button(action: { withAnimation { isExpanded.toggle() } }) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
             
@@ -51,7 +51,7 @@ struct CouncilDebateCard: View {
                     
                     Text("→")
                         .font(.caption2)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     
                     Text(proposal.action)
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .bold))
@@ -60,7 +60,7 @@ struct CouncilDebateCard: View {
                 
                 Text(proposal.reasoning)
                     .font(DesignTokens.Fonts.custom(size: 10))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .italic()
                     .lineLimit(2)
             }
@@ -68,14 +68,14 @@ struct CouncilDebateCard: View {
             // Expanded: Show all votes
             if isExpanded {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
 
                 // 2026-05-05 H-67: caps "OYLAR" tracking 1 → sentence "Oylar".
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Oylar")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     
                     ForEach(Array(votes.enumerated()), id: \.offset) { _, vote in
                         DebateVoteRow(
@@ -88,7 +88,7 @@ struct CouncilDebateCard: View {
                 }
                 
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
 
                 // Summary
@@ -98,7 +98,7 @@ struct CouncilDebateCard: View {
 
                     Text("\(approveCount) onay, \(vetoCount) veto")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
 
                     Spacer()
 
@@ -109,13 +109,13 @@ struct CouncilDebateCard: View {
             }
         }
         .padding(12)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .overlay(
             // 2026-05-05 H-67: motor accent tinted border (opacity 0.3)
             // → hairline borderSubtle (sade).
             RoundedRectangle(cornerRadius: 12)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
     }
     
@@ -143,7 +143,7 @@ struct DebateVoteRow: View {
                 HStack {
                     Text(name)
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     
                     Text(decision.rawValue)
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .bold))
@@ -158,7 +158,7 @@ struct DebateVoteRow: View {
                 if let reason = reasoning, !reason.isEmpty {
                     Text(reason)
                         .font(DesignTokens.Fonts.custom(size: 9))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
             }
@@ -195,7 +195,7 @@ struct AtlasDebateCard: View {
         CouncilDebateCard(
             title: "Bilanço konseyi",
             icon: "building.columns",
-            accentColor: InstitutionalTheme.Colors.textSecondary,
+            accentColor: DesignTokens.Colors.textSecondary,
             winningProposal: proposal,
             votes: votes,
             finalDecision: decision.action.rawValue,
@@ -246,7 +246,7 @@ struct GrandCouncilDebateCard: View {
             HStack {
                 Text("Karar patikası")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Text(decision.action.rawValue)
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
@@ -254,19 +254,19 @@ struct GrandCouncilDebateCard: View {
                 Button(action: { withAnimation { isExpanded.toggle() } }) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
 
             // Reasoning özet (sayım + ağırlık + eşik dahil)
             Text(decision.reasoning)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if isExpanded {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
 
                 // 2026-05-05 H-67: caps başlıklar tracking 1 → sentence.
@@ -274,7 +274,7 @@ struct GrandCouncilDebateCard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Oylar · \(decision.contributors.count) / \(totalExpectedVoters) modül")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     ForEach(Array(decision.contributors.enumerated()), id: \.offset) { _, contrib in
                         contributorRow(contrib)
                     }
@@ -295,7 +295,7 @@ struct GrandCouncilDebateCard: View {
                 // Hard veto'lar (gerçek veto — ModuleVeto listesi)
                 if !decision.vetoes.isEmpty {
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 0.5)
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Veto · \(decision.vetoes.count)")
@@ -308,11 +308,11 @@ struct GrandCouncilDebateCard: View {
                                     .foregroundColor(InstitutionalTheme.Colors.crimson)
                                 Text(veto.module)
                                     .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
-                                Text("·").foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                    .foregroundColor(DesignTokens.Colors.textPrimary)
+                                Text("·").foregroundColor(DesignTokens.Colors.textTertiary)
                                 Text(veto.reason)
                                     .font(DesignTokens.Fonts.custom(size: 10))
-                                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                    .foregroundColor(DesignTokens.Colors.textSecondary)
                                     .lineLimit(2)
                             }
                         }
@@ -322,12 +322,12 @@ struct GrandCouncilDebateCard: View {
                 // Danışman notları
                 if !decision.advisors.isEmpty {
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 0.5)
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Danışman notları · \(decision.advisors.count)")
                             .font(DesignTokens.Fonts.custom(size: 12))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         ForEach(Array(decision.advisors.enumerated()), id: \.offset) { _, note in
                             HStack(alignment: .top, spacing: 6) {
                                 Image(systemName: noteIcon(for: note.tone))
@@ -336,10 +336,10 @@ struct GrandCouncilDebateCard: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(note.module)
                                         .font(DesignTokens.Fonts.custom(size: 10, weight: .bold))
-                                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                        .foregroundColor(DesignTokens.Colors.textPrimary)
                                     Text(note.advice)
                                         .font(DesignTokens.Fonts.custom(size: 10))
-                                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                        .foregroundColor(DesignTokens.Colors.textSecondary)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
@@ -349,13 +349,13 @@ struct GrandCouncilDebateCard: View {
             }
         }
         .padding(12)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .overlay(
             // 2026-05-05 H-67: holo motor tinted border (opacity 0.3) →
             // hairline borderSubtle.
             RoundedRectangle(cornerRadius: 12)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
     }
 
@@ -371,19 +371,19 @@ struct GrandCouncilDebateCard: View {
                 HStack(spacing: 6) {
                     Text(contrib.module)
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(voteLabel(for: contrib.action))
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
                         .foregroundColor(voteColor(for: contrib.action))
                     Spacer()
                     Text("%\(Int(abs(contrib.confidence) * 100))")
                         .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 if !contrib.reasoning.isEmpty {
                     Text(contrib.reasoning)
                         .font(DesignTokens.Fonts.custom(size: 10))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                 }
             }
@@ -402,7 +402,7 @@ struct GrandCouncilDebateCard: View {
                 HStack(spacing: 6) {
                     Text(name)
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text("Bekleniyor")
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
                         .foregroundColor(InstitutionalTheme.Colors.titan)
@@ -410,7 +410,7 @@ struct GrandCouncilDebateCard: View {
                 }
                 Text(reason)
                     .font(DesignTokens.Fonts.custom(size: 10))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(1)
             }
         }
@@ -436,7 +436,7 @@ struct GrandCouncilDebateCard: View {
         switch action {
         case .buy:  return InstitutionalTheme.Colors.aurora
         case .sell: return InstitutionalTheme.Colors.crimson
-        case .hold: return InstitutionalTheme.Colors.textSecondary
+        case .hold: return DesignTokens.Colors.textSecondary
         }
     }
 
@@ -444,7 +444,7 @@ struct GrandCouncilDebateCard: View {
         switch action {
         case .aggressiveBuy, .accumulate: return InstitutionalTheme.Colors.aurora
         case .trim, .liquidate: return InstitutionalTheme.Colors.crimson
-        case .neutral: return InstitutionalTheme.Colors.textSecondary
+        case .neutral: return DesignTokens.Colors.textSecondary
         }
     }
 
@@ -462,7 +462,7 @@ struct GrandCouncilDebateCard: View {
         case .positive: return InstitutionalTheme.Colors.aurora
         case .caution:  return InstitutionalTheme.Colors.titan
         case .warning:  return InstitutionalTheme.Colors.crimson
-        case .neutral:  return InstitutionalTheme.Colors.textSecondary
+        case .neutral:  return DesignTokens.Colors.textSecondary
         }
     }
 }
@@ -486,7 +486,7 @@ struct OrionDebateCard: View {
         CouncilDebateCard(
             title: "Teknik konseyi",
             icon: "waveform.path.ecg",
-            accentColor: InstitutionalTheme.Colors.textSecondary,
+            accentColor: DesignTokens.Colors.textSecondary,
             winningProposal: proposal,
             votes: votes,
             finalDecision: decision.action.rawValue,

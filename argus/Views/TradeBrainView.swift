@@ -89,13 +89,13 @@ struct TradeBrainView: View {
     var body: some View {
         // 2026-05-03 H-59: nested NavigationStack kaldırıldı.
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                     topNav
 
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 0.5)
 
                     ScrollView {
@@ -155,7 +155,7 @@ struct TradeBrainView: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
                         .font(DesignTokens.Fonts.custom(size: 16, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .frame(width: 32, height: 32)
                         .contentShape(Rectangle())
                 }
@@ -165,10 +165,10 @@ struct TradeBrainView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("Trade Brain")
                     .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text("Otomatik karar merkezi")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             Spacer()
             if !isPushed {
@@ -179,7 +179,7 @@ struct TradeBrainView: View {
                 }) {
                     Image(systemName: "line.3.horizontal")
                         .font(DesignTokens.Fonts.custom(size: 16, weight: .regular))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .frame(width: 32, height: 32)
                         .contentShape(Rectangle())
                 }
@@ -192,7 +192,7 @@ struct TradeBrainView: View {
 
     private var sectionDivider: some View {
         Rectangle()
-            .fill(InstitutionalTheme.Colors.borderSubtle)
+            .fill(DesignTokens.Colors.borderSubtle)
             .frame(height: 0.5)
     }
 
@@ -214,10 +214,10 @@ struct TradeBrainView: View {
                 Text(label)
                     .font(DesignTokens.Fonts.custom(size: 13, weight: selected ? .medium : .regular))
                     .foregroundColor(selected
-                                     ? InstitutionalTheme.Colors.textPrimary
-                                     : InstitutionalTheme.Colors.textSecondary)
+                                     ? DesignTokens.Colors.textPrimary
+                                     : DesignTokens.Colors.textSecondary)
                 Rectangle()
-                    .fill(selected ? InstitutionalTheme.Colors.textPrimary : Color.clear)
+                    .fill(selected ? DesignTokens.Colors.textPrimary : Color.clear)
                     .frame(height: 1.5)
             }
             .padding(.horizontal, 8)
@@ -231,8 +231,8 @@ struct TradeBrainView: View {
     private var autopilotStatus: some View {
         let active = isAutoPilotActive
         let dotColor: Color = active
-            ? InstitutionalTheme.Colors.positive
-            : InstitutionalTheme.Colors.textTertiary
+            ? DesignTokens.Colors.success
+            : DesignTokens.Colors.textTertiary
         let summary = "\(openPositionsCount) pozisyon · sağlık \(Int(healthSnapshot.score))"
         return HStack(alignment: .center, spacing: 10) {
             Circle()
@@ -241,10 +241,10 @@ struct TradeBrainView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(active ? "Otopilot aktif" : "Otopilot pasif")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(summary)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(1)
             }
             Spacer()
@@ -253,7 +253,7 @@ struct TradeBrainView: View {
                 set: { executionState.isAutoPilotEnabled = $0 }
             ))
             .labelsHidden()
-            .tint(InstitutionalTheme.Colors.positive)
+            .tint(DesignTokens.Colors.success)
         }
     }
 
@@ -263,12 +263,12 @@ struct TradeBrainView: View {
         HStack(spacing: 0) {
             statColumn(title: "Açık",
                        value: "\(openPositionsCount)",
-                       tone: InstitutionalTheme.Colors.textPrimary,
+                       tone: DesignTokens.Colors.textPrimary,
                        leadingDivider: false)
             statColumn(title: "Nakit",
                        value: "\(Int(cashRatio * 100))%",
                        tone: cashRatio >= 0.20
-                            ? InstitutionalTheme.Colors.textPrimary
+                            ? DesignTokens.Colors.textPrimary
                             : InstitutionalTheme.Colors.warning,
                        leadingDivider: true)
             statColumn(title: "Risk",
@@ -282,14 +282,14 @@ struct TradeBrainView: View {
         HStack(spacing: 0) {
             if leadingDivider {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(width: 0.5)
                     .padding(.vertical, 2)
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Text(value)
                     .font(DesignTokens.Fonts.custom(size: 15, weight: .medium))
                     .foregroundColor(tone)
@@ -319,18 +319,18 @@ struct TradeBrainView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("Bekleyen aksiyonlar")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 if !alerts.isEmpty {
                     Text("\(alerts.count)")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Spacer()
             }
             if alerts.isEmpty {
                 Text("Şu an aktif uyarı yok. Plan tetiklenmeleri ve konsey değişiklikleri burada görünür.")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.vertical, 4)
             } else {
                 VStack(spacing: 0) {
@@ -338,13 +338,13 @@ struct TradeBrainView: View {
                         pendingActionRow(alert)
                         if alert.id != alerts.last?.id {
                             Rectangle()
-                                .fill(InstitutionalTheme.Colors.borderSubtle)
+                                .fill(DesignTokens.Colors.borderSubtle)
                                 .frame(height: 0.5)
                                 .padding(.leading, 14)
                         }
                     }
                 }
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
@@ -360,14 +360,14 @@ struct TradeBrainView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(alert.symbol)
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(humanAlertType(alert.type))
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Text(alert.actionDescription)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
             }
             .padding(.horizontal, 11)
@@ -375,7 +375,7 @@ struct TradeBrainView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             Image(systemName: "chevron.right")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.trailing, 11)
         }
     }
@@ -397,16 +397,16 @@ struct TradeBrainView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("Yakın olaylar")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text("7 gün")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
             }
             if events.isEmpty {
                 Text("Önümüzdeki 7 günde planlı bilanço, faiz kararı ya da makro veri yok.")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.vertical, 4)
             } else {
                 VStack(spacing: 0) {
@@ -415,13 +415,13 @@ struct TradeBrainView: View {
                         eventRow(event)
                         if idx < preview.count - 1 {
                             Rectangle()
-                                .fill(InstitutionalTheme.Colors.borderSubtle)
+                                .fill(DesignTokens.Colors.borderSubtle)
                                 .frame(height: 0.5)
                                 .padding(.leading, 14)
                         }
                     }
                 }
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
@@ -438,20 +438,20 @@ struct TradeBrainView: View {
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
                     .foregroundColor(isPosition
                                      ? InstitutionalTheme.Colors.warning
-                                     : InstitutionalTheme.Colors.textPrimary)
+                                     : DesignTokens.Colors.textPrimary)
                 Text(eventMonth(event.date))
                     .font(DesignTokens.Fonts.custom(size: 9))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .frame(width: 32)
             VStack(alignment: .leading, spacing: 1) {
                 Text(event.title)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .lineLimit(1)
                 Text(eventSubtitle(event))
                     .font(DesignTokens.Fonts.custom(size: 10))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(1)
             }
             Spacer(minLength: 6)
@@ -462,7 +462,7 @@ struct TradeBrainView: View {
             } else if event.symbol == nil {
                 Text("Makro")
                     .font(DesignTokens.Fonts.custom(size: 10))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
         .padding(.horizontal, 11)
@@ -496,29 +496,29 @@ struct TradeBrainView: View {
         return VStack(alignment: .leading, spacing: 10) {
             Text("Son işlemler")
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             if logs.isEmpty {
                 Text("Henüz otomatik işlem yok.")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.vertical, 4)
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(logs.enumerated()), id: \.offset) { idx, log in
                         Text(log)
                             .font(DesignTokens.Fonts.custom(size: 12))
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 11)
                             .padding(.vertical, 8)
                         if idx < logs.count - 1 {
                             Rectangle()
-                                .fill(InstitutionalTheme.Colors.borderSubtle)
+                                .fill(DesignTokens.Colors.borderSubtle)
                                 .frame(height: 0.5)
                         }
                     }
                 }
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
@@ -530,7 +530,7 @@ struct TradeBrainView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Trade Brain'i öğren")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("Otopilot nasıl çalışır, plan adımları ve risk eşikleri →")
                 .font(DesignTokens.Fonts.custom(size: 13))
                 .foregroundColor(InstitutionalTheme.Colors.holo)
@@ -544,7 +544,7 @@ struct TradeBrainView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Risk dağılımı")
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             VStack(spacing: 0) {
                 riskRow(label: "Nakit oranı",
                         valueText: "%\(Int(cashRatio * 100))",
@@ -564,32 +564,32 @@ struct TradeBrainView: View {
                         healthy: maxPositionWeight <= 0.15,
                         hint: "max %15")
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
 
     private var rowDivider: some View {
         Rectangle()
-            .fill(InstitutionalTheme.Colors.borderSubtle)
+            .fill(DesignTokens.Colors.borderSubtle)
             .frame(height: 0.5)
             .padding(.leading, 11)
     }
 
     private func riskRow(label: String, valueText: String, progress: Double, healthy: Bool, hint: String) -> some View {
         let tone: Color = healthy
-            ? InstitutionalTheme.Colors.textPrimary
+            ? DesignTokens.Colors.textPrimary
             : InstitutionalTheme.Colors.warning
         let clamped = max(0, min(progress, 1))
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(label)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 Text(hint)
                     .font(DesignTokens.Fonts.custom(size: 10))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(valueText)
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
                     .foregroundColor(tone)
@@ -598,7 +598,7 @@ struct TradeBrainView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                     Rectangle()
                         .fill(tone.opacity(0.7))
                         .frame(width: max(2, geo.size.width * clamped))
@@ -618,18 +618,18 @@ struct TradeBrainView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("Açık pozisyonlar")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 if !positions.isEmpty {
                     Text("\(positions.count)")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 Spacer()
             }
             if positions.isEmpty {
                 Text("Açık pozisyon yok. Yeni alım yapıldığında plan burada görünür.")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.vertical, 4)
             } else {
                 VStack(spacing: 0) {
@@ -637,13 +637,13 @@ struct TradeBrainView: View {
                         openPositionRow(trade)
                         if trade.id != positions.last?.id {
                             Rectangle()
-                                .fill(InstitutionalTheme.Colors.borderSubtle)
+                                .fill(DesignTokens.Colors.borderSubtle)
                                 .frame(height: 0.5)
                                 .padding(.leading, 14)
                         }
                     }
                 }
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
@@ -654,8 +654,8 @@ struct TradeBrainView: View {
         let pnlPct = (price - trade.entryPrice) / trade.entryPrice * 100
         let pnlPositive = pnlPct >= 0
         let pnlColor: Color = pnlPositive
-            ? InstitutionalTheme.Colors.positive
-            : InstitutionalTheme.Colors.negative
+            ? DesignTokens.Colors.success
+            : DesignTokens.Colors.error
         let plan = planStore.getPlan(for: trade.id)
         let nextStep = plan?.nextPendingStep?.description ?? "Plan tanımlı değil"
         let decision = signalState.grandDecisions[trade.symbol]
@@ -678,11 +678,11 @@ struct TradeBrainView: View {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(trade.symbol)
                             .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         if !actionLabel.isEmpty {
                             Text(actionLabel)
                                 .font(DesignTokens.Fonts.custom(size: 11))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                         }
                         Spacer()
                         Text("\(pnlPositive ? "+" : "")\(String(format: "%.2f", pnlPct))%")
@@ -692,7 +692,7 @@ struct TradeBrainView: View {
                     }
                     Text(nextStep)
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(2)
                 }
                 .padding(.horizontal, 11)
@@ -700,7 +700,7 @@ struct TradeBrainView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .padding(.trailing, 11)
             }
         }
@@ -734,10 +734,10 @@ struct TradeBrainView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("Konsey çelişkisi")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text("\(array.count)")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
             }
             VStack(spacing: 0) {
@@ -745,13 +745,13 @@ struct TradeBrainView: View {
                     contradictionRow(symbol: item.key, analysis: item.value)
                     if idx < array.count - 1 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
                             .padding(.leading, 14)
                     }
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
@@ -769,10 +769,10 @@ struct TradeBrainView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(symbol)
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(modules)
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(1)
                     Spacer()
                     Text("güven −%\(Int(analysis.suggestedConfidenceDrop * 100))")
@@ -782,7 +782,7 @@ struct TradeBrainView: View {
                 }
                 Text(analysis.recommendation)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineLimit(2)
             }
             .padding(.horizontal, 11)
@@ -801,9 +801,9 @@ struct TradeBrainView: View {
 
     private func severityColor(_ severity: Severity) -> Color {
         switch severity {
-        case .high: return InstitutionalTheme.Colors.negative
+        case .high: return DesignTokens.Colors.error
         case .medium: return InstitutionalTheme.Colors.warning
-        case .low: return InstitutionalTheme.Colors.textSecondary
+        case .low: return DesignTokens.Colors.textSecondary
         }
     }
 
@@ -830,18 +830,18 @@ struct TradeBrainView: View {
 
     private func statusColor(for status: PortfolioRiskManager.HealthStatus) -> Color {
         switch status {
-        case .healthy: return InstitutionalTheme.Colors.positive
+        case .healthy: return DesignTokens.Colors.success
         case .warning: return InstitutionalTheme.Colors.warning
-        case .critical: return InstitutionalTheme.Colors.negative
+        case .critical: return DesignTokens.Colors.error
         }
     }
 
     private func alertColor(for priority: TradeBrainAlert.AlertPriority) -> Color {
         switch priority {
-        case .low: return InstitutionalTheme.Colors.textSecondary
-        case .medium: return InstitutionalTheme.Colors.primary
+        case .low: return DesignTokens.Colors.textSecondary
+        case .medium: return DesignTokens.Colors.primary
         case .high: return InstitutionalTheme.Colors.warning
-        case .critical: return InstitutionalTheme.Colors.negative
+        case .critical: return DesignTokens.Colors.error
         }
     }
 

@@ -1,35 +1,44 @@
 import SwiftUI
 
+// MARK: - APIKeyCenterView (2026-05-11 sade yeniden yazım)
+//
+// Eski: TerminalSection + Card-pattern + monospace heavy + ASCII Türkçe + sistem renkleri.
+// Yeni: MarketView dili — sade liste, kart yok, monospace yalnız anahtar string'inde,
+// CAPS yok, status sade text. Tap → bottom sheet ile edit.
+//
+// Davranış aynen korunuyor: APIKeyStore + APIKeyVerifier + TCMBDataService.
+
 struct APIKeyCenterView: View {
-    private enum KeyFilter: String, CaseIterable, Identifiable {
-        case all = "Tumunu Goster"
-        case configured = "Tanimli"
-        case missing = "Eksik"
 
+    // MARK: Tipler
+
+    enum KeyFilter: String, CaseIterable, Identifiable {
+        case all       = "Tümü"
+        case configured = "Tanımlı"
+        case missing    = "Eksik"
         var id: String { rawValue }
     }
 
-    private enum Category: String, CaseIterable, Identifiable {
-        case market = "Piyasa Verisi"
-        case macro = "Makro"
-        case intelligence = "Yapay Zeka"
-        case infrastructure = "Altyapi"
-
+    enum Category: String, CaseIterable, Identifiable {
+        case market        = "Piyasa"
+        case macro         = "Makro"
+        case intelligence  = "Zekâ"
+        case infrastructure = "Altyapı"
         var id: String { rawValue }
     }
 
-    private enum Source {
+    enum Source {
         case provider(APIProvider)
         case customKey(String)
     }
 
-    private enum TestMode {
-        case heimdall(ArgusProvider)
+    enum TestMode {
+        case provider(APIProvider)
         case tcmb
         case unsupported
     }
 
-    private struct KeyEntry: Identifiable {
+    struct KeyEntry: Identifiable {
         let id: String
         let title: String
         let subtitle: String
@@ -37,50 +46,48 @@ struct APIKeyCenterView: View {
         let category: Category
         let source: Source
         let testMode: TestMode
+        /// Sağlayıcının anahtar/hesap açma sayfası.
+        let signUpURL: URL?
     }
 
-    private struct TestState {
+    struct TestState {
         let success: Bool
         let message: String
     }
 
+    // MARK: State
+
     @State private var searchText = ""
     @State private var filter: KeyFilter = .all
     @State private var categoryFilter: Category?
-    @State private var drafts: [String: String] = [:]
     @State private var persisted: [String: String] = [:]
-    @State private var revealed: Set<String> = []
-    @State private var testing: Set<String> = []
     @State private var testStates: [String: TestState] = [:]
+    @State private var selectedEntry: KeyEntry?
+
+    // MARK: - Sağlayıcı kataloğu
 
     private var entries: [KeyEntry] {
         [
+            // Piyasa
             KeyEntry(
-                id: "tcmb_evds",
-                title: "TCMB EVDS",
-                subtitle: "Turkiye makro veri kaynagi",
-                placeholder: "TCMB API Key",
-                category: .macro,
-                source: .customKey("tcmb_evds_api_key"),
-                testMode: .tcmb
-            ),
-            KeyEntry(
-                id: "fred",
-                title: "FRED",
-                subtitle: "Kuresel makro indikatorler",
-                placeholder: "FRED API Key",
-                category: .macro,
-                source: .provider(.fred),
-                testMode: .unsupported
-            ),
-            KeyEntry(
-                id: "collectapi",
-                title: "CollectAPI",
-                subtitle: "BIST yardimci veri girisi",
-                placeholder: "CollectAPI Key",
+                id: "alpaca_key_id",
+                title: "Alpaca · Key ID",
+                subtitle: "US hisse anlık fiyat · 200 r/dk · paper",
+                placeholder: "PK... (20 karakter)",
                 category: .market,
-                source: .customKey("collectapi_key"),
-                testMode: .unsupported
+                source: .customKey(AlpacaProvider.keyIDStoreID),
+                testMode: .unsupported,
+                signUpURL: URL(string: "https://alpaca.markets/")
+            ),
+            KeyEntry(
+                id: "alpaca_secret",
+                title: "Alpaca · Secret",
+                subtitle: "Paper hesap secret · ~40 karakter",
+                placeholder: "Alpaca Secret Key",
+                category: .market,
+                source: .customKey(AlpacaProvider.secretStoreID),
+                testMode: .unsupported,
+                signUpURL: URL(string: "https://alpaca.markets/")
             ),
             KeyEntry(
                 id: "fmp",
@@ -89,16 +96,18 @@ struct APIKeyCenterView: View {
                 placeholder: "FMP API Key",
                 category: .market,
                 source: .provider(.fmp),
-                testMode: .heimdall(.fmp)
+                testMode: .provider(.fmp),
+                signUpURL: URL(string: "https://site.financialmodelingprep.com/developer/docs/dashboard")
             ),
             KeyEntry(
                 id: "twelve_data",
                 title: "Twelve Data",
-                subtitle: "Anlik fiyat ve zaman serisi",
+                subtitle: "Anlık fiyat ve zaman serisi",
                 placeholder: "Twelve Data API Key",
                 category: .market,
                 source: .provider(.twelveData),
-                testMode: .heimdall(.twelveData)
+                testMode: .provider(.twelveData),
+                signUpURL: URL(string: "https://twelvedata.com/account/api-keys")
             ),
             KeyEntry(
                 id: "tiingo",
@@ -107,16 +116,18 @@ struct APIKeyCenterView: View {
                 placeholder: "Tiingo API Key",
                 category: .market,
                 source: .provider(.tiingo),
-                testMode: .unsupported
+                testMode: .provider(.tiingo),
+                signUpURL: URL(string: "https://www.tiingo.com/account/api/token")
             ),
             KeyEntry(
                 id: "eodhd",
                 title: "EODHD",
-                subtitle: "Global hisse/ETF ve screener",
+                subtitle: "Global hisse · ETF · screener",
                 placeholder: "EODHD API Key",
                 category: .market,
                 source: .provider(.eodhd),
-                testMode: .heimdall(.eodhd)
+                testMode: .provider(.eodhd),
+                signUpURL: URL(string: "https://eodhd.com/cp/settings")
             ),
             KeyEntry(
                 id: "alpha_vantage",
@@ -125,7 +136,8 @@ struct APIKeyCenterView: View {
                 placeholder: "Alpha Vantage API Key",
                 category: .market,
                 source: .provider(.alphaVantage),
-                testMode: .unsupported
+                testMode: .provider(.alphaVantage),
+                signUpURL: URL(string: "https://www.alphavantage.co/support/#api-key")
             ),
             KeyEntry(
                 id: "marketstack",
@@ -134,52 +146,72 @@ struct APIKeyCenterView: View {
                 placeholder: "MarketStack API Key",
                 category: .market,
                 source: .provider(.marketstack),
-                testMode: .unsupported
+                testMode: .provider(.marketstack),
+                signUpURL: URL(string: "https://marketstack.com/signup")
             ),
             KeyEntry(
                 id: "finnhub",
                 title: "Finnhub",
-                subtitle: "Yedek piyasa verisi (60 istek/dk)",
+                subtitle: "Yedek piyasa verisi · 60 r/dk",
                 placeholder: "Finnhub API Key",
                 category: .market,
                 source: .provider(.finnhub),
-                testMode: .unsupported
+                testMode: .provider(.finnhub),
+                signUpURL: URL(string: "https://finnhub.io/register")
             ),
             KeyEntry(
-                id: "massive",
-                title: "Massive",
-                subtitle: "Opsiyon ve zincir verisi",
-                placeholder: "Massive Token",
-                category: .infrastructure,
-                source: .provider(.massive),
-                testMode: .unsupported
+                id: "collectapi",
+                title: "CollectAPI",
+                subtitle: "BIST yardımcı veri girişi",
+                placeholder: "CollectAPI Key",
+                category: .market,
+                source: .customKey("collectapi_key"),
+                testMode: .unsupported,
+                signUpURL: URL(string: "https://collectapi.com/")
+            ),
+
+            // Makro
+            KeyEntry(
+                id: "tcmb_evds",
+                title: "TCMB EVDS",
+                subtitle: "Türkiye makro veri kaynağı",
+                placeholder: "TCMB API Key",
+                category: .macro,
+                source: .customKey("tcmb_evds_api_key"),
+                testMode: .tcmb,
+                signUpURL: URL(string: "https://evds2.tcmb.gov.tr/index.php?/evds/login")
             ),
             KeyEntry(
-                id: "pinecone",
-                title: "Pinecone",
-                subtitle: "Vektor veritabani ulasimi",
-                placeholder: "Pinecone API Key",
-                category: .infrastructure,
-                source: .provider(.pinecone),
-                testMode: .unsupported
+                id: "fred",
+                title: "FRED",
+                subtitle: "Küresel makro indikatörler",
+                placeholder: "FRED API Key",
+                category: .macro,
+                source: .provider(.fred),
+                testMode: .provider(.fred),
+                signUpURL: URL(string: "https://fred.stlouisfed.org/docs/api/api_key.html")
             ),
+
+            // Zekâ
             KeyEntry(
                 id: "groq",
                 title: "Groq",
-                subtitle: "Llama tabanli model cagirilari",
+                subtitle: "Llama tabanlı model çağrıları",
                 placeholder: "Groq API Key (gsk_...)",
                 category: .intelligence,
                 source: .provider(.groq),
-                testMode: .unsupported
+                testMode: .provider(.groq),
+                signUpURL: URL(string: "https://console.groq.com/keys")
             ),
             KeyEntry(
                 id: "cerebras",
                 title: "Cerebras",
-                subtitle: "Qwen 3 — 1M token/gun ucretsiz",
+                subtitle: "Qwen 3 · 1M token/gün ücretsiz",
                 placeholder: "Cerebras API Key (csk-...)",
                 category: .intelligence,
                 source: .provider(.cerebras),
-                testMode: .unsupported
+                testMode: .provider(.cerebras),
+                signUpURL: URL(string: "https://cloud.cerebras.ai/platform")
             ),
             KeyEntry(
                 id: "gemini",
@@ -188,387 +220,324 @@ struct APIKeyCenterView: View {
                 placeholder: "Gemini API Key (AIza...)",
                 category: .intelligence,
                 source: .provider(.gemini),
-                testMode: .unsupported
+                testMode: .provider(.gemini),
+                signUpURL: URL(string: "https://aistudio.google.com/app/apikey")
             ),
             KeyEntry(
                 id: "glm",
                 title: "GLM",
-                subtitle: "Zhipu GLM erisimi",
+                subtitle: "Zhipu GLM erişimi",
                 placeholder: "GLM API Key",
                 category: .intelligence,
                 source: .provider(.glm),
-                testMode: .unsupported
+                testMode: .provider(.glm),
+                signUpURL: URL(string: "https://open.bigmodel.cn/usercenter/apikeys")
             ),
             KeyEntry(
                 id: "deepseek",
                 title: "DeepSeek",
-                subtitle: "DeepSeek model erisimi",
-                placeholder: "DeepSeek API Key (sk_...)",
+                subtitle: "DeepSeek model erişimi",
+                placeholder: "DeepSeek API Key (sk-...)",
                 category: .intelligence,
                 source: .provider(.deepSeek),
-                testMode: .unsupported
+                testMode: .provider(.deepSeek),
+                signUpURL: URL(string: "https://platform.deepseek.com/api_keys")
+            ),
+
+            // Altyapı
+            KeyEntry(
+                id: "massive",
+                title: "Massive",
+                subtitle: "Opsiyon ve zincir verisi",
+                placeholder: "Massive Token",
+                category: .infrastructure,
+                source: .provider(.massive),
+                testMode: .provider(.massive),
+                signUpURL: nil
+            ),
+            KeyEntry(
+                id: "pinecone",
+                title: "Pinecone",
+                subtitle: "Vektör veritabanı erişimi",
+                placeholder: "Pinecone API Key",
+                category: .infrastructure,
+                source: .provider(.pinecone),
+                testMode: .provider(.pinecone),
+                signUpURL: URL(string: "https://app.pinecone.io/")
             )
         ]
     }
 
+    // MARK: - Computed
+
     private var filteredEntries: [KeyEntry] {
         entries.filter { entry in
-            if let categoryFilter, entry.category != categoryFilter {
-                return false
-            }
-
+            if let categoryFilter, entry.category != categoryFilter { return false }
             if !searchText.isEmpty {
-                let query = searchText.lowercased()
-                let matchesTitle = entry.title.lowercased().contains(query)
-                let matchesSubtitle = entry.subtitle.lowercased().contains(query)
-                if !matchesTitle && !matchesSubtitle {
+                let q = searchText.lowercased()
+                if !entry.title.lowercased().contains(q),
+                   !entry.subtitle.lowercased().contains(q) {
                     return false
                 }
             }
-
-            let value = drafts[entry.id, default: ""].trimmingCharacters(in: .whitespacesAndNewlines)
+            let configured = !(persisted[entry.id, default: ""]
+                .trimmingCharacters(in: .whitespacesAndNewlines)).isEmpty
             switch filter {
-            case .all:
-                return true
-            case .configured:
-                return !value.isEmpty
-            case .missing:
-                return value.isEmpty
+            case .all:        return true
+            case .configured: return configured
+            case .missing:    return !configured
             }
         }
     }
 
-    private var groupedEntries: [Category: [KeyEntry]] {
-        Dictionary(grouping: filteredEntries, by: { $0.category })
-    }
-
-    private var visibleCategories: [Category] {
-        Category.allCases.filter { groupedEntries[$0] != nil }
+    private var grouped: [(Category, [KeyEntry])] {
+        Category.allCases.compactMap { cat in
+            let items = filteredEntries.filter { $0.category == cat }
+            return items.isEmpty ? nil : (cat, items)
+        }
     }
 
     private var configuredCount: Int {
-        entries.reduce(0) { partialResult, entry in
-            let key = persisted[entry.id, default: ""].trimmingCharacters(in: .whitespacesAndNewlines)
-            return partialResult + (key.isEmpty ? 0 : 1)
+        entries.reduce(0) {
+            $0 + (persisted[$1.id, default: ""]
+                .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0 : 1)
         }
     }
 
-    private var hasDirtyEdits: Bool {
-        entries.contains { entry in
-            drafts[entry.id, default: ""] != persisted[entry.id, default: ""]
-        }
-    }
+    // MARK: - Body
 
     var body: some View {
         ZStack {
             DesignTokens.Colors.background.ignoresSafeArea()
 
-            VStack(spacing: DesignTokens.Spacing.lg) {
-                summaryCard
-                searchAndFilterArea
+            VStack(spacing: 0) {
+                topBar
 
                 ScrollView {
-                    VStack(spacing: DesignTokens.Spacing.lg) {
-                        categoryChips
+                    LazyVStack(spacing: 0, pinnedViews: []) {
+                        searchField
+                            .padding(.horizontal, DesignTokens.Spacing.s14)
+                            .padding(.top, DesignTokens.Spacing.md)
+                            .padding(.bottom, DesignTokens.Spacing.sm)
 
-                        ForEach(visibleCategories) { category in
-                            if let categoryEntries = groupedEntries[category] {
-                                TerminalSection(title: category.rawValue.uppercased()) {
-                                    VStack(spacing: DesignTokens.Spacing.md) {
-                                        ForEach(categoryEntries) { entry in
-                                            keyRow(for: entry)
-                                        }
-                                    }
-                                    .padding(.vertical, DesignTokens.Spacing.s6)
-                                }
+                        categoryRow
+                            .padding(.horizontal, DesignTokens.Spacing.s14)
+                            .padding(.bottom, DesignTokens.Spacing.sm)
+
+                        ForEach(grouped, id: \.0) { category, items in
+                            sectionHeader(category.rawValue, count: items.count)
+                            ForEach(items) { entry in
+                                row(for: entry)
                             }
                         }
+
+                        Spacer(minLength: DesignTokens.Spacing.xxl)
                     }
-                    .padding(.bottom, DesignTokens.Spacing.xl)
                 }
             }
-            .padding(.horizontal, DesignTokens.Spacing.lg)
-            .padding(.top, DesignTokens.Spacing.lg)
         }
+        .navigationBarHidden(true)
         .onAppear(perform: loadValuesFromStorage)
         .onReceive(NotificationCenter.default.publisher(for: .argusKeyStoreDidUpdate)) { _ in
-            if !hasDirtyEdits {
-                loadValuesFromStorage()
-            }
+            loadValuesFromStorage()
+        }
+        .sheet(item: $selectedEntry) { entry in
+            APIKeyEditSheet(
+                entry: entry,
+                initialValue: persisted[entry.id, default: ""],
+                onSaved: { newValue in
+                    persisted[entry.id] = newValue
+                    testStates[entry.id] = nil
+                },
+                onCleared: {
+                    persisted[entry.id] = ""
+                    testStates[entry.id] = nil
+                }
+            )
+            .preferredColorScheme(.dark)
         }
     }
 
-    private var summaryCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Label("Merkezi Yonetim", systemImage: "key.horizontal.fill")
-                    .font(DesignTokens.Fonts.custom(size: 14, weight: .bold, design: .monospaced))
+    // MARK: - TopBar
+
+    private var topBar: some View {
+        VStack(spacing: DesignTokens.Spacing.s10) {
+            HStack(alignment: .center) {
+                Text("API anahtarları")
+                    .font(DesignTokens.Fonts.custom(size: 22, weight: .semibold))
                     .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
-                Text("\(configuredCount)/\(entries.count) TANIMLI")
-                    .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(configuredCount == entries.count ? .green : .orange)
+                Text("\(configuredCount) / \(entries.count)")
+                    .font(DesignTokens.Fonts.custom(size: 13))
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
-            Text("Tum API anahtarlari tek ekranda yonetilir. Daginik ayar bloklari kaldirildi.")
-                .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
-                .foregroundColor(DesignTokens.Colors.textTertiary)
+            HStack(spacing: 0) {
+                tabButton(title: "Tümü",    value: .all)
+                tabButton(title: "Tanımlı", value: .configured)
+                tabButton(title: "Eksik",   value: .missing)
+                Spacer()
+            }
         }
-        .padding(DesignTokens.Spacing.md)
-        .background(DesignTokens.Colors.Overlay.l06)
+        .padding(.horizontal, DesignTokens.Spacing.s14)
+        .padding(.top, DesignTokens.Spacing.md)
+        .padding(.bottom, DesignTokens.Spacing.s10)
+        .background(DesignTokens.Colors.surface)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(DesignTokens.Colors.borderSubtle)
+                .frame(height: DesignTokens.BorderWidth.hairline)
+        }
+    }
+
+    @ViewBuilder
+    private func tabButton(title: String, value: KeyFilter) -> some View {
+        let isSelected = filter == value
+        Button(action: { withAnimation(.easeInOut(duration: 0.18)) { filter = value } }) {
+            VStack(spacing: DesignTokens.Spacing.xs) {
+                Text(title)
+                    .font(DesignTokens.Fonts.custom(
+                        size: 13,
+                        weight: isSelected ? .medium : .regular
+                    ))
+                    .foregroundColor(isSelected
+                                     ? DesignTokens.Colors.textPrimary
+                                     : DesignTokens.Colors.textSecondary)
+                Rectangle()
+                    .fill(isSelected ? DesignTokens.Colors.textPrimary : Color.clear)
+                    .frame(height: 1.5)
+            }
+            .padding(.horizontal, DesignTokens.Spacing.sm)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    // MARK: - Search & Category
+
+    private var searchField: some View {
+        HStack(spacing: DesignTokens.Spacing.s10) {
+            Image(systemName: "magnifyingglass")
+                .font(DesignTokens.Fonts.custom(size: 15))
+                .foregroundColor(DesignTokens.Colors.textTertiary)
+            TextField("Sağlayıcı ara", text: $searchText)
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                .font(DesignTokens.Fonts.custom(size: 14))
+                .foregroundColor(DesignTokens.Colors.textPrimary)
+        }
+        .padding(.horizontal, DesignTokens.Spacing.md)
+        .padding(.vertical, DesignTokens.Spacing.s10)
+        .background(DesignTokens.Colors.Overlay.l03)
         .overlay(
             RoundedRectangle(cornerRadius: DesignTokens.Radius.r10)
-                .stroke(DesignTokens.Colors.Overlay.l08, lineWidth: DesignTokens.BorderWidth.regular)
+                .stroke(DesignTokens.Colors.border, lineWidth: DesignTokens.BorderWidth.hairline)
         )
         .cornerRadius(DesignTokens.Radius.r10)
     }
 
-    private var searchAndFilterArea: some View {
-        VStack(spacing: DesignTokens.Spacing.s10) {
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(DesignTokens.Colors.textTertiary)
-                TextField("Saglayici ara", text: $searchText)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .font(DesignTokens.Fonts.custom(size: 13, design: .monospaced))
-                    .foregroundColor(DesignTokens.Colors.textPrimary)
-            }
-            .padding(DesignTokens.Spacing.s10)
-            .background(DesignTokens.Colors.Overlay.l06)
-            .cornerRadius(DesignTokens.Radius.sm)
-
-            Picker("Filtre", selection: $filter) {
-                ForEach(KeyFilter.allCases) { filter in
-                    Text(filter.rawValue).tag(filter)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
-    }
-
-    private var categoryChips: some View {
+    private var categoryRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                categoryChip(title: "Tum Kategoriler", isSelected: categoryFilter == nil) {
+            HStack(spacing: DesignTokens.Spacing.lg) {
+                categoryItem(title: "Tümü", isSelected: categoryFilter == nil) {
                     categoryFilter = nil
                 }
-
-                ForEach(Category.allCases) { category in
-                    categoryChip(title: category.rawValue, isSelected: categoryFilter == category) {
-                        categoryFilter = category
+                ForEach(Category.allCases) { c in
+                    categoryItem(title: c.rawValue, isSelected: categoryFilter == c) {
+                        categoryFilter = (categoryFilter == c) ? nil : c
                     }
                 }
             }
-            .padding(.vertical, DesignTokens.Spacing.xs)
         }
     }
 
-    private func categoryChip(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+    private func categoryItem(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold, design: .monospaced))
-                .foregroundColor(isSelected ? .black : .gray)
-                .padding(.horizontal, DesignTokens.Spacing.s10)
-                .padding(.vertical, DesignTokens.Spacing.s6)
-                .background(isSelected ? Color.cyan : DesignTokens.Colors.Overlay.l08)
-                .cornerRadius(DesignTokens.Radius.sm)
+                .font(DesignTokens.Fonts.custom(
+                    size: 13,
+                    weight: isSelected ? .medium : .regular
+                ))
+                .foregroundColor(isSelected
+                                 ? DesignTokens.Colors.textPrimary
+                                 : DesignTokens.Colors.textSecondary)
         }
+        .buttonStyle(.plain)
     }
 
-    private func keyRow(for entry: KeyEntry) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 3) {
+    // MARK: - Section & Row
+
+    private func sectionHeader(_ title: String, count: Int) -> some View {
+        HStack {
+            Text(title)
+                .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
+                .foregroundColor(DesignTokens.Colors.textTertiary)
+            Spacer()
+            Text("\(count)")
+                .font(DesignTokens.Fonts.custom(size: 11))
+                .foregroundColor(DesignTokens.Colors.textTertiary)
+        }
+        .padding(.horizontal, DesignTokens.Spacing.s14)
+        .padding(.top, DesignTokens.Spacing.lg)
+        .padding(.bottom, DesignTokens.Spacing.s6)
+    }
+
+    private func row(for entry: KeyEntry) -> some View {
+        let configured = !(persisted[entry.id, default: ""]
+            .trimmingCharacters(in: .whitespacesAndNewlines)).isEmpty
+        return Button {
+            selectedEntry = entry
+        } label: {
+            HStack(spacing: DesignTokens.Spacing.s10) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxs) {
                     Text(entry.title)
-                        .font(DesignTokens.Fonts.custom(size: 13, weight: .bold, design: .monospaced))
+                        .font(DesignTokens.Fonts.custom(size: 15))
                         .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(entry.subtitle)
-                        .font(DesignTokens.Fonts.custom(size: 10, design: .monospaced))
-                        .foregroundColor(DesignTokens.Colors.textTertiary)
+                        .font(DesignTokens.Fonts.custom(size: 12))
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
+                        .lineLimit(2)
                 }
-
                 Spacer()
-
-                let configured = !drafts[entry.id, default: ""].trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                Text(configured ? "TANIMLI" : "EKSIK")
-                    .font(DesignTokens.Fonts.custom(size: 9, weight: .bold, design: .monospaced))
-                    .foregroundColor(configured ? .green : .red)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, DesignTokens.Spacing.xs)
-                    .background((configured ? Color.green : Color.red).opacity(0.15))
-                    .cornerRadius(DesignTokens.Radius.r6)
+                Text(configured ? "Tanımlı" : "Eksik")
+                    .font(DesignTokens.Fonts.custom(size: 12))
+                    .foregroundColor(configured
+                                     ? DesignTokens.Colors.success
+                                     : DesignTokens.Colors.textTertiary)
+                Image(systemName: "chevron.right")
+                    .font(DesignTokens.Fonts.custom(size: 12))
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
-
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                Group {
-                    if revealed.contains(entry.id) {
-                        TextField(
-                            entry.placeholder,
-                            text: Binding(
-                                get: { drafts[entry.id, default: ""] },
-                                set: { drafts[entry.id] = $0 }
-                            )
-                        )
-                    } else {
-                        SecureField(
-                            entry.placeholder,
-                            text: Binding(
-                                get: { drafts[entry.id, default: ""] },
-                                set: { drafts[entry.id] = $0 }
-                            )
-                        )
-                    }
-                }
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-                .font(DesignTokens.Fonts.custom(size: 12, design: .monospaced))
-                .foregroundColor(DesignTokens.Colors.textPrimary)
-
-                Button(action: { toggleVisibility(for: entry.id) }) {
-                    Image(systemName: revealed.contains(entry.id) ? "eye.slash.fill" : "eye.fill")
-                        .foregroundColor(DesignTokens.Colors.textTertiary)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, DesignTokens.Spacing.s10)
-            .padding(.vertical, DesignTokens.Spacing.sm)
-            .background(DesignTokens.Colors.Overlay.l05)
-            .cornerRadius(DesignTokens.Radius.sm)
-
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                Button(action: { save(entry) }) {
-                    Label("Kaydet", systemImage: "tray.and.arrow.down.fill")
-                        .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(isDirty(entry.id) ? .cyan : .gray)
-                .disabled(!isDirty(entry.id))
-
-                Button(action: { clear(entry) }) {
-                    Label("Temizle", systemImage: "trash")
-                        .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
-                }
-                .buttonStyle(.bordered)
-                .tint(.red)
-
-                Button(action: { runTest(for: entry) }) {
-                    if testing.contains(entry.id) {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                            .frame(width: 14, height: 14)
-                    } else {
-                        Label("Test", systemImage: "network")
-                            .font(DesignTokens.Fonts.custom(size: 10, weight: .bold, design: .monospaced))
-                    }
-                }
-                .buttonStyle(.bordered)
-                .tint(.mint)
-                .disabled(drafts[entry.id, default: ""].trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }
-
-            if let testState = testStates[entry.id] {
-                Text(testState.message)
-                    .font(DesignTokens.Fonts.custom(size: 10, design: .monospaced))
-                    .foregroundColor(testState.success ? .green : .orange)
-                    .padding(.top, DesignTokens.Spacing.xxs)
-            }
+            .padding(.horizontal, DesignTokens.Spacing.s14)
+            .padding(.vertical, DesignTokens.Spacing.s14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(DesignTokens.Colors.borderSubtle)
+                .frame(height: DesignTokens.BorderWidth.hairline)
+                .padding(.leading, DesignTokens.Spacing.s14)
         }
     }
+
+    // MARK: - I/O
 
     private func loadValuesFromStorage() {
         var snapshot: [String: String] = [:]
         for entry in entries {
             snapshot[entry.id] = readValue(for: entry)
         }
-        drafts = snapshot
         persisted = snapshot
     }
 
     private func readValue(for entry: KeyEntry) -> String {
         switch entry.source {
-        case .provider(let provider):
-            return APIKeyStore.shared.getKey(for: provider) ?? ""
+        case .provider(let p):
+            return APIKeyStore.shared.getKey(for: p) ?? ""
         case .customKey(let key):
             return APIKeyStore.shared.getCustomValue(for: key) ?? ""
         }
     }
-
-    private func save(_ entry: KeyEntry) {
-        let value = drafts[entry.id, default: ""].trimmingCharacters(in: .whitespacesAndNewlines)
-        drafts[entry.id] = value
-
-        switch entry.source {
-        case .provider(let provider):
-            APIKeyStore.shared.setKey(provider: provider, key: value)
-        case .customKey(let key):
-            APIKeyStore.shared.setCustomValue(value, for: key)
-        }
-
-        persisted[entry.id] = value
-        testStates[entry.id] = nil
-    }
-
-    private func clear(_ entry: KeyEntry) {
-        switch entry.source {
-        case .provider(let provider):
-            APIKeyStore.shared.deleteKey(provider: provider)
-        case .customKey(let key):
-            APIKeyStore.shared.deleteCustomValue(for: key)
-        }
-
-        drafts[entry.id] = ""
-        persisted[entry.id] = ""
-        testStates[entry.id] = nil
-    }
-
-    private func isDirty(_ id: String) -> Bool {
-        drafts[id, default: ""] != persisted[id, default: ""]
-    }
-
-    private func toggleVisibility(for id: String) {
-        if revealed.contains(id) {
-            revealed.remove(id)
-        } else {
-            revealed.insert(id)
-        }
-    }
-
-    private func runTest(for entry: KeyEntry) {
-        let key = drafts[entry.id, default: ""].trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !key.isEmpty else { return }
-
-        testing.insert(entry.id)
-        testStates[entry.id] = nil
-
-        Task {
-            let result: TestState
-
-            switch entry.testMode {
-            case .heimdall(let provider):
-                let verification = await HeimdallProbe.shared.verifyKey(provider: provider, key: key)
-                let message = verification.isValid ? "Dogrulama basarili." : "Dogrulama basarisiz."
-                result = TestState(success: verification.isValid, message: message)
-
-            case .tcmb:
-                await TCMBDataService.shared.setAPIKey(key)
-                let success = await TCMBDataService.shared.testConnection()
-                result = TestState(
-                    success: success,
-                    message: success ? "TCMB baglantisi basarili." : "TCMB baglantisi basarisiz."
-                )
-            case .unsupported:
-                result = TestState(
-                    success: false,
-                    message: "Bu saglayici icin otomatik test tanimli degil."
-                )
-            }
-
-            await MainActor.run {
-                testing.remove(entry.id)
-                testStates[entry.id] = result
-            }
-        }
-    }
-    
 }

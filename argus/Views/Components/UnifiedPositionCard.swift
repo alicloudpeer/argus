@@ -23,11 +23,11 @@ struct UnifiedPositionCard: View {
     private var isBist: Bool { market == .bist }
 
     private var positiveColor: Color {
-        InstitutionalTheme.Colors.positive
+        DesignTokens.Colors.success
     }
 
     private var negativeColor: Color {
-        InstitutionalTheme.Colors.negative
+        DesignTokens.Colors.error
     }
 
     private var pnlPercent: Double {
@@ -74,13 +74,13 @@ struct UnifiedPositionCard: View {
 
             ForEach(alerts) { alert in
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
                 alertRow(alert)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .onAppear(perform: refreshCardData)
         .onChange(of: currentPrice) { _, _ in
             refreshCardData()
@@ -93,10 +93,10 @@ struct UnifiedPositionCard: View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
             Text(displaySymbol)
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text("\(formatQuantity(trade.quantity)) hisse")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             if hasCriticalAlert {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(DesignTokens.Fonts.custom(size: 10))
@@ -105,7 +105,7 @@ struct UnifiedPositionCard: View {
             Spacer(minLength: 8)
             Text(formatPrice(currentPrice))
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .monospacedDigit()
         }
     }
@@ -114,7 +114,7 @@ struct UnifiedPositionCard: View {
         HStack(alignment: .firstTextBaseline) {
             Text("Giriş \(formatPrice(trade.entryPrice)) · \(holdingDays) gün")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Spacer(minLength: 6)
             Text("\(pnlValue >= 0 ? "+" : "")\(formatPrice(pnlValue)) · \(pnlPercent >= 0 ? "+" : "")\(String(format: "%.1f", pnlPercent))%")
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
@@ -141,7 +141,7 @@ struct UnifiedPositionCard: View {
                   filled: true)
         } else {
             badge(text: "Karar bekleniyor",
-                  color: InstitutionalTheme.Colors.textSecondary,
+                  color: DesignTokens.Colors.textSecondary,
                   filled: false)
         }
     }
@@ -155,17 +155,17 @@ struct UnifiedPositionCard: View {
             let stopText = stop.map { "Stop \(formatPrice($0))" } ?? "Stop yok"
             if executed == 0 && stop == nil {
                 badge(text: "Plan başlamadı",
-                      color: InstitutionalTheme.Colors.textSecondary,
+                      color: DesignTokens.Colors.textSecondary,
                       filled: false)
             } else {
                 let prefix = executed > 0 ? "Adım \(executed)/\(plan.totalStepCount) · " : ""
                 badge(text: "\(prefix)\(stopText)",
-                      color: InstitutionalTheme.Colors.textSecondary,
+                      color: DesignTokens.Colors.textSecondary,
                       filled: false)
             }
         } else {
             badge(text: "Plan yok",
-                  color: InstitutionalTheme.Colors.textSecondary,
+                  color: DesignTokens.Colors.textSecondary,
                   filled: false)
         }
     }
@@ -178,7 +178,7 @@ struct UnifiedPositionCard: View {
             .padding(.vertical, 3)
             .background(filled
                         ? color.opacity(0.14)
-                        : InstitutionalTheme.Colors.surface2)
+                        : DesignTokens.Colors.surfaceElevated)
             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 
@@ -195,14 +195,14 @@ struct UnifiedPositionCard: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(alertTypeLabel(alert.type))
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(relativeTime(alert.timestamp))
                         .font(DesignTokens.Fonts.custom(size: 10))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 Text(alert.message)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(alert.actionDescription)
                     .font(DesignTokens.Fonts.custom(size: 11))
@@ -213,7 +213,7 @@ struct UnifiedPositionCard: View {
             Button(action: { onAlertDismiss?(alert) }) {
                 Image(systemName: "xmark")
                     .font(DesignTokens.Fonts.custom(size: 10))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .frame(width: 22, height: 22)
                     .contentShape(Rectangle())
             }
@@ -240,7 +240,7 @@ struct UnifiedPositionCard: View {
         if let decision {
             return actionColor(decision.action)
         }
-        return InstitutionalTheme.Colors.textTertiary
+        return DesignTokens.Colors.textTertiary
     }
 
     /// High/critical priority alert var mı?
@@ -250,7 +250,7 @@ struct UnifiedPositionCard: View {
 
     private func priorityColor(_ priority: TradeBrainAlert.AlertPriority) -> Color {
         switch priority {
-        case .low:      return InstitutionalTheme.Colors.textSecondary
+        case .low:      return DesignTokens.Colors.textSecondary
         case .medium:   return InstitutionalTheme.Colors.holo
         case .high:     return InstitutionalTheme.Colors.warning
         case .critical: return InstitutionalTheme.Colors.crimson
@@ -306,11 +306,11 @@ struct UnifiedPositionCard: View {
 
     private func actionColor(_ action: ArgusAction) -> Color {
         switch action {
-        case .aggressiveBuy: return InstitutionalTheme.Colors.positive
-        case .accumulate:    return InstitutionalTheme.Colors.primary
-        case .neutral:       return InstitutionalTheme.Colors.textSecondary
+        case .aggressiveBuy: return DesignTokens.Colors.success
+        case .accumulate:    return DesignTokens.Colors.primary
+        case .neutral:       return DesignTokens.Colors.textSecondary
         case .trim:          return InstitutionalTheme.Colors.warning
-        case .liquidate:     return InstitutionalTheme.Colors.negative
+        case .liquidate:     return DesignTokens.Colors.error
         }
     }
 

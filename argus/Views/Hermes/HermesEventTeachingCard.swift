@@ -36,7 +36,7 @@ struct HermesEventTeachingCard: View {
                 // Başlık cümlesi
                 Text(event.headline)
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 // 2026-05-05 H-67: caps mono chip'ler "ETKİ/UFUK/GÜVEN" →
@@ -44,17 +44,17 @@ struct HermesEventTeachingCard: View {
                 HStack(spacing: 8) {
                     Text("Etki \(Int(event.finalScore))")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text("·")
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text(event.horizonHint.rawValue.lowercased())
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text("·")
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     Text(String(format: "Güven %%%.0f", event.confidence * 100))
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
 
                 // Sentiment + rationale + kanıt — sentence label.
@@ -76,10 +76,10 @@ struct HermesEventTeachingCard: View {
                 HermesDelayBoardView(scope: scope)
             } else {
                 HStack(spacing: 8) {
-                    ArgusDot(color: InstitutionalTheme.Colors.textTertiary)
+                    ArgusDot(color: DesignTokens.Colors.textTertiary)
                     Text("Şu an analiz edilebilir haber bulunamadı.")
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -97,12 +97,12 @@ struct HermesEventTeachingCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             // 2026-05-05 H-67: hermes motor tinted border (opacity 0.3) →
             // hairline borderSubtle.
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -112,7 +112,7 @@ struct HermesEventTeachingCard: View {
         // DERS NOTU" → sade sentence başlık.
         Text(scope == .bist ? "Kulis ders notu" : "Haber ders notu")
             .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
     }
 
     private func teachingLine(label: String, value: String, italicize: Bool = false) -> some View {
@@ -121,13 +121,13 @@ struct HermesEventTeachingCard: View {
         HStack(alignment: .top, spacing: 10) {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .frame(width: 78, alignment: .leading)
                 .padding(.top, 1)
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 12))
                 .italic(italicize)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -157,12 +157,12 @@ private struct HermesDelayBoardView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             
             if sources.isEmpty {
                 Text("Kaynak gecikme verisi birikiyor.")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             } else {
                 let maxAvg = max(sources.map { $0.summary.averageMinutes }.max() ?? 1.0, 1.0)
                 ForEach(sources.indices, id: \.self) { index in
@@ -173,12 +173,12 @@ private struct HermesDelayBoardView: View {
                         HStack {
                             Text(item.source.capitalized)
                                 .font(.caption2)
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                                 .lineLimit(1)
                             Spacer()
                             Text("Ort \(avg)dk · P90 \(p90)dk")
                                 .font(.caption2)
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                         }
                         HStack(spacing: 8) {
                             HermesDelayBar(
@@ -198,7 +198,7 @@ private struct HermesDelayBoardView: View {
             }
         }
         .padding(10)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .cornerRadius(10)
         .task(id: scope.rawValue) {
             sources = HermesDelayStatsService.shared.topSources(scope: scope)
@@ -267,51 +267,51 @@ private struct HermesTeachingGuideView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(modeTitle)
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             
             Text("1) Haber türünü bul: fiyat etkisi ilk ipucudur.")
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("2) Güven + gecikme: düşük güven/uzun gecikme puanı törpüler.")
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("3) Etki ufku: intraday kısa, multiweek uzun izdir.")
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             if let event {
                 Text("Mini örnek")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 
                 let tone = event.polarity == .positive ? "olumlu" : (event.polarity == .negative ? "olumsuz" : "karma")
                 let rumorTag = event.riskFlags.contains(.rumor) ? " (kulis/dedikodu)" : ""
                 Text("“\(event.headline)” → \(event.eventType.displayTitleTR)\(rumorTag). Beklenen etki: \(tone), skor: \(Int(event.finalScore)).")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 
                 Text("Adım adım analiz")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 
                 let delayMinutes = Int(event.ingestDelayMinutes.rounded())
                 let groupLabel = event.riskFlags.contains(.rumor) ? "kulis/dedikodu" : (event.riskFlags.contains(.lowReliability) ? "düşük güven" : "çekirdek")
                 Text("1) Tür: \(event.eventType.displayTitleTR) → tarihsel etki kalıbı seçilir.")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text("2) Güven/şiddet: \(Int(event.confidence * 100))% güven, \(Int(event.severity))/100 şiddet.")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text("3) Gecikme: \(delayMinutes) dk → etki kırpılır.")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text("4) Kalibrasyon: \(groupLabel) grubunun geçmiş isabetine göre skor ayarlanır.")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
         }
         .padding(10)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .cornerRadius(10)
     }
 }
@@ -327,31 +327,31 @@ struct HermesWhyScoreView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Neden bu puan?")
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             
             Text("Bu haber \(event.eventType.displayTitleTR) türünde; genelde fiyatı \(event.polarity == .positive ? "olumlu" : (event.polarity == .negative ? "olumsuz" : "karma")) etkiler.")
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             Text("Şiddet: \(Int(event.severity))/100, Kaynak güveni: \(Int(event.sourceReliability))/100.")
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
                 Text("Haber bize \(Int(ageMinutes)) dk gecikmeli düştü; bu yüzden etki %\(Int(delayPenalty * 100)) kırpıldı.")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 
                 let sourceDelayText = HermesDelayStatsService.shared.describe(source: event.sourceName)
                 Text("Kaynak gecikmesi: \(sourceDelayText)")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             
             Text("Ek uyarılar: \(riskText)")
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .padding(10)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .cornerRadius(10)
     }
 }
@@ -368,44 +368,44 @@ struct HermesCalibrationSummaryView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Öğrenme özeti")
                 .font(.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             
             if let summary = summary {
                 if summary.totalCount < 5 {
                     Text("Hermes bu türde veri biriktiriyor (\(summary.totalCount) olay). Biraz daha örnek gördükçe puanları düzeltir.")
                         .font(.caption2)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 } else {
                     Text("Bu türde son \(summary.totalCount) olayda isabet %\(Int(summary.hitRate * 100)). Ortalama hata: \(Int(summary.meanAbsError)) puan.")
                         .font(.caption2)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
                 
                 Text("Puan düzeltme çarpanı: \(String(format: "%.2f", summary.multiplier))x.")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 
                 let benchmarkText = summary.benchmarkCandidates.isEmpty ? "Bilinmiyor" : summary.benchmarkCandidates.joined(separator: ", ")
                 Text("Kalibrasyon penceresi: T+\(summary.primaryDays) / T+\(summary.secondaryDays) gün. Benchmark: \(benchmarkText).")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 
                 if let group = summary.calibrationGroup {
                     let label = group == "rumor" ? "Kulis (dedikodu)" : (group == "lowrel" ? "Kulis (düşük güven)" : "Kulis (çekirdek)")
                     Text("Kalibrasyon modu: \(label).")
                         .font(.caption2)
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 
                 HermesCalibrationTimelineView(summary: summary)
             } else {
                 Text("Öğrenme verisi hazırlanıyor.")
                     .font(.caption2)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
         }
         .padding(10)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .cornerRadius(10)
         .task(id: eventType.rawValue + scope.rawValue + horizon.rawValue + flags.map { $0.rawValue }.joined()) {
             summary = await HermesCalibrationService.shared.summary(scope: scope, eventType: eventType, horizon: horizon, flags: flags)
@@ -433,7 +433,7 @@ private struct HermesCalibrationTimelineView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Öğrenme ilerlemesi")
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             HStack(spacing: 6) {
                 ForEach(0..<5, id: \.self) { index in
@@ -461,10 +461,10 @@ private struct HermesCalibrationTimelineView: View {
             
             Text("Son kalibrasyon: \(lastUpdateText)")
                 .font(.caption2)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(8)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .cornerRadius(10)
     }
 }

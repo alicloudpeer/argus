@@ -96,10 +96,20 @@ final class HermesStateViewModel: ObservableObject {
     }
     
     // MARK: - Helper
+    /// Birincil kaynak boş dönerse GDELT yedek olarak devreye girer
+    /// (2026-05-11). GDELT 3 aylık global haber penceresi + ticker tone
+    /// sağlar; boş feed deneyimini ortadan kaldırır.
     private func fetchRawNews(for symbol: String) async -> [NewsArticle] {
+        let primary: [NewsArticle]
         if symbol.uppercased().hasSuffix(".IS") || SymbolResolver.shared.isBistSymbol(symbol) {
-             return (try? await RSSNewsProvider().fetchNews(symbol: symbol, limit: 20)) ?? []
+            primary = (try? await RSSNewsProvider().fetchNews(symbol: symbol, limit: 20)) ?? []
+        } else {
+            primary = (try? await GoogleNewsRSSProvider.shared.fetchNews(symbol: symbol, limit: 15)) ?? []
         }
-        return (try? await GoogleNewsRSSProvider.shared.fetchNews(symbol: symbol, limit: 15)) ?? []
+        if !primary.isEmpty { return primary }
+
+        // Birincil boş → GDELT yedek. `gdeltTone` alanı dolu döner; bu
+        // ileride HermesLLMService cold-start sentiment için sinyal.
+        return (try? await GDELTNewsProvider.shared.fetchNews(symbol: symbol, limit: 15)) ?? []
     }
 }

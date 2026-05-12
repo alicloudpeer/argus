@@ -25,7 +25,6 @@ final class APIKeyStore: ObservableObject, @unchecked Sendable {
 
     // MARK: - Legacy / Direct Access Properties
 
-    var dovizComToken: String { Secrets.dovizComKey }
     var borsaPyToken: String { Secrets.borsaPyKey }
 
     var geminiApiKey: String { resolvedKey(for: .gemini, fallback: Secrets.geminiKey) }

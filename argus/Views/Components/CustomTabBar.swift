@@ -38,7 +38,7 @@ struct CustomTabBar: View {
             .padding(.bottom, 38) // Home Indicator padding
             .background(
                 TabShape()
-                    .fill(InstitutionalTheme.Colors.surface1)
+                    .fill(DesignTokens.Colors.surface)
                     .shadow(color: DesignTokens.Colors.Scrim.s40, radius: 10, x: 0, y: -5)
             )
             

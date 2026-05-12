@@ -5,8 +5,8 @@ struct TitanAnalysisCard: View {
     
     var ringColor: Color {
         let score = result.score
-        if score >= 70 { return InstitutionalTheme.Colors.positive }
-        if score <= 30 { return InstitutionalTheme.Colors.negative }
+        if score >= 70 { return DesignTokens.Colors.success }
+        if score <= 30 { return DesignTokens.Colors.error }
         return InstitutionalTheme.Colors.warning
     }
     
@@ -15,17 +15,17 @@ struct TitanAnalysisCard: View {
             HStack {
                 Text("Titan Analizi ⚡️")
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.primary)
+                    .foregroundColor(DesignTokens.Colors.primary)
                 Spacer()
                 Text(result.log.date, style: .date)
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             
             HStack(spacing: 20) {
                 ZStack {
                     Circle()
-                        .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 8)
+                        .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 8)
                     Circle()
                         .trim(from: 0, to: result.score / 100.0)
                         .stroke(ringColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
@@ -34,18 +34,18 @@ struct TitanAnalysisCard: View {
                     VStack(spacing: 0) {
                         Text("\(Int(result.score))")
                             .font(InstitutionalTheme.Typography.title)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Text("Puan")
                             .font(InstitutionalTheme.Typography.micro)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                 }
                 .frame(width: 80, height: 80)
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    ContextRow(icon: "chart.line.uptrend.xyaxis", title: "Trend:", value: result.log.technicalContext, color: InstitutionalTheme.Colors.textPrimary)
-                    ContextRow(icon: "globe", title: "Makro:", value: result.log.macroContext, color: InstitutionalTheme.Colors.textPrimary)
-                    ContextRow(icon: "shazam.logo", title: "Kalite:", value: result.log.qualityContext, color: InstitutionalTheme.Colors.textSecondary)
+                    ContextRow(icon: "chart.line.uptrend.xyaxis", title: "Trend:", value: result.log.technicalContext, color: DesignTokens.Colors.textPrimary)
+                    ContextRow(icon: "globe", title: "Makro:", value: result.log.macroContext, color: DesignTokens.Colors.textPrimary)
+                    ContextRow(icon: "shazam.logo", title: "Kalite:", value: result.log.qualityContext, color: DesignTokens.Colors.textSecondary)
                 }
             }
         }
@@ -68,12 +68,12 @@ struct ContextRow: View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.primary)
+                .foregroundColor(DesignTokens.Colors.primary)
                 .frame(width: 16)
             
             Text(title)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             Text(value)
                 .font(InstitutionalTheme.Typography.caption)
@@ -90,7 +90,7 @@ struct FundProfileCard: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Fon Profili ")
                 .font(InstitutionalTheme.Typography.bodyStrong)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             
             if let p = profile {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
@@ -103,7 +103,7 @@ struct FundProfileCard: View {
                 if !p.description.isEmpty {
                     Text(p.description)
                         .font(InstitutionalTheme.Typography.caption)
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .lineLimit(3)
                         .padding(.top, 8)
                 }
@@ -125,11 +125,11 @@ struct ProfileItem: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text(value)
                 .font(InstitutionalTheme.Typography.caption)
                 .bold()
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
         }
     }
 }

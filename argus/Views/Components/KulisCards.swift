@@ -38,10 +38,10 @@ struct DuyguBarometresiCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
@@ -56,10 +56,10 @@ struct DuyguBarometresiCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Duygu barometresi")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Text("Haber, algı analizi")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             Spacer()
             EducationToggle(isOn: $showEducation)
@@ -71,7 +71,7 @@ struct DuyguBarometresiCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Duygu")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(sentimentLabel)
                     .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
                     .foregroundColor(tone.foreground)
@@ -82,7 +82,7 @@ struct DuyguBarometresiCard: View {
             VStack(alignment: .trailing, spacing: 3) {
                 Text("Skor")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(sentimentScore >= 0
                      ? "+\(Int(sentimentScore))"
                      : "\(Int(sentimentScore))")
@@ -92,7 +92,7 @@ struct DuyguBarometresiCard: View {
             }
         }
         .padding(12)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous))
     }
 
@@ -105,7 +105,7 @@ struct DuyguBarometresiCard: View {
                 Spacer()
                 Text("Nötr")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Spacer()
                 Text("Açgözlülük")
                     .font(DesignTokens.Fonts.custom(size: 11))
@@ -131,9 +131,9 @@ struct DuyguBarometresiCard: View {
                     // Sade pointer — surface halka, textPrimary dolgu
                     let clampedPos = max(0, min(1, (sentimentScore + 100) / 200))
                     Circle()
-                        .strokeBorder(InstitutionalTheme.Colors.surface1, lineWidth: 2)
+                        .strokeBorder(DesignTokens.Colors.surface, lineWidth: 2)
                         .background(
-                            Circle().fill(InstitutionalTheme.Colors.textPrimary)
+                            Circle().fill(DesignTokens.Colors.textPrimary)
                         )
                         .frame(width: 12, height: 12)
                         .offset(x: geo.size.width * clampedPos - 6)
@@ -149,7 +149,7 @@ struct DuyguBarometresiCard: View {
             ProgressView().scaleEffect(0.7)
             Text("Yükleniyor")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, minHeight: 60)
     }
@@ -299,12 +299,12 @@ private struct EducationRow: View {
                 .padding(.top, 5)
             Text(text)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.md, style: .continuous)
                 .stroke(InstitutionalTheme.Colors.titan.opacity(0.22), lineWidth: 0.5)

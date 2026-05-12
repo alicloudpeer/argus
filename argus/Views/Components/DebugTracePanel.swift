@@ -53,7 +53,7 @@ struct DebugTracePanel: View {
                         // Error & Domain
                         if let err = trace.errorMessage {
                             Text("Hata: \(err)")
-                                .foregroundColor(.red)
+                                .foregroundColor(DesignTokens.Colors.error)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         

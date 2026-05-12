@@ -28,7 +28,7 @@ struct AgoraDetailPanel: View {
             }
         }
         .padding()
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -40,9 +40,9 @@ struct AgoraDetailPanel: View {
     
     private var borderColor: Color {
         if let t = trace {
-            return t.riskEvaluation.isApproved ? InstitutionalTheme.Colors.border.opacity(0.3) : InstitutionalTheme.Colors.crimson.opacity(0.5)
+            return t.riskEvaluation.isApproved ? DesignTokens.Colors.border.opacity(0.3) : InstitutionalTheme.Colors.crimson.opacity(0.5)
         }
-        return snapshot?.locks.isLocked == true ? Color.orange.opacity(0.3) : InstitutionalTheme.Colors.border.opacity(0.3)
+        return snapshot?.locks.isLocked == true ? Color.orange.opacity(0.3) : DesignTokens.Colors.border.opacity(0.3)
     }
     
     private var headerView: some View {
@@ -108,10 +108,10 @@ struct AgoraDetailPanel: View {
             
             Text(t.finalDecision.rationale)
                 .font(.body)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineLimit(nil)
                 .padding(12)
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .cornerRadius(8)
             
             // --- NEW: Execution Plan & Phoenix ---
@@ -127,7 +127,7 @@ struct AgoraDetailPanel: View {
                             .foregroundColor(DesignTokens.Colors.textTertiary)
                         Text("\(String(format: "%.2f", plan.targetSizeR))R")
                             .font(.subheadline)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                     }
                     
                     // 2. Risk Levels
@@ -154,13 +154,13 @@ struct AgoraDetailPanel: View {
                         VStack(alignment: .trailing) {
                             Text("Risk")
                                 .font(DesignTokens.Fonts.custom(size: 11))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                             Text(ph.priceBand)
                                 .font(DesignTokens.Fonts.custom(size: 11))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                             Text(ph.recommendedEntry)
                                 .font(DesignTokens.Fonts.custom(size: 11))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                         }
                     }
                 }
@@ -175,7 +175,7 @@ struct AgoraDetailPanel: View {
                     Divider().padding(.vertical, 4)
                     Text("Kullanılmayan faktörler")
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                     
                     ForEach(t.unusedFactors, id: \.self) { factor in
                         HStack(spacing: 6) {
@@ -323,7 +323,7 @@ struct AgoraDetailPanel: View {
             
             Text(s.reasonOneLiner)
                 .font(.body)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -355,7 +355,7 @@ struct AgoraDetailPanel: View {
                             Text(mod.name)
                                 .font(.caption)
                                 .bold()
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                             Spacer()
                             if let score = mod.score, score > 0 {
                                 Text("\(Int(score))")
@@ -365,7 +365,7 @@ struct AgoraDetailPanel: View {
                             }
                         }
                         .padding(8)
-                        .background(InstitutionalTheme.Colors.background)
+                        .background(DesignTokens.Colors.background)
                         .cornerRadius(6)
                     }
                 }
@@ -377,7 +377,7 @@ struct AgoraDetailPanel: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Karar mantığı")
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             
             ForEach(s.evidence, id: \.claim) { item in
                 HStack(alignment: .top, spacing: 8) {
@@ -388,7 +388,7 @@ struct AgoraDetailPanel: View {
                     
                     Text(item.claim)
                         .font(.subheadline)
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.vertical, 2)

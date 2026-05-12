@@ -34,7 +34,7 @@ struct AtlasV2DetailView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 inlineTopNav
@@ -74,7 +74,7 @@ struct AtlasV2DetailView: View {
             Button(action: { dismiss() }) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
@@ -83,17 +83,17 @@ struct AtlasV2DetailView: View {
 
             Text(symbol.replacingOccurrences(of: ".IS", with: ""))
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .accessibilityAddTraits(.isHeader)
 
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -105,7 +105,7 @@ struct AtlasV2DetailView: View {
             ProgressView().scaleEffect(0.8)
             Text("Bilanço analizi yükleniyor…")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 22)
@@ -115,15 +115,15 @@ struct AtlasV2DetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Analiz tamamlanamadı")
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text(err)
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .padding(.vertical, 22)
     }
@@ -134,22 +134,22 @@ struct AtlasV2DetailView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(r.profile.name)
                 .font(DesignTokens.Fonts.custom(size: 18, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 0) {
                 Text(symbol.replacingOccurrences(of: ".IS", with: ""))
                     .font(DesignTokens.Fonts.custom(size: 12, design: .monospaced))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 if let sector = r.profile.sector, !sector.isEmpty {
                     Text(" · \(sector)")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 Text(" · \(r.profile.formattedMarketCap)")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
         }
         .padding(.bottom, 12)
@@ -160,7 +160,7 @@ struct AtlasV2DetailView: View {
     private func statusParagraph(_ r: AtlasV2Result) -> some View {
         Text(r.summary)
             .font(DesignTokens.Fonts.custom(size: 14))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .lineSpacing(3)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.bottom, 22)
@@ -196,7 +196,7 @@ struct AtlasV2DetailView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .padding(.bottom, 18)
         }
@@ -206,14 +206,14 @@ struct AtlasV2DetailView: View {
         HStack(spacing: 10) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 15))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             Text("\(count)")
                 .font(DesignTokens.Fonts.custom(size: 14))
                 .foregroundColor(color)
             Image(systemName: "chevron.right")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 13)
@@ -222,7 +222,7 @@ struct AtlasV2DetailView: View {
 
     private var divider: some View {
         Rectangle()
-            .fill(InstitutionalTheme.Colors.borderSubtle)
+            .fill(DesignTokens.Colors.borderSubtle)
             .frame(height: 0.5)
             .padding(.leading, 14)
     }
@@ -287,7 +287,7 @@ struct AtlasV2DetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 2)
 
             VStack(spacing: 0) {
@@ -305,7 +305,7 @@ struct AtlasV2DetailView: View {
                     }
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .padding(.bottom, 18)
@@ -316,10 +316,10 @@ struct AtlasV2DetailView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.title)
                     .font(DesignTokens.Fonts.custom(size: 15))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Text(row.sub)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             Spacer()
             Text("\(Int(row.score))")
@@ -328,7 +328,7 @@ struct AtlasV2DetailView: View {
                 .monospacedDigit()
             Image(systemName: "chevron.right")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 13)
@@ -346,7 +346,7 @@ struct AtlasV2DetailView: View {
     private var footerNote: some View {
         Text("Skor 7 boyutun ağırlıklı ortalamasıdır. Veriler son finansal raporlardan çekilir.")
             .font(DesignTokens.Fonts.custom(size: 12))
-            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+            .foregroundColor(DesignTokens.Colors.textTertiary)
             .lineSpacing(2)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 4)
@@ -408,7 +408,7 @@ struct BilancoBoyutView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             VStack(spacing: 0) {
                 topNav
 
@@ -434,22 +434,22 @@ struct BilancoBoyutView: View {
             Button(action: { dismiss() }) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -462,7 +462,7 @@ struct BilancoBoyutView: View {
     private func statusParagraph(_ m: AtlasMetric) -> some View {
         Text(m.explanation)
             .font(DesignTokens.Fonts.custom(size: 14))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .lineSpacing(3)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.bottom, 22)
@@ -472,7 +472,7 @@ struct BilancoBoyutView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Metrikler")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 2)
 
             VStack(spacing: 0) {
@@ -480,13 +480,13 @@ struct BilancoBoyutView: View {
                     metricRow(m)
                     if idx < metrics.count - 1 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.borderSubtle)
+                            .fill(DesignTokens.Colors.borderSubtle)
                             .frame(height: 0.5)
                             .padding(.leading, 14)
                     }
                 }
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .padding(.bottom, 18)
@@ -497,15 +497,15 @@ struct BilancoBoyutView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(m.name)
                     .font(DesignTokens.Fonts.custom(size: 14))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 if let sectorAvg = m.sectorAverage {
                     Text("Sektör ortalaması \(AtlasMetric.format(sectorAvg))")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 } else if !m.explanation.isEmpty {
                     Text(m.explanation)
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .lineLimit(1)
                 }
             }
@@ -522,10 +522,10 @@ struct BilancoBoyutView: View {
     private func metricValueColor(_ status: AtlasMetricStatus) -> Color {
         switch status {
         case .excellent, .good: return InstitutionalTheme.Colors.aurora
-        case .neutral: return InstitutionalTheme.Colors.textSecondary
+        case .neutral: return DesignTokens.Colors.textSecondary
         case .warning: return InstitutionalTheme.Colors.titan
         case .bad, .critical: return InstitutionalTheme.Colors.crimson
-        case .noData: return InstitutionalTheme.Colors.textTertiary
+        case .noData: return DesignTokens.Colors.textTertiary
         }
     }
 
@@ -533,14 +533,14 @@ struct BilancoBoyutView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Değerlendirme")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .padding(.leading, 2)
 
             VStack(spacing: 0) {
                 HStack {
                     Text("Özet skor")
                         .font(DesignTokens.Fonts.custom(size: 14))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Spacer()
                     Text("\(Int(score)) / 100")
                         .font(DesignTokens.Fonts.custom(size: 14))
@@ -551,18 +551,18 @@ struct BilancoBoyutView: View {
                 .padding(.vertical, 12)
 
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
 
                 Text(summarySentence)
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 11)
             }
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
     }
@@ -591,7 +591,7 @@ struct BilancoSinyalView: View {
 
     var body: some View {
         ZStack {
-            InstitutionalTheme.Colors.background.ignoresSafeArea()
+            DesignTokens.Colors.background.ignoresSafeArea()
             VStack(spacing: 0) {
                 topNav
 
@@ -613,22 +613,22 @@ struct BilancoSinyalView: View {
             Button(action: { dismiss() }) {
                 Image(systemName: "chevron.left")
                     .font(DesignTokens.Fonts.custom(size: 18, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .frame(width: 36, height: 36)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(InstitutionalTheme.Colors.borderSubtle)
+                .fill(DesignTokens.Colors.borderSubtle)
                 .frame(height: 0.5)
         }
     }
@@ -643,7 +643,7 @@ struct BilancoSinyalView: View {
                         .padding(.top, 7)
                     Text(item)
                         .font(DesignTokens.Fonts.custom(size: 14))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .lineSpacing(3)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
@@ -652,13 +652,13 @@ struct BilancoSinyalView: View {
                 .padding(.vertical, 14)
                 if idx < items.count - 1 {
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 0.5)
                         .padding(.leading, 14)
                 }
             }
         }
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }

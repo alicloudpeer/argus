@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ArgusVoiceView: View {
     @StateObject private var viewModel = ChatViewModel()
+    @ObservedObject private var speech = ArgusSpeechService.shared
+    @ObservedObject private var tts = ArgusTTSService.shared
     @Environment(\.dismiss) var dismiss
     @State private var isListening = false
     @State private var showSuggestions = true
@@ -17,7 +19,7 @@ struct ArgusVoiceView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
                 
                 VStack(spacing: 0) {
                     // V5 Header — Argus göz radial gradient + Argus Voice başlık
@@ -46,10 +48,10 @@ struct ArgusVoiceView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Sesli asistan")
                                 .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                             Text("Çevrimiçi")
                                 .font(DesignTokens.Fonts.custom(size: 11))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                         }
 
                         Spacer()
@@ -57,16 +59,16 @@ struct ArgusVoiceView: View {
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark")
                                 .font(DesignTokens.Fonts.custom(size: 13, weight: .semibold))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                                 .frame(width: 32, height: 32)
-                                .background(InstitutionalTheme.Colors.surface2)
+                                .background(DesignTokens.Colors.surfaceElevated)
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(
-                        InstitutionalTheme.Colors.background
+                        DesignTokens.Colors.background
                             .overlay(ArgusHair().frame(maxHeight: .infinity, alignment: .bottom))
                     )
                     
@@ -106,11 +108,11 @@ struct ArgusVoiceView: View {
 
                                         Text("Merhaba, ben Argus.")
                                             .font(DesignTokens.Fonts.custom(size: 22, weight: .medium))
-                                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                            .foregroundColor(DesignTokens.Colors.textPrimary)
 
                                         Text("Piyasalar, portföyün veya hisseler hakkında bana soru sorabilirsin.")
                                             .font(InstitutionalTheme.Typography.caption)
-                                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                            .foregroundColor(DesignTokens.Colors.textSecondary)
                                             .multilineTextAlignment(.center)
                                             .padding(.horizontal, 32)
                                     }
@@ -153,7 +155,7 @@ struct ArgusVoiceView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Öneriler")
                                 .font(DesignTokens.Fonts.custom(size: 13))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                                 .padding(.horizontal, 16)
 
                             VStack(spacing: 8) {
@@ -173,20 +175,30 @@ struct ArgusVoiceView: View {
 
                     // V5 input bar — pill shape + mic + send
                     HStack(spacing: 8) {
-                        Button(action: {}) {
-                            Image(systemName: "mic.fill")
+                        // 2026-05-11: Mic button ArgusSpeechService'e bağlandı.
+                        // Recording: tap to start, tap again to stop. Tanınan
+                        // metin canlı input field'a aktarılır.
+                        Button(action: { toggleSpeech() }) {
+                            Image(systemName: speech.isRecording ? "stop.fill" : "mic.fill")
                                 .font(DesignTokens.Fonts.custom(size: 14))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(speech.isRecording
+                                                 ? DesignTokens.Colors.textPrimary
+                                                 : DesignTokens.Colors.textSecondary)
                                 .frame(width: 36, height: 36)
-                                .background(InstitutionalTheme.Colors.surface3)
+                                .background(speech.isRecording
+                                            ? InstitutionalTheme.Colors.crimson
+                                            : InstitutionalTheme.Colors.surface3)
                                 .clipShape(Circle())
+                                .scaleEffect(speech.isRecording ? 1.0 + CGFloat(speech.audioLevel) * 0.15 : 1.0)
+                                .animation(.linear(duration: 0.12), value: speech.audioLevel)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel(speech.isRecording ? "Kaydı durdur" : "Sesle sor")
 
                         TextField("Argus'a sor...", text: $viewModel.inputMessage, axis: .vertical)
                             .lineLimit(1...4)
                             .font(DesignTokens.Fonts.custom(size: 13))
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
 
                         Button {
                             if !viewModel.inputMessage.isEmpty {
@@ -206,9 +218,9 @@ struct ArgusVoiceView: View {
                     .padding(.vertical, 8)
                     .background(
                         Capsule()
-                            .fill(InstitutionalTheme.Colors.surface2)
+                            .fill(DesignTokens.Colors.surfaceElevated)
                             .overlay(
-                                Capsule().stroke(InstitutionalTheme.Colors.borderStrong, lineWidth: 1)
+                                Capsule().stroke(DesignTokens.Colors.borderStrong, lineWidth: 1)
                             )
                     )
                     .padding(.horizontal, 12)
@@ -224,8 +236,49 @@ struct ArgusVoiceView: View {
                 if let text = notification.object as? String {
                     viewModel.inputMessage = text
                     // Optional: Auto-send if silence detection is good
-                    // viewModel.sendMessage() 
+                    // viewModel.sendMessage()
                 }
+            }
+            // Canlı transkripsiyon → input field'a aktar
+            .onChange(of: speech.recognizedText) { _, newText in
+                if !newText.isEmpty { viewModel.inputMessage = newText }
+            }
+            // Recording bittiğinde otomatik gönder (kullanıcı durdurursa son metin gönderilir)
+            .onChange(of: speech.isRecording) { wasRecording, isNow in
+                if wasRecording && !isNow {
+                    let text = viewModel.inputMessage.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !text.isEmpty {
+                        viewModel.sendMessage()
+                    }
+                }
+            }
+            // Yeni asistan mesajını sesli oku (TTS)
+            .onChange(of: viewModel.messages.count) { _, _ in
+                guard let last = viewModel.messages.last,
+                      last.role == .assistant,
+                      !last.content.isEmpty else { return }
+                tts.speak(last.content)
+            }
+            .onDisappear {
+                if speech.isRecording { speech.stopRecording() }
+                tts.stop()
+            }
+        }
+    }
+
+    // MARK: - Speech toggle
+
+    private func toggleSpeech() {
+        if speech.isRecording {
+            speech.stopRecording()
+        } else {
+            // Recording başlarken eski text'i temizle, TTS de sussun
+            tts.stop()
+            viewModel.inputMessage = ""
+            do {
+                try speech.startRecording()
+            } catch {
+                print("🛑 ArgusSpeech start failed: \(error)")
             }
         }
     }
@@ -288,22 +341,22 @@ private extension ArgusVoiceView {
             HStack(spacing: 12) {
                 Image(systemName: motorIconName(motor))
                     .font(DesignTokens.Fonts.custom(size: 14))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(width: 28, height: 28)
                 Text(text)
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(DesignTokens.Fonts.custom(size: 10, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
             .padding(12)
             .frame(maxWidth: .infinity)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
@@ -356,17 +409,17 @@ struct ChatMessageBubble: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(message.content)
                     .font(.body)
-                    .foregroundColor(isUser ? .white : InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(isUser ? .white : DesignTokens.Colors.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 Text(message.timestamp.formatted(date: .omitted, time: .shortened))
                     .font(.caption2)
-                    .foregroundColor(isUser ? .white.opacity(0.8) : InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(isUser ? .white.opacity(0.8) : DesignTokens.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .padding(12)
             .padding(.horizontal, 4)
-            .background(isUser ? InstitutionalTheme.Colors.holo : InstitutionalTheme.Colors.surface1)
+            .background(isUser ? InstitutionalTheme.Colors.holo : DesignTokens.Colors.surface)
             .clipShape(
                 // 2026-05-06: özel `.cornerRadius(_:corners:)` extension yoktu, UnevenRoundedRectangle ile asymmetric corner
                 UnevenRoundedRectangle(
@@ -383,10 +436,10 @@ struct ChatMessageBubble: View {
                 // User Avatar
                 ZStack {
                     Circle()
-                        .fill(InstitutionalTheme.Colors.surface1)
+                        .fill(DesignTokens.Colors.surface)
                         .frame(width: 36, height: 36)
                     Image(systemName: "person.fill")
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                         .font(.body)
                 }
             } else {

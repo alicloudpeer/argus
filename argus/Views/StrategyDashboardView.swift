@@ -22,7 +22,7 @@ struct StrategyDashboardView: View {
                 actions: [.custom(sfSymbol: "arrow.clockwise", action: { Task { await loadData() } })]
             )
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     bucketSelector
@@ -44,7 +44,7 @@ struct StrategyDashboardView: View {
                 }
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
             await loadData()
@@ -66,11 +66,11 @@ struct StrategyDashboardView: View {
             VStack(spacing: 4) {
                 Text(bucket.rawValue)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(selectedBucket == bucket ? InstitutionalTheme.Colors.textPrimary : InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(selectedBucket == bucket ? DesignTokens.Colors.textPrimary : DesignTokens.Colors.textSecondary)
                 
                 Text(bucketTimeframeLabel(bucket))
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 
                 Rectangle()
                     .fill(selectedBucket == bucket ? bucketColor(bucket) : Color.clear)
@@ -91,7 +91,7 @@ struct StrategyDashboardView: View {
     private func bucketColor(_ bucket: OrionMultiFrameEngine.StrategyBucket) -> Color {
         switch bucket {
         case .scalp: return InstitutionalTheme.Colors.warning
-        case .swing: return InstitutionalTheme.Colors.primary
+        case .swing: return DesignTokens.Colors.primary
         case .position: return InstitutionalTheme.Colors.warning
         }
     }
@@ -105,20 +105,20 @@ struct StrategyDashboardView: View {
                 
                 Text(selectedBucket.displayName)
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 
                 Spacer()
                 
                 Text("Aktif")
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.positive)
+                    .foregroundColor(DesignTokens.Colors.success)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(InstitutionalTheme.Colors.positive.opacity(0.2))
+                    .background(DesignTokens.Colors.success.opacity(0.2))
                     .cornerRadius(8)
             }
             
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
             
             HStack(spacing: 20) {
                 statItem(label: "Risk", value: riskLabel(selectedBucket))
@@ -128,7 +128,7 @@ struct StrategyDashboardView: View {
             
             Text(bucketDescription(selectedBucket))
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .padding(.top, 4)
         }
         .padding()
@@ -139,10 +139,10 @@ struct StrategyDashboardView: View {
         VStack(spacing: 4) {
             Text(value)
                 .font(InstitutionalTheme.Typography.dataSmall)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text(label)
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -183,12 +183,12 @@ struct StrategyDashboardView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Zaman dilimi konsensüsü")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             if multiFrameReports.isEmpty {
                 Text("Veri yükleniyor...")
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             } else {
                 ForEach(Array(multiFrameReports.keys.prefix(5)), id: \.self) { symbol in
                     if let report = multiFrameReports[symbol] {
@@ -205,7 +205,7 @@ struct StrategyDashboardView: View {
         HStack {
             Text(symbol)
                 .font(InstitutionalTheme.Typography.dataSmall)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             
             Spacer()
             
@@ -229,11 +229,11 @@ struct StrategyDashboardView: View {
     
     private func signalColor(_ signal: OrionMultiFrameEngine.TimeframeAnalysis.Signal) -> Color {
         switch signal {
-        case .strongBuy: return InstitutionalTheme.Colors.positive
-        case .buy: return InstitutionalTheme.Colors.positive.opacity(0.7)
-        case .neutral: return InstitutionalTheme.Colors.textTertiary
-        case .sell: return InstitutionalTheme.Colors.negative.opacity(0.7)
-        case .strongSell: return InstitutionalTheme.Colors.negative
+        case .strongBuy: return DesignTokens.Colors.success
+        case .buy: return DesignTokens.Colors.success.opacity(0.7)
+        case .neutral: return DesignTokens.Colors.textTertiary
+        case .sell: return DesignTokens.Colors.error.opacity(0.7)
+        case .strongSell: return DesignTokens.Colors.error
         }
     }
     
@@ -241,7 +241,7 @@ struct StrategyDashboardView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("EN İYİ FIRSATLAR")
                 .font(InstitutionalTheme.Typography.micro)
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .tracking(1)
             
             let opportunities = getTopOpportunities()
@@ -249,7 +249,7 @@ struct StrategyDashboardView: View {
             if opportunities.isEmpty {
                 Text("Şu an güçlü fırsat yok")
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             } else {
                 ForEach(opportunities.prefix(3), id: \.symbol) { opp in
                     opportunityRow(opp)
@@ -265,11 +265,11 @@ struct StrategyDashboardView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(opp.symbol)
                     .font(InstitutionalTheme.Typography.dataSmall)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 
                 Text(opp.reason)
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             
             Spacer()
@@ -277,7 +277,7 @@ struct StrategyDashboardView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text("\(Int(opp.confidence * 100))%")
                     .font(InstitutionalTheme.Typography.data)
-                    .foregroundColor(InstitutionalTheme.Colors.positive)
+                    .foregroundColor(DesignTokens.Colors.success)
                 
                 Text(opp.bucket.rawValue)
                     .font(InstitutionalTheme.Typography.micro)
@@ -313,11 +313,11 @@ struct StrategyDashboardView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Strateji önerileri")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             Text("Bu strateji için öneriler yükleniyor.")
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .padding()
         .institutionalCard(scale: .standard, elevated: false)
@@ -329,7 +329,7 @@ struct StrategyDashboardView: View {
                 .scaleEffect(1.5)
             Text("Multi-timeframe analiz yapılıyor...")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             LoadingQuoteView()
                 .padding(.top, 16)

@@ -39,10 +39,10 @@ struct PrometheusPanelView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Tahmin")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text("Kısa vadeli fiyat projeksiyonu")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -64,18 +64,18 @@ struct PrometheusPanelView: View {
                         Spacer()
                         Text("\(f.horizonDays) gün")
                             .font(DesignTokens.Fonts.custom(size: 12))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                     }
 
                     // Tahmin fiyatı
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Tahmin")
                             .font(DesignTokens.Fonts.custom(size: 11))
-                            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Text(formatPrice(f.predictedPrice))
                                 .font(DesignTokens.Fonts.custom(size: 28, weight: .medium))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .monospacedDigit()
                             Text(f.formattedChange)
                                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
@@ -85,7 +85,7 @@ struct PrometheusPanelView: View {
                     }
 
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 0.5)
 
                     HStack(spacing: 12) {
@@ -109,10 +109,10 @@ struct PrometheusPanelView: View {
             }
         }
         .padding(14)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
     }
@@ -122,10 +122,10 @@ struct PrometheusPanelView: View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                .foregroundColor(color ?? InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(color ?? DesignTokens.Colors.textPrimary)
                 .monospacedDigit()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -133,7 +133,7 @@ struct PrometheusPanelView: View {
 
     private func confidenceColor(_ value: Double) -> Color {
         if value >= 70 { return InstitutionalTheme.Colors.aurora }
-        if value >= 50 { return InstitutionalTheme.Colors.textPrimary }
+        if value >= 50 { return DesignTokens.Colors.textPrimary }
         if value >= 30 { return InstitutionalTheme.Colors.titan }
         return InstitutionalTheme.Colors.crimson
     }
@@ -161,19 +161,19 @@ struct PrometheusPanelView: View {
             HStack {
                 Text("Fiyat devam grafiği")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 if let f = forecast, f.isValid {
                     Text("\(historicalTail.count) + \(f.predictions.count)")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .monospacedDigit()
                 }
             }
 
             if let f = forecast, f.isValid, !historicalTail.isEmpty {
                 let chartData = buildChartData(forecast: f, history: historicalTail)
-                let lineColor = InstitutionalTheme.Colors.textPrimary
+                let lineColor = DesignTokens.Colors.textPrimary
 
                 Chart {
                     ForEach(chartData.history) { p in
@@ -181,7 +181,7 @@ struct PrometheusPanelView: View {
                             x: .value("Tarih", p.date),
                             y: .value("Fiyat", p.price)
                         )
-                        .foregroundStyle(InstitutionalTheme.Colors.textSecondary.opacity(0.85))
+                        .foregroundStyle(DesignTokens.Colors.textSecondary.opacity(0.85))
                     }
 
                     ForEach(chartData.future) { p in
@@ -199,35 +199,35 @@ struct PrometheusPanelView: View {
                             yStart: .value("Alt", p.lower),
                             yEnd: .value("Üst", p.upper)
                         )
-                        .foregroundStyle(InstitutionalTheme.Colors.textPrimary.opacity(0.08))
+                        .foregroundStyle(DesignTokens.Colors.textPrimary.opacity(0.08))
                     }
                 }
                 .frame(height: 230)
 
                 HStack(spacing: 14) {
-                    legendDot(color: InstitutionalTheme.Colors.textSecondary, label: "geçmiş")
-                    legendDot(color: InstitutionalTheme.Colors.textPrimary, label: "tahmin")
-                    legendDot(color: InstitutionalTheme.Colors.textPrimary.opacity(0.3),
+                    legendDot(color: DesignTokens.Colors.textSecondary, label: "geçmiş")
+                    legendDot(color: DesignTokens.Colors.textPrimary, label: "tahmin")
+                    legendDot(color: DesignTokens.Colors.textPrimary.opacity(0.3),
                               label: "güven aralığı")
                     Spacer()
                 }
             } else {
                 HStack(spacing: 8) {
                     Circle()
-                        .fill(InstitutionalTheme.Colors.textTertiary)
+                        .fill(DesignTokens.Colors.textTertiary)
                         .frame(width: 4, height: 4)
                     Text("Grafik için tahmin verisi yok.")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
     }
@@ -237,7 +237,7 @@ struct PrometheusPanelView: View {
             Circle().fill(color).frame(width: 6, height: 6)
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
     }
 
@@ -247,7 +247,7 @@ struct PrometheusPanelView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Neden bu karar")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             if let f = forecast, !f.rationale.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
@@ -255,12 +255,12 @@ struct PrometheusPanelView: View {
                         HStack(alignment: .top, spacing: 10) {
                             Text("\(idx + 1).")
                                 .font(DesignTokens.Fonts.custom(size: 12))
-                                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                                .foregroundColor(DesignTokens.Colors.textTertiary)
                                 .monospacedDigit()
                                 .frame(width: 18, alignment: .leading)
                             Text(line)
                                 .font(DesignTokens.Fonts.custom(size: 13))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .lineSpacing(2)
                         }
@@ -269,20 +269,20 @@ struct PrometheusPanelView: View {
             } else {
                 HStack(spacing: 8) {
                     Circle()
-                        .fill(InstitutionalTheme.Colors.textTertiary)
+                        .fill(DesignTokens.Colors.textTertiary)
                         .frame(width: 4, height: 4)
                     Text("Açıklama verisi hazır değil.")
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: InstitutionalTheme.Radius.lg, style: .continuous))
     }
@@ -294,7 +294,7 @@ struct PrometheusPanelView: View {
             ProgressView()
             Text("Tahmin hesaplanıyor")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, minHeight: 96)
     }
@@ -303,10 +303,10 @@ struct PrometheusPanelView: View {
         VStack(spacing: 8) {
             Image(systemName: "chart.xyaxis.line")
                 .font(DesignTokens.Fonts.custom(size: 18))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text("Tahmin için yeterli veri yok")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity, minHeight: 96)
     }

@@ -33,7 +33,7 @@ struct ForecastCard: View {
                 trendLine(f)
 
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(height: 0.5)
 
                 ForecastMiniChart(
@@ -52,10 +52,10 @@ struct ForecastCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .task { await loadForecast() }
@@ -67,11 +67,11 @@ struct ForecastCard: View {
         HStack {
             Text("Tahmin")
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Spacer()
             Text("\(forecast?.horizonDays ?? 5) günlük")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
     }
 
@@ -80,10 +80,10 @@ struct ForecastCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Şimdi")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(formatPrice(f.currentPrice))
                     .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .monospacedDigit()
             }
 
@@ -98,7 +98,7 @@ struct ForecastCard: View {
             VStack(alignment: .trailing, spacing: 3) {
                 Text("+\(f.horizonDays) gün")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                 Text(formatPrice(f.predictedPrice))
                     .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
                     .foregroundColor(trendColor(f.trend))
@@ -114,10 +114,10 @@ struct ForecastCard: View {
                 .foregroundColor(trendColor(f.trend))
                 .monospacedDigit()
             Text("·")
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(trendLabel(f.trend))
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
         }
     }
 
@@ -125,7 +125,7 @@ struct ForecastCard: View {
         HStack(spacing: 10) {
             Text("Güven")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .frame(width: 50, alignment: .leading)
 
             ArgusBar(value: max(0, min(1, f.confidence / 100)),
@@ -134,7 +134,7 @@ struct ForecastCard: View {
 
             Text("%\(Int(f.confidence))")
                 .font(DesignTokens.Fonts.custom(size: 12, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .monospacedDigit()
                 .frame(width: 36, alignment: .trailing)
 
@@ -148,7 +148,7 @@ struct ForecastCard: View {
     private func insightLine(_ f: PrometheusForecast) -> some View {
         Text(generateInsight(trend: f.trend, confidence: f.confidence))
             .font(DesignTokens.Fonts.custom(size: 12))
-            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+            .foregroundColor(DesignTokens.Colors.textSecondary)
             .lineSpacing(2)
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -156,7 +156,7 @@ struct ForecastCard: View {
     private var footerLine: some View {
         Text("Holt-Winters üstel düzleştirme")
             .font(DesignTokens.Fonts.custom(size: 11))
-            .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+            .foregroundColor(DesignTokens.Colors.textTertiary)
             .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
@@ -165,7 +165,7 @@ struct ForecastCard: View {
             ProgressView().scaleEffect(0.7)
             Text("Tahmin hesaplanıyor…")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Spacer()
         }
         .frame(maxWidth: .infinity, minHeight: 60, alignment: .leading)
@@ -175,10 +175,10 @@ struct ForecastCard: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Yeterli veri yok")
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text("En az 30 günlük fiyat geçmişi gerekiyor.")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 8)
@@ -189,7 +189,7 @@ struct ForecastCard: View {
     private func trendColor(_ t: PrometheusTrend) -> Color {
         switch t {
         case .strongBullish, .bullish: return InstitutionalTheme.Colors.aurora
-        case .neutral:                 return InstitutionalTheme.Colors.textSecondary
+        case .neutral:                 return DesignTokens.Colors.textSecondary
         case .bearish, .strongBearish: return InstitutionalTheme.Colors.crimson
         }
     }
@@ -206,7 +206,7 @@ struct ForecastCard: View {
 
     private func confidenceColor(_ c: Double) -> Color {
         if c >= 70 { return InstitutionalTheme.Colors.aurora }
-        if c >= 50 { return InstitutionalTheme.Colors.textPrimary }
+        if c >= 50 { return DesignTokens.Colors.textPrimary }
         if c >= 30 { return InstitutionalTheme.Colors.titan }
         return InstitutionalTheme.Colors.crimson
     }
@@ -295,7 +295,7 @@ struct ForecastMiniChart: View {
 
                 Circle()
                     .fill(index == 0
-                          ? InstitutionalTheme.Colors.textPrimary
+                          ? DesignTokens.Colors.textPrimary
                           : trendColor)
                     .frame(width: 4, height: 4)
                     .position(x: x, y: y)
@@ -306,7 +306,7 @@ struct ForecastMiniChart: View {
     private var trendColor: Color {
         switch trend {
         case .strongBullish, .bullish: return InstitutionalTheme.Colors.aurora
-        case .neutral:                 return InstitutionalTheme.Colors.textSecondary
+        case .neutral:                 return DesignTokens.Colors.textSecondary
         case .bearish, .strongBearish: return InstitutionalTheme.Colors.crimson
         }
     }
@@ -314,7 +314,7 @@ struct ForecastMiniChart: View {
 
 #Preview {
     ZStack {
-        InstitutionalTheme.Colors.background.ignoresSafeArea()
+        DesignTokens.Colors.background.ignoresSafeArea()
         ForecastCard(
             symbol: "AAPL",
             historicalPrices: Array(stride(from: 180.0, through: 195.0, by: 0.5))

@@ -31,7 +31,7 @@ struct CrystalWatchlistRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(displayName)
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .lineLimit(1)
 
                 if let sig = signal, !sig.reason.isEmpty {
@@ -42,7 +42,7 @@ struct CrystalWatchlistRow: View {
                 } else {
                     Text(symbolDisplay)
                         .font(DesignTokens.Fonts.custom(size: 11, weight: .medium, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .lineLimit(1)
                 }
             }
@@ -119,9 +119,9 @@ struct CrystalWatchlistRow: View {
         switch sig.action {
         case .buy:  return InstitutionalTheme.Colors.aurora
         case .sell: return InstitutionalTheme.Colors.crimson
-        case .hold: return InstitutionalTheme.Colors.textSecondary
+        case .hold: return DesignTokens.Colors.textSecondary
         case .wait: return InstitutionalTheme.Colors.Motors.chiron
-        case .skip: return InstitutionalTheme.Colors.textTertiary
+        case .skip: return DesignTokens.Colors.textTertiary
         }
     }
 
@@ -140,7 +140,7 @@ struct CrystalWatchlistRow: View {
         case .buy, .hold:  return InstitutionalTheme.Colors.aurora
         case .sell: return InstitutionalTheme.Colors.crimson
         case .wait: return InstitutionalTheme.Colors.Motors.chiron
-        case .skip: return InstitutionalTheme.Colors.textTertiary
+        case .skip: return DesignTokens.Colors.textTertiary
         }
     }
 
@@ -162,7 +162,7 @@ struct CrystalWatchlistRow: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(String(format: "\(currency)%.2f", q.currentPrice))
                         .font(DesignTokens.Fonts.custom(size: 14, weight: .semibold, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
 
                     Text(String(format: "%+.2f%%", q.percentChange))
                         .font(DesignTokens.Fonts.custom(size: 11, design: .monospaced))
@@ -174,10 +174,10 @@ struct CrystalWatchlistRow: View {
             } else {
                 VStack(alignment: .trailing, spacing: 4) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(InstitutionalTheme.Colors.surface2)
+                        .fill(DesignTokens.Colors.surfaceElevated)
                         .frame(width: 50, height: 16)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(InstitutionalTheme.Colors.surface2)
+                        .fill(DesignTokens.Colors.surfaceElevated)
                         .frame(width: 40, height: 14)
                 }
                 .frame(minWidth: 82, alignment: .trailing)

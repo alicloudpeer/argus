@@ -76,7 +76,7 @@ struct AlkindusDashboardView: View {
             )
 
             ZStack {
-                InstitutionalTheme.Colors.background.ignoresSafeArea()
+                DesignTokens.Colors.background.ignoresSafeArea()
 
                 if isLoading {
                     ProgressView()
@@ -114,7 +114,7 @@ struct AlkindusDashboardView: View {
                 }
             }
         }
-        .background(InstitutionalTheme.Colors.background.ignoresSafeArea())
+        .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
         .task {
             await loadAll()
@@ -130,22 +130,22 @@ struct AlkindusDashboardView: View {
                 HStack {
                     Text("Bu sembol için okuma")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Spacer()
                     Text(sym)
                         .font(DesignTokens.Fonts.custom(size: 12))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
 
                 if let insight = symbolInsight {
                     Text(insight.message)
                         .font(DesignTokens.Fonts.custom(size: 14))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                         .lineSpacing(2)
 
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 0.5)
 
                     insightStatRow(label: "En iyi modül",
@@ -156,19 +156,19 @@ struct AlkindusDashboardView: View {
                                    color: InstitutionalTheme.Colors.crimson)
                     insightStatRow(label: "Toplam karar",
                                    value: "\(insight.totalDecisions)",
-                                   color: InstitutionalTheme.Colors.textPrimary)
+                                   color: DesignTokens.Colors.textPrimary)
                 } else {
                     Text("Bu sembol için en az 5 karar gerekli. Veriler biriktikçe burası dolacak.")
                         .font(DesignTokens.Fonts.custom(size: 13))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                    .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
@@ -178,7 +178,7 @@ struct AlkindusDashboardView: View {
         HStack {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Spacer()
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
@@ -197,7 +197,7 @@ struct AlkindusDashboardView: View {
         return VStack(alignment: .leading, spacing: 12) {
             Text("Özet")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
 
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -206,7 +206,7 @@ struct AlkindusDashboardView: View {
                 kpiTile(label: "Olgunlaşan karar",
                         value: "\(totalEvaluated)",
                         sub: totalEvaluated == 0 ? "henüz yok" : nil,
-                        color: InstitutionalTheme.Colors.textPrimary)
+                        color: DesignTokens.Colors.textPrimary)
 
                 kpiTile(label: "Doğruluk",
                         value: totalEvaluated > 0 ? "%\(Int(accuracy * 100))" : "—",
@@ -216,20 +216,20 @@ struct AlkindusDashboardView: View {
                 kpiTile(label: "Bekleyen",
                         value: "\(pendingCount)",
                         sub: pendingCount == 0 ? "kuyruk boş" : "olgunlaşma bekliyor",
-                        color: InstitutionalTheme.Colors.textPrimary)
+                        color: DesignTokens.Colors.textPrimary)
 
                 kpiTile(label: "Son güncelleme",
                         value: lastMatureLabel(stats: stats),
                         sub: nil,
-                        color: InstitutionalTheme.Colors.textSecondary)
+                        color: DesignTokens.Colors.textSecondary)
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -238,7 +238,7 @@ struct AlkindusDashboardView: View {
         VStack(alignment: .leading, spacing: 3) {
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 22, weight: .medium))
                 .foregroundColor(color)
@@ -246,14 +246,14 @@ struct AlkindusDashboardView: View {
             if let sub = sub {
                 Text(sub)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             } else {
                 Color.clear.frame(height: 13)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(InstitutionalTheme.Colors.surface2)
+        .background(DesignTokens.Colors.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
@@ -275,19 +275,19 @@ struct AlkindusDashboardView: View {
             HStack {
                 Text("Modül performansı")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 if !modules.isEmpty {
                     Text("\(modules.count) modül")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
             }
 
             if modules.isEmpty {
                 Text("Henüz veri yok. Kararlar olgunlaştıkça burada modüllerin doğruluk oranı görünür.")
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.vertical, 6)
             } else {
                 VStack(spacing: 10) {
@@ -301,10 +301,10 @@ struct AlkindusDashboardView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -313,7 +313,7 @@ struct AlkindusDashboardView: View {
         HStack(spacing: 10) {
             Text(displayName(for: name))
                 .font(DesignTokens.Fonts.custom(size: 13))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
                 .frame(width: 88, alignment: .leading)
 
             ArgusBar(value: hitRate, color: scoreColor(hitRate), height: 4)
@@ -326,7 +326,7 @@ struct AlkindusDashboardView: View {
 
             Text("\(Int(attempts))")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
                 .monospacedDigit()
                 .frame(width: 32, alignment: .trailing)
         }
@@ -353,19 +353,19 @@ struct AlkindusDashboardView: View {
             HStack {
                 Text("Son değerlendirilen kararlar")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 if !verdicts.isEmpty {
                     Text("son \(min(8, verdicts.count))")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
             }
 
             if verdicts.isEmpty {
                 Text("Henüz olgunlaşmış karar yok. Her karar 7 ve 15 gün sonra otomatik değerlendirilir.")
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .padding(.vertical, 6)
             } else {
                 VStack(spacing: 0) {
@@ -374,7 +374,7 @@ struct AlkindusDashboardView: View {
                         verdictRow(verdict)
                         if idx < sorted.count - 1 {
                             Rectangle()
-                                .fill(InstitutionalTheme.Colors.borderSubtle)
+                                .fill(DesignTokens.Colors.borderSubtle)
                                 .frame(height: 0.5)
                         }
                     }
@@ -383,10 +383,10 @@ struct AlkindusDashboardView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -403,17 +403,17 @@ struct AlkindusDashboardView: View {
                 HStack(spacing: 6) {
                     Text(verdict.symbol)
                         .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(verdict.action == "BUY" ? "al" : "sat")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text("· T+\(verdict.horizon)g")
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
                 Text("Değerlendirildi · \(timeAgo(verdict.evaluationDate))")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             Spacer()
@@ -442,7 +442,7 @@ struct AlkindusDashboardView: View {
             HStack {
                 Text("Aksiyon")
                     .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 if let flash = actionFlash {
                     Text(flash)
@@ -481,10 +481,10 @@ struct AlkindusDashboardView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(InstitutionalTheme.Colors.borderSubtle, lineWidth: 0.5)
+                .stroke(DesignTokens.Colors.borderSubtle, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -533,14 +533,14 @@ struct AlkindusDashboardView: View {
                 if let trailing {
                     Text(trailing)
                         .font(DesignTokens.Fonts.custom(size: 11))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                         .monospacedDigit()
                 }
             }
-            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+            .foregroundColor(DesignTokens.Colors.textPrimary)
             .padding(.horizontal, 14)
             .padding(.vertical, 11)
-            .background(InstitutionalTheme.Colors.surface2)
+            .background(DesignTokens.Colors.surfaceElevated)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .opacity(disabled ? 0.6 : 1)
         }
@@ -554,20 +554,20 @@ struct AlkindusDashboardView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Nasıl çalışıyor")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Text("Her al/sat kararı kuyruğa girer. 7 ve 15 gün sonra fiyat değişimi gerçekle karşılaştırılır. Doğruysa modül +1, yanlışsa -1. Zamanla modüllerin gerçek doğruluk oranı çıkar.")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(2)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(InstitutionalTheme.Colors.surface1.opacity(0.6))
+        .background(DesignTokens.Colors.surface.opacity(0.6))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(
-                    InstitutionalTheme.Colors.borderSubtle,
+                    DesignTokens.Colors.borderSubtle,
                     style: StrokeStyle(lineWidth: 0.5, dash: [4, 3])
                 )
         )
@@ -580,13 +580,13 @@ struct AlkindusDashboardView: View {
         VStack(spacing: 12) {
             Image(systemName: "brain.head.profile")
                 .font(DesignTokens.Fonts.custom(size: 28))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text("Henüz veri yok")
                 .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             Text("Kararlar verildikçe ve olgunlaştıkça istatistikler burada görünecek.")
                 .font(DesignTokens.Fonts.custom(size: 12))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
         }

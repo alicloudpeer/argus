@@ -129,37 +129,19 @@ struct argusApp: App {
                             .environmentObject(coordinator.portfolio)
                             .task {
                                 // One-time startup logic
+                                // 2026-05-11: BorsaPy warm-up artık tek noktada
+                                // (AppStateCoordinator+Bootstrap.swift). Daha
+                                // önce 3 yerden çağırılıyordu (bu task içinde
+                                // 2x + bootstrap 1x) — duplicate ısındırma cold
+                                // start latency'sini azaltmıyor, sadece HTTP
+                                // request israfı oluyordu.
                                 coordinator.bootstrap()
-
-                                // BorsaPy is hosted on Render's free tier and
-                                // sleeps after ~15 minutes idle. Pinging it as
-                                // soon as the app foregrounds lets the cold
-                                // start happen in parallel with bootstrap so
-                                // the first BIST quote does not eat 30-60s.
-                                Task.detached(priority: .background) {
-                                    await BorsaPyProvider.shared.warmUp()
-                                }
 
                                 // 🧠 Chiron: Start background learning analysis
                                 Task.detached(priority: .background) {
                                     try? await Task.sleep(nanoseconds: 10_000_000_000)
                                     await ChironLearningJob.shared.runFullAnalysis()
                                     print("🧠 Chiron: Startup learning cycle completed")
-                                }
-
-                                // 🇹🇷 BorsaPy: backend ısınma çağrısı (FIX F).
-                                // Render.com free-tier cold start 40-60sn yanıt verebiliyor;
-                                // ilk kullanıcı isteği bunun üstüne denk gelirse 8sn timeout
-                                // tetikleniyor → 3 timeout = circuit AÇIK 5dk → BIST'in tamamı
-                                // Yahoo fallback'e düşüyordu. Açılışta health endpoint'i
-                                // çağırarak backend'i önceden uyandırırız (warmUp method
-                                // BorsaPyProvider.swift:305-312'de zaten mevcut, bağlanmamıştı).
-                                // Eğer BORSAPY_URL boşsa veya backend tepkisizse warmUp sessiz
-                                // dönecek; circuit açık kalmadığı için Yahoo fallback hızlı çalışır.
-                                Task.detached(priority: .background) {
-                                    // Hafif gecikme — Heimdall/Yahoo ana data fetch'lerini bloklamasın
-                                    try? await Task.sleep(nanoseconds: 2_000_000_000)
-                                    await BorsaPyProvider.shared.warmUp()
                                 }
 
                                 // 👁️ Alkindus: Start periodic maturation checks

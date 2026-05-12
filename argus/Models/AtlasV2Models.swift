@@ -140,9 +140,9 @@ struct AtlasValuationData: Codable {
     let peg: AtlasMetric
     let forwardPE: AtlasMetric
     let priceToSales: AtlasMetric?
-    
+
     var allMetrics: [AtlasMetric] {
-        [pe, pb, evEbitda, peg, forwardPE, priceToSales].compactMap { $0 }
+        [pe, pb, evEbitda, peg, forwardPE, priceToSales].compactMap { $0 }.filter { $0.status != .noData }
     }
 }
 
@@ -152,9 +152,9 @@ struct AtlasProfitabilityData: Codable {
     let netMargin: AtlasMetric
     let grossMargin: AtlasMetric?
     let roic: AtlasMetric?
-    
+
     var allMetrics: [AtlasMetric] {
-        [roe, roa, netMargin, grossMargin, roic].compactMap { $0 }
+        [roe, roa, netMargin, grossMargin, roic].compactMap { $0 }.filter { $0.status != .noData }
     }
 }
 
@@ -163,9 +163,9 @@ struct AtlasGrowthData: Codable {
     let netIncomeCAGR: AtlasMetric
     let forwardGrowth: AtlasMetric?
     let revenueGrowthYoY: AtlasMetric?
-    
+
     var allMetrics: [AtlasMetric] {
-        [revenueCAGR, netIncomeCAGR, forwardGrowth, revenueGrowthYoY].compactMap { $0 }
+        [revenueCAGR, netIncomeCAGR, forwardGrowth, revenueGrowthYoY].compactMap { $0 }.filter { $0.status != .noData }
     }
 }
 
@@ -174,9 +174,9 @@ struct AtlasHealthData: Codable {
     let currentRatio: AtlasMetric
     let interestCoverage: AtlasMetric?
     let altmanZScore: AtlasMetric?
-    
+
     var allMetrics: [AtlasMetric] {
-        [debtToEquity, currentRatio, interestCoverage, altmanZScore].compactMap { $0 }
+        [debtToEquity, currentRatio, interestCoverage, altmanZScore].compactMap { $0 }.filter { $0.status != .noData }
     }
 }
 
@@ -185,9 +185,9 @@ struct AtlasCashData: Codable {
     let ocfToNetIncome: AtlasMetric
     let cashPosition: AtlasMetric?
     let netDebt: AtlasMetric?
-    
+
     var allMetrics: [AtlasMetric] {
-        [freeCashFlow, ocfToNetIncome, cashPosition, netDebt].compactMap { $0 }
+        [freeCashFlow, ocfToNetIncome, cashPosition, netDebt].compactMap { $0 }.filter { $0.status != .noData }
     }
 }
 
@@ -195,9 +195,9 @@ struct AtlasDividendData: Codable {
     let dividendYield: AtlasMetric
     let payoutRatio: AtlasMetric?
     let dividendGrowth: AtlasMetric?
-    
+
     var allMetrics: [AtlasMetric] {
-        [dividendYield, payoutRatio, dividendGrowth].compactMap { $0 }
+        [dividendYield, payoutRatio, dividendGrowth].compactMap { $0 }.filter { $0.status != .noData }
     }
 }
 
@@ -206,9 +206,9 @@ struct AtlasRiskData: Codable {
     let week52High: AtlasMetric?
     let week52Low: AtlasMetric?
     let volatility: AtlasMetric?
-    
+
     var allMetrics: [AtlasMetric] {
-        [beta, week52High, week52Low, volatility].compactMap { $0 }
+        [beta, week52High, week52Low, volatility].compactMap { $0 }.filter { $0.status != .noData }
     }
 }
 

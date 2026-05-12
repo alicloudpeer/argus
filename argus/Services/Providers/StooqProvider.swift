@@ -1,20 +1,16 @@
 import Foundation
 
-/// Stooq.com adapter. Free, keyless, no published rate limit.
-/// Two main entry points:
-///   * `fetchSnapshotBatch` returns the latest OHLCV row for hundreds of
-///     tickers in one CSV request. Used by the warm tier to refresh the
-///     entire watchlist with a single round-trip.
-///   * `fetchDailyCandles` returns historical daily/weekly/monthly bars
-///     in CSV form. Used as the canonical source of long-running
-///     OHLCV history.
-/// US/global equities, FX majors, commodities, indices and a subset of
-/// crypto are supported. BIST symbols are not (BorsaPy covers them).
+/// Stooq.com adapter. Free, keyless quote snapshots — used by the warm
+/// tier to refresh the entire watchlist with a single CSV round-trip.
+/// Stooq's historical candle endpoint was gated behind a captcha-bound
+/// API key in May 2026, so candle fetching is no longer routed here;
+/// Yahoo is the primary daily/intraday source.
+/// US/global equities, FX majors, commodities and indices are supported.
+/// BIST symbols are not (BorsaPy covers them).
 actor StooqProvider {
     static let shared = StooqProvider()
 
     private let snapshotBase = URL(string: "https://stooq.com/q/l/")!
-    private let candlesBase  = URL(string: "https://stooq.com/q/d/l/")!
 
     private init() {}
 
@@ -65,34 +61,6 @@ actor StooqProvider {
         return parseSnapshotCSV(data: data, symbolMap: normalized)
     }
 
-    // MARK: - Daily candles
-
-    /// Returns historical OHLCV for the requested symbol. Stooq exposes
-    /// `i` for interval (`d` daily, `w` weekly, `m` monthly).
-    func fetchDailyCandles(symbol: String, limit: Int = 365, interval: Interval = .daily) async throws -> [Candle] {
-        guard let mapped = Self.toStooqSymbol(symbol) else { return [] }
-
-        var components = URLComponents(url: candlesBase, resolvingAgainstBaseURL: false)!
-        components.queryItems = [
-            URLQueryItem(name: "s", value: mapped.stooq),
-            URLQueryItem(name: "i", value: interval.rawValue)
-        ]
-        guard let url = components.url else { return [] }
-
-        let data = try await Self.fetch(url: url, timeout: 20)
-        let candles = Self.parseCandlesCSV(data: data)
-        if candles.count > limit {
-            return Array(candles.suffix(limit))
-        }
-        return candles
-    }
-
-    enum Interval: String {
-        case daily   = "d"
-        case weekly  = "w"
-        case monthly = "m"
-    }
-
     // MARK: - Symbol mapping
 
     /// Canonical symbol form used by the rest of the codebase translated
@@ -105,17 +73,15 @@ actor StooqProvider {
         // BIST is not on Stooq.
         if upper.hasSuffix(".IS") { return nil }
 
-        // Index aliases.
+        // Index aliases. Symbols returning N/D on Stooq (VIX, TNX,
+        // Russell) are omitted so they fall through to Yahoo backstop.
         let indexMap: [String: String] = [
             "^GSPC": "^spx",
             "^IXIC": "^ndq",
             "^DJI":  "^dji",
-            "^RUT":  "^rut",
-            "^VIX":  "^vix",
             "^FTSE": "^ftm",
             "^N225": "^nkx",
-            "^TNX":  "^tnx",
-            "DX-Y.NYB": "^dxy"
+            "DX-Y.NYB": "dx.f"
         ]
         if let m = indexMap[upper] { return SymbolMapping(canonical: upper, stooq: m) }
 
@@ -126,10 +92,11 @@ actor StooqProvider {
         }
 
         // Commodities: GC=F (gold), CL=F (crude), etc.
+        // Brent (BZ=F) returns N/D on Stooq — routed to Yahoo.
         if upper.hasSuffix("=F") {
             let map: [String: String] = [
                 "GC=F": "gc.f", "SI=F": "si.f", "HG=F": "hg.f",
-                "CL=F": "cl.f", "BZ=F": "bz.f", "NG=F": "ng.f"
+                "CL=F": "cl.f", "NG=F": "ng.f"
             ]
             if let m = map[upper] { return SymbolMapping(canonical: upper, stooq: m) }
             return nil
@@ -219,31 +186,6 @@ actor StooqProvider {
             quotes[canonical] = quote
         }
         return quotes
-    }
-
-    private static func parseCandlesCSV(data: Data) -> [Candle] {
-        guard let text = String(data: data, encoding: .utf8) else { return [] }
-        let lines = text.split(whereSeparator: { $0 == "\n" || $0 == "\r" })
-        guard lines.count > 1 else { return [] }
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-
-        var out: [Candle] = []
-        for raw in lines.dropFirst() {
-            let cols = raw.split(separator: ",", omittingEmptySubsequences: false).map { String($0) }
-            guard cols.count >= 6 else { continue }
-            guard let date = formatter.date(from: cols[0]) else { continue }
-            guard let open = Double(cols[1]),
-                  let high = Double(cols[2]),
-                  let low  = Double(cols[3]),
-                  let close = Double(cols[4]) else { continue }
-            let volume = Double(cols[5]) ?? 0
-            out.append(Candle(date: date, open: open, high: high, low: low, close: close, volume: volume))
-        }
-        return out
     }
 
     private static func inferCurrency(canonical: String) -> String {

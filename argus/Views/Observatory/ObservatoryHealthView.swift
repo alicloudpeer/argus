@@ -36,7 +36,7 @@ struct ObservatoryHealthView: View {
         VStack(alignment: .leading, spacing: 12) {
             Label("SYSTEM_PERFORMANCE", systemImage: "chart.line.uptrend.xyaxis")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .bold, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 HoloMetricCard(
@@ -75,7 +75,7 @@ struct ObservatoryHealthView: View {
         VStack(alignment: .leading, spacing: 12) {
             Label("PREDICTION_DRIFT", systemImage: "chart.pie")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .bold, design: .monospaced))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             VStack(spacing: 0) {
                 HStack(spacing: 0) {
@@ -86,7 +86,7 @@ struct ObservatoryHealthView: View {
                     
                     // HOLD
                     Rectangle()
-                        .fill(InstitutionalTheme.Colors.textSecondary.opacity(0.3))
+                        .fill(DesignTokens.Colors.textSecondary.opacity(0.3))
                         .frame(width: max(0, CGFloat(distribution.holdPercent / 100) * (UIScreen.main.bounds.width - 40)))
                     
                     // SELL
@@ -103,7 +103,7 @@ struct ObservatoryHealthView: View {
                         .foregroundColor(InstitutionalTheme.Colors.aurora)
                     Spacer()
                     Text("HOLD \(Int(distribution.holdPercent))%")
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Spacer()
                     Text("SELL \(Int(distribution.sellPercent))%")
                         .foregroundColor(InstitutionalTheme.Colors.crimson)
@@ -112,7 +112,7 @@ struct ObservatoryHealthView: View {
                 .padding(.top, 6)
             }
             .padding(12)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
@@ -141,7 +141,7 @@ struct ObservatoryHealthView: View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Sistem günlüğü", systemImage: "exclamationmark.shield")
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             if alerts.isEmpty {
                 HStack {
@@ -149,11 +149,11 @@ struct ObservatoryHealthView: View {
                         .foregroundStyle(InstitutionalTheme.Colors.aurora)
                     Text("ALL SYSTEMS NOMINAL")
                         .font(DesignTokens.Fonts.custom(size: 12, weight: .medium, design: .monospaced))
-                        .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundStyle(DesignTokens.Colors.textSecondary)
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(InstitutionalTheme.Colors.surface1)
+                .background(DesignTokens.Colors.surface)
                 .cornerRadius(8)
             } else {
                 ForEach(alerts) { alert in
@@ -168,17 +168,17 @@ struct ObservatoryHealthView: View {
                                 .foregroundColor(DesignTokens.Colors.textPrimary)
                             Text(alert.message)
                                 .font(DesignTokens.Fonts.custom(size: 10, design: .monospaced))
-                                .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundStyle(DesignTokens.Colors.textSecondary)
                         }
                         
                         Spacer()
                         
                         Text(alert.formattedTime)
                             .font(DesignTokens.Fonts.custom(size: 9, design: .monospaced))
-                            .foregroundStyle(InstitutionalTheme.Colors.textSecondary.opacity(0.5))
+                            .foregroundStyle(DesignTokens.Colors.textSecondary.opacity(0.5))
                     }
                     .padding(12)
-                    .background(InstitutionalTheme.Colors.surface1)
+                    .background(DesignTokens.Colors.surface)
                     .cornerRadius(8)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
@@ -281,10 +281,10 @@ struct HoloMetricCard: View {
             
             Text(title)
                 .font(DesignTokens.Fonts.custom(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(InstitutionalTheme.Colors.textSecondary)
+                .foregroundStyle(DesignTokens.Colors.textSecondary)
         }
         .padding()
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

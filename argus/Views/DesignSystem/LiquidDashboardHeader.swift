@@ -57,11 +57,11 @@ struct LiquidDashboardHeader: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(isBist ? "BIST değeri" : "Toplam varlık")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text("\(currencySymbol)\(formatLarge(equity))")
                         .font(DesignTokens.Fonts.custom(size: 28, weight: .medium))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                         .monospacedDigit()
@@ -82,17 +82,17 @@ struct LiquidDashboardHeader: View {
                 }
                 Text("Bugünkü değişim")
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
             }
 
             HStack(spacing: 0) {
                 statColumn(title: "Nakit",
                            value: "\(currencySymbol)\(formatLarge(balance))",
-                           tone: InstitutionalTheme.Colors.textPrimary,
+                           tone: DesignTokens.Colors.textPrimary,
                            leadingDivider: false)
                 statColumn(title: "Pozisyon",
                            value: "\(currencySymbol)\(formatLarge(equity - balance))",
-                           tone: InstitutionalTheme.Colors.textPrimary,
+                           tone: DesignTokens.Colors.textPrimary,
                            leadingDivider: true)
                 statColumn(title: "Toplam K/Z",
                            value: "\(netPnL >= 0 ? "+" : "")\(currencySymbol)\(formatLarge(netPnL))",
@@ -113,7 +113,7 @@ struct LiquidDashboardHeader: View {
 
             Text("Portföy")
                 .font(DesignTokens.Fonts.custom(size: 17, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
 
             Spacer()
 
@@ -125,7 +125,7 @@ struct LiquidDashboardHeader: View {
                     .resizable()
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                     .frame(width: 22, height: 22)
                     .frame(width: 32, height: 32)
                     .contentShape(Rectangle())
@@ -139,7 +139,7 @@ struct LiquidDashboardHeader: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(DesignTokens.Fonts.custom(size: 16, weight: .regular))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 32, height: 32)
                 .contentShape(Rectangle())
         }
@@ -166,11 +166,11 @@ struct LiquidDashboardHeader: View {
                 Text(label)
                     .font(DesignTokens.Fonts.custom(size: 13, weight: selected ? .medium : .regular))
                     .foregroundColor(selected
-                                     ? InstitutionalTheme.Colors.textPrimary
-                                     : InstitutionalTheme.Colors.textSecondary)
+                                     ? DesignTokens.Colors.textPrimary
+                                     : DesignTokens.Colors.textSecondary)
                 Rectangle()
                     .fill(selected
-                          ? InstitutionalTheme.Colors.textPrimary
+                          ? DesignTokens.Colors.textPrimary
                           : Color.clear)
                     .frame(height: 1.5)
             }
@@ -186,14 +186,14 @@ struct LiquidDashboardHeader: View {
         HStack(spacing: 0) {
             if leadingDivider {
                 Rectangle()
-                    .fill(InstitutionalTheme.Colors.borderSubtle)
+                    .fill(DesignTokens.Colors.borderSubtle)
                     .frame(width: 0.5)
                     .padding(.vertical, 2)
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(DesignTokens.Fonts.custom(size: 11))
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Text(value)
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
                     .foregroundColor(tone)

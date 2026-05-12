@@ -524,14 +524,14 @@ struct AgoraDebateSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.red)
+                    .foregroundColor(DesignTokens.Colors.error)
                 HStack(spacing: 4) {
                     Image(systemName: "nosign")
-                        .foregroundColor(.red)
+                        .foregroundColor(DesignTokens.Colors.error)
                     Text("VETOLAR")
                         .font(.caption)
                         .bold()
-                        .foregroundColor(.red)
+                        .foregroundColor(DesignTokens.Colors.error)
                 }
             }
             
@@ -544,7 +544,7 @@ struct AgoraDebateSheet: View {
                     Text(veto.module)
                         .font(.caption)
                         .bold()
-                        .foregroundColor(.red)
+                        .foregroundColor(DesignTokens.Colors.error)
                     
                     Spacer()
                     
@@ -567,7 +567,7 @@ struct AgoraDebateSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "book.fill")
-                    .foregroundColor(.blue)
+                    .foregroundColor(DesignTokens.Colors.primary)
                 Text("Terim Sözlüğü")
                     .font(.headline)
                     .foregroundColor(DesignTokens.Colors.textPrimary)
@@ -591,7 +591,7 @@ struct AgoraDebateSheet: View {
                             
                             Image(systemName: "questionmark.circle")
                                 .font(.caption)
-                                .foregroundColor(.blue)
+                                .foregroundColor(DesignTokens.Colors.primary)
                         }
                         .padding(10)
                         .background(Color.blue.opacity(0.1))
@@ -621,7 +621,7 @@ struct AgoraDebateSheet: View {
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.caption)
-                            .foregroundColor(.green)
+                            .foregroundColor(DesignTokens.Colors.success)
                         
                         Text(point)
                             .font(.caption2)

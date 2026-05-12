@@ -127,7 +127,7 @@ struct EntrySetupCard: View {
 
             Text(setup.waitMessage ?? "Setup uygulanabilir değil.")
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if let zone = setup.entryZone {
@@ -154,7 +154,7 @@ struct EntrySetupCard: View {
             Text("Geçerlilik: \(fmt.string(from: setup.validUntil))")
                 .font(DesignTokens.Fonts.custom(size: 10))
         }
-        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+        .foregroundColor(DesignTokens.Colors.textTertiary)
         .padding(.top, 2)
     }
 
@@ -178,7 +178,7 @@ private struct GradeBadge: View {
         HStack(spacing: 6) {
             Text("Not")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Text(grade.label)
                 .font(DesignTokens.Fonts.custom(size: 15, weight: .medium))
                 .foregroundColor(color)
@@ -191,17 +191,17 @@ private struct SetupRow: View {
     let icon: String
     let label: String
     let value: String
-    var valueColor: Color = InstitutionalTheme.Colors.textPrimary
+    var valueColor: Color = DesignTokens.Colors.textPrimary
 
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(width: 16)
             Text(label)
                 .font(DesignTokens.Fonts.custom(size: 12, weight: .medium))
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Spacer()
             Text(value)
                 .font(DesignTokens.Fonts.custom(size: 13, weight: .semibold, design: .monospaced))

@@ -62,7 +62,7 @@ struct SanctumCouncilBody: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Konsey")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(decisionWord)
                     .font(DesignTokens.Fonts.custom(size: 36, weight: .semibold))
@@ -70,7 +70,7 @@ struct SanctumCouncilBody: View {
                 if let d = decision {
                     Text("güven %\(Int(d.finalScoreCore.rounded()))")
                         .font(DesignTokens.Fonts.custom(size: 14))
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
         }
@@ -80,7 +80,7 @@ struct SanctumCouncilBody: View {
 
     private var decisionDivider: some View {
         Rectangle()
-            .fill(InstitutionalTheme.Colors.border)
+            .fill(DesignTokens.Colors.border)
             .frame(height: 0.5)
             .padding(.vertical, 16)
     }
@@ -98,7 +98,7 @@ struct SanctumCouncilBody: View {
 
     private var decisionTone: Color {
         guard let action = decision?.finalActionCore else {
-            return InstitutionalTheme.Colors.textSecondary
+            return DesignTokens.Colors.textSecondary
         }
         switch action {
         case .buy:                return InstitutionalTheme.Colors.aurora
@@ -133,7 +133,7 @@ struct SanctumCouncilBody: View {
                             let w = max(2, geo.size.width * CGFloat(seg.ratio))
                             Text(w >= 36 ? seg.label : "·")
                                 .font(DesignTokens.Fonts.custom(size: 10, design: .monospaced))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                                 .frame(width: w, alignment: .leading)
                                 .lineLimit(1)
                         }
@@ -171,14 +171,14 @@ struct SanctumCouncilBody: View {
                     motorRow(r)
                     if idx < reasonings.count - 1 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.border)
+                            .fill(DesignTokens.Colors.border)
                             .frame(height: 0.5)
                     }
                 }
             } else {
                 Text("Motor oyları henüz toplanmadı.")
                     .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                    .foregroundColor(DesignTokens.Colors.textTertiary)
                     .padding(.vertical, 8)
             }
         } else {
@@ -200,8 +200,8 @@ struct SanctumCouncilBody: View {
                 Text(r.motor.displayName)
                     .font(DesignTokens.Fonts.custom(size: 14))
                     .foregroundColor(isPending
-                        ? InstitutionalTheme.Colors.textSecondary
-                        : InstitutionalTheme.Colors.textPrimary)
+                        ? DesignTokens.Colors.textSecondary
+                        : DesignTokens.Colors.textPrimary)
                 Spacer()
                 if let value = r.valueText {
                     Text(value)
@@ -211,7 +211,7 @@ struct SanctumCouncilBody: View {
                 } else if isPending {
                     Text("—")
                         .font(DesignTokens.Fonts.custom(size: 14, design: .monospaced))
-                        .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 } else {
                     Text("\(r.stance.arrowGlyph) \(Int(r.score))")
                         .font(DesignTokens.Fonts.custom(size: 14, design: .monospaced))
@@ -229,16 +229,16 @@ struct SanctumCouncilBody: View {
         HStack {
             Text("…")
                 .font(DesignTokens.Fonts.custom(size: 14))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
             Spacer()
             Text("toplanıyor")
                 .font(DesignTokens.Fonts.custom(size: 11))
-                .foregroundColor(InstitutionalTheme.Colors.textTertiary)
+                .foregroundColor(DesignTokens.Colors.textTertiary)
         }
         .padding(.vertical, 9)
         .overlay(
             Rectangle()
-                .fill(InstitutionalTheme.Colors.border)
+                .fill(DesignTokens.Colors.border)
                 .frame(height: 0.5),
             alignment: .bottom
         )
@@ -267,7 +267,7 @@ struct SanctumCouncilBody: View {
         switch stance {
         case .strongBuy, .buy:   return InstitutionalTheme.Colors.aurora
         case .wait:              return InstitutionalTheme.Colors.holo
-        case .neutral:           return InstitutionalTheme.Colors.textSecondary
+        case .neutral:           return DesignTokens.Colors.textSecondary
         case .sell, .strongSell: return InstitutionalTheme.Colors.crimson
         }
     }

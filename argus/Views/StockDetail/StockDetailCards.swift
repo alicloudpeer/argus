@@ -28,7 +28,7 @@ struct AgoraTraceCard: View {
                     .foregroundColor(approved ? InstitutionalTheme.Colors.aurora : InstitutionalTheme.Colors.crimson)
                 Text(approved ? "Argus onayladı" : "Argus reddetti")
                     .font(DesignTokens.Fonts.custom(size: 15, weight: .semibold))
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Text(action.rawValue.uppercased())
                     .font(.caption)
@@ -57,7 +57,7 @@ struct AgoraTraceCard: View {
             }
         }
         .padding(16)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(16)
     }
 }
@@ -84,11 +84,11 @@ struct RiskSummaryCard: View {
                     .foregroundColor(isVeto ? InstitutionalTheme.Colors.crimson : InstitutionalTheme.Colors.holo)
                 Text(isVeto ? report.replacingOccurrences(of: "VETO: ", with: "") : report)
                     .font(DesignTokens.Fonts.custom(size: 13))
-                    .foregroundColor(isVeto ? InstitutionalTheme.Colors.crimson : InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(isVeto ? InstitutionalTheme.Colors.crimson : DesignTokens.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(14)
-            .background(isVeto ? InstitutionalTheme.Colors.crimson.opacity(0.08) : InstitutionalTheme.Colors.surface1)
+            .background(isVeto ? InstitutionalTheme.Colors.crimson.opacity(0.08) : DesignTokens.Colors.surface)
             .cornerRadius(14)
         }
     }
@@ -115,7 +115,7 @@ struct PhoenixChannelCard: View {
                         .foregroundColor(InstitutionalTheme.Colors.holo)
                     Text("Kanal Analizi")
                         .font(DesignTokens.Fonts.custom(size: 15, weight: .semibold))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                     Spacer()
                     if let run = onRunBacktest {
                         Button("Geçmiş Test", action: run)
@@ -131,7 +131,7 @@ struct PhoenixChannelCard: View {
                             .foregroundColor(InstitutionalTheme.Colors.crimson.opacity(0.9))
                         Text("Direnç")
                             .font(.caption2)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
 
                         Rectangle()
                             .fill(LinearGradient(
@@ -144,17 +144,17 @@ struct PhoenixChannelCard: View {
                             .foregroundColor(InstitutionalTheme.Colors.aurora.opacity(0.9))
                         Text("Destek")
                             .font(.caption2)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Text("Konum:")
                                 .font(DesignTokens.Fonts.custom(size: 13))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                             Text(advice.triggers.touchLowerBand ? "Destek bölgesi" : "Kanal içi")
                                 .font(DesignTokens.Fonts.custom(size: 13, weight: .semibold))
-                                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                                .foregroundColor(DesignTokens.Colors.textPrimary)
                         }
                         if advice.triggers.rsiReversal || advice.triggers.bullishDivergence {
                             Text(advice.triggers.rsiReversal ? "RSI dönüş sinyali var" : "Yükseliş ayrışması")
@@ -164,14 +164,14 @@ struct PhoenixChannelCard: View {
                         if !advice.reasonShort.isEmpty {
                             Text(advice.reasonShort)
                                 .font(DesignTokens.Fonts.custom(size: 12))
-                                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                                .foregroundColor(DesignTokens.Colors.textSecondary)
                                 .italic()
                         }
                     }
                 }
             }
             .padding(16)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .cornerRadius(16)
         }
     }
@@ -187,10 +187,10 @@ struct TransactionHistoryCard: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Image(systemName: "clock.arrow.circlepath")
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                     Text("Bu Hissedeki İşlemler")
                         .font(DesignTokens.Fonts.custom(size: 15, weight: .semibold))
-                        .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
                 }
                 ForEach(transactions.prefix(5)) { tx in
                     HStack {
@@ -200,17 +200,17 @@ struct TransactionHistoryCard: View {
                             .foregroundColor(tx.type.rawValue == "BUY" ? InstitutionalTheme.Colors.aurora : InstitutionalTheme.Colors.crimson)
                         Text(tx.date.formatted(date: .numeric, time: .shortened))
                             .font(.caption2)
-                            .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
                         Spacer()
                         Text("\(String(format: "%.0f", tx.amount)) adet @ \(String(format: "%.2f", tx.price))")
                             .font(.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                     }
                     Divider()
                 }
             }
             .padding(16)
-            .background(InstitutionalTheme.Colors.surface1)
+            .background(DesignTokens.Colors.surface)
             .cornerRadius(16)
         }
     }

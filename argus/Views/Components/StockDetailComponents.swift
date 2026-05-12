@@ -10,8 +10,8 @@ struct ToggleButton: View {
                 .font(InstitutionalTheme.Typography.caption)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(isOn ? InstitutionalTheme.Colors.primary : InstitutionalTheme.Colors.surface1)
-                .foregroundColor(isOn ? .white : InstitutionalTheme.Colors.textPrimary)
+                .background(isOn ? DesignTokens.Colors.primary : DesignTokens.Colors.surface)
+                .foregroundColor(isOn ? .white : DesignTokens.Colors.textPrimary)
                 .cornerRadius(16)
         }
     }
@@ -25,7 +25,7 @@ struct ScoreItem: View {
         VStack {
             Text(title)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
             if let s = score {
                 Text("\(Int(s))")
@@ -35,16 +35,16 @@ struct ScoreItem: View {
             } else {
                 Text("-")
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
         }
         .frame(maxWidth: .infinity)
     }
     
     private func scoreColor(_ score: Double) -> Color {
-        if score >= 70 { return InstitutionalTheme.Colors.positive }
+        if score >= 70 { return DesignTokens.Colors.success }
         if score >= 50 { return InstitutionalTheme.Colors.warning }
-        return InstitutionalTheme.Colors.negative
+        return DesignTokens.Colors.error
     }
 }
 
@@ -58,7 +58,7 @@ struct AtlasMetricRow: View {
             HStack {
                 Label(title, systemImage: icon)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
                 Spacer()
                 if let v = value {
                     Text("\(Int(v))/100")
@@ -67,14 +67,14 @@ struct AtlasMetricRow: View {
                         .foregroundColor(scoreColor(v))
                 } else {
                     Text("-")
-                        .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                        .foregroundColor(DesignTokens.Colors.textSecondary)
                 }
             }
             
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(InstitutionalTheme.Colors.borderSubtle)
+                        .fill(DesignTokens.Colors.borderSubtle)
                         .frame(height: 6)
                     
                     if let v = value {
@@ -91,9 +91,9 @@ struct AtlasMetricRow: View {
     }
     
     private func scoreColor(_ score: Double) -> Color {
-        if score >= 70 { return InstitutionalTheme.Colors.positive }
+        if score >= 70 { return DesignTokens.Colors.success }
         if score >= 50 { return InstitutionalTheme.Colors.warning }
-        return InstitutionalTheme.Colors.negative
+        return DesignTokens.Colors.error
     }
 }
 
@@ -106,17 +106,17 @@ struct DetailRow: View {
                 let parts = text.split(separator: ":", maxSplits: 1).map(String.init)
                 Text(parts[0])
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary.opacity(0.7))
+                    .foregroundColor(DesignTokens.Colors.textPrimary.opacity(0.7))
                 Spacer()
                 Text(parts[1])
                     .font(InstitutionalTheme.Typography.caption)
                     .bold()
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .multilineTextAlignment(.trailing)
             } else {
                 Text(text)
                     .font(InstitutionalTheme.Typography.caption)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
             }
@@ -139,31 +139,31 @@ struct WeightedSignalCard: View {
                 HStack(spacing: 0) {
                     if buy > 0 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.positive)
+                            .fill(DesignTokens.Colors.success)
                             .frame(width: geometry.size.width * CGFloat(buy / 100))
                     }
                     if hold > 0 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.textSecondary)
+                            .fill(DesignTokens.Colors.textSecondary)
                             .frame(width: geometry.size.width * CGFloat(hold / 100))
                     }
                     if sell > 0 {
                         Rectangle()
-                            .fill(InstitutionalTheme.Colors.negative)
+                            .fill(DesignTokens.Colors.error)
                             .frame(width: geometry.size.width * CGFloat(sell / 100))
                     }
                 }
             }
             .frame(height: 20)
             .cornerRadius(10)
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(InstitutionalTheme.Colors.borderSubtle))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(DesignTokens.Colors.borderSubtle))
             
             HStack {
-                Label("\(Int(buy))% AL", systemImage: "arrow.up.circle.fill").foregroundColor(InstitutionalTheme.Colors.positive).font(InstitutionalTheme.Typography.caption)
+                Label("\(Int(buy))% AL", systemImage: "arrow.up.circle.fill").foregroundColor(DesignTokens.Colors.success).font(InstitutionalTheme.Typography.caption)
                 Spacer()
-                Label("\(Int(hold))% BEKLE", systemImage: "minus.circle.fill").foregroundColor(InstitutionalTheme.Colors.textSecondary).font(InstitutionalTheme.Typography.caption)
+                Label("\(Int(hold))% BEKLE", systemImage: "minus.circle.fill").foregroundColor(DesignTokens.Colors.textSecondary).font(InstitutionalTheme.Typography.caption)
                 Spacer()
-                Label("\(Int(sell))% SAT", systemImage: "arrow.down.circle.fill").foregroundColor(InstitutionalTheme.Colors.negative).font(InstitutionalTheme.Typography.caption)
+                Label("\(Int(sell))% SAT", systemImage: "arrow.down.circle.fill").foregroundColor(DesignTokens.Colors.error).font(InstitutionalTheme.Typography.caption)
             }
         }
         .padding()
@@ -205,7 +205,7 @@ struct StrategyResultRow: View {
                     .bold()
                 Text(result.summary)
                     .font(InstitutionalTheme.Typography.micro)
-                    .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
             }
             
             Spacer()
@@ -225,11 +225,11 @@ struct StrategyResultRow: View {
     
     private func color(for action: SignalAction) -> Color {
         switch action {
-        case .buy: return InstitutionalTheme.Colors.positive
-        case .sell: return InstitutionalTheme.Colors.negative
-        case .hold: return InstitutionalTheme.Colors.textSecondary
-        case .wait: return InstitutionalTheme.Colors.textSecondary
-        case .skip: return InstitutionalTheme.Colors.textSecondary
+        case .buy: return DesignTokens.Colors.success
+        case .sell: return DesignTokens.Colors.error
+        case .hold: return DesignTokens.Colors.textSecondary
+        case .wait: return DesignTokens.Colors.textSecondary
+        case .skip: return DesignTokens.Colors.textSecondary
         }
     }
 }
@@ -243,7 +243,7 @@ struct AthenaFactorCard: View {
             HStack {
                 Label("Athena Faktör Analizi", systemImage: "building.columns.fill")
                     .font(InstitutionalTheme.Typography.bodyStrong)
-                    .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
                 Spacer()
                 Text(String(format: "%.0f", result.factorScore))
                     .font(InstitutionalTheme.Typography.headline)
@@ -257,11 +257,11 @@ struct AthenaFactorCard: View {
                     .animation(Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: animate)
             }
             
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
             
             Text(result.styleLabel)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .opacity(animate ? 1 : 0)
                 .offset(y: animate ? 0 : 5)
@@ -288,11 +288,11 @@ struct AthenaFactorCard: View {
     
     private func color(for name: String) -> Color {
         switch name {
-        case "Green": return InstitutionalTheme.Colors.positive
-        case "Blue": return InstitutionalTheme.Colors.primary
+        case "Green": return DesignTokens.Colors.success
+        case "Blue": return DesignTokens.Colors.primary
         case "Yellow": return InstitutionalTheme.Colors.warning
-        case "Red": return InstitutionalTheme.Colors.negative
-        default: return InstitutionalTheme.Colors.textSecondary
+        case "Red": return DesignTokens.Colors.error
+        default: return DesignTokens.Colors.textSecondary
         }
     }
     
@@ -300,7 +300,7 @@ struct AthenaFactorCard: View {
         HStack {
             Text(name)
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             Spacer()
             
             HStack(spacing: 4) {
@@ -316,7 +316,7 @@ struct AthenaFactorCard: View {
             }
         }
         .padding(8)
-        .background(InstitutionalTheme.Colors.surface1)
+        .background(DesignTokens.Colors.surface)
         .cornerRadius(6)
         .scaleEffect(animate ? 1 : 0.9)
         .opacity(animate ? 1 : 0)
@@ -324,9 +324,9 @@ struct AthenaFactorCard: View {
     }
     
     private func colorFor(score: Double, invert: Bool) -> Color {
-        if score >= 70 { return InstitutionalTheme.Colors.positive }
+        if score >= 70 { return DesignTokens.Colors.success }
         if score >= 40 { return InstitutionalTheme.Colors.warning }
-        return InstitutionalTheme.Colors.negative
+        return DesignTokens.Colors.error
     }
 }
 
@@ -337,20 +337,20 @@ struct InformationQualityCard: View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Bilgi Kalitesi Ağırlıkları", systemImage: "scalemass.fill")
                 .font(InstitutionalTheme.Typography.bodyStrong)
-                .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                .foregroundColor(DesignTokens.Colors.textPrimary)
             
             Text("Her modülün karar mekanizmasındaki güvenilirlik ve etki oranı.")
                 .font(InstitutionalTheme.Typography.caption)
-                .foregroundColor(InstitutionalTheme.Colors.textSecondary)
+                .foregroundColor(DesignTokens.Colors.textSecondary)
             
-            Divider().background(InstitutionalTheme.Colors.borderSubtle)
+            Divider().background(DesignTokens.Colors.borderSubtle)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 ForEach(weights.sorted(by: { $0.value > $1.value }), id: \.key) { key, value in
                     HStack {
                         Text(key)
                             .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.textPrimary)
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
                         Spacer()
                         Text("%\(Int(value * 100))")
                             .font(InstitutionalTheme.Typography.dataSmall)
@@ -371,8 +371,8 @@ struct InformationQualityCard: View {
     }
     
     private func qualityColor(_ value: Double) -> Color {
-        if value >= 0.9 { return InstitutionalTheme.Colors.positive }
+        if value >= 0.9 { return DesignTokens.Colors.success }
         if value >= 0.7 { return InstitutionalTheme.Colors.warning }
-        return InstitutionalTheme.Colors.negative
+        return DesignTokens.Colors.error
     }
 }
