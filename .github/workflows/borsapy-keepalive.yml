@@ -1,0 +1,21 @@
+name: BorsaPy Keep-Alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      BORSAPY_HEALTH_URL: ${{ secrets.BORSAPY_URL }}/health
+    steps:
+      - name: Ping BorsaPy health
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 30 --max-time 60 "$BORSAPY_HEALTH_URL")
+          echo "BorsaPy health: HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "::warning::BorsaPy yanıt vermedi (HTTP $HTTP_CODE)"
+          fi
