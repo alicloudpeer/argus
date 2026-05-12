@@ -201,18 +201,27 @@ actor ExecutionGovernor {
 
     // MARK: - Journaling Hook (ARGUS 3.0: Migrated to ArgusLedger)
     
-    func didExecute(trade: Trade, scores: (Double, Double, Double, Double, Double?)) async {
+    func didExecute(
+        trade: Trade,
+        scores: (Double, Double, Double, Double, Double?),
+        decisionId: String? = nil
+    ) async {
         // Create entry reason from scores
         let reason = "Atlas: \(Int(scores.0)), Orion: \(Int(scores.1)), Aether: \(Int(scores.2)), Hermes: \(Int(scores.3))"
         let dominantSignal = scores.1 > scores.0 ? "Orion" : "Atlas"
-        
-        // Log to ArgusLedger (Single Source of Truth)
+
+        // 2026-05-12 Faz 0 Task 1: decisionId açık parametre olarak alınabilir
+        // (TradeBrainExecutor.executeBuy doğrudan decision.id.uuidString geçirir).
+        // Fallback: trade.decisionContext.decisionId, son çare trade.id.uuidString.
+        let resolvedDecisionId = decisionId
+            ?? trade.decisionContext?.decisionId
+            ?? trade.id.uuidString
         ArgusLedger.shared.openTrade(
             symbol: trade.symbol,
             price: trade.entryPrice,
             reason: reason,
             dominantSignal: dominantSignal,
-            decisionId: trade.id.uuidString
+            decisionId: resolvedDecisionId
         )
     }
 }

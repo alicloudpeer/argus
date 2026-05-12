@@ -986,6 +986,18 @@ class TradeBrainExecutor: ObservableObject {
             log("✅ \(symbol): \(isAddOn ? "EKLEME" : "ALIM") - \(String(format: "%.2f", trade.quantity)) adet @ \(String(format: "%.2f", currentPrice))\(isAddOn ? " [EKLEME]" : momentumFloor > 0 ? " [MOMENTUM]" : "")")
             log("   📋 Karar: \(decision.action.rawValue) (\(String(format: "%.0f", decision.confidence * 100))%)")
             ArgusLogger.info("executeBuy: ALIM BAŞARILI - \(symbol): \(trade.quantity) @ \(currentPrice)", category: "TRADEBRAIN")
+
+            // Faz 0 Task 1: Forward test omurgası — ArgusLedger trades tablosuna
+            // her başarılı alımı yaz. Daha önce didExecute hiçbir yerden çağrılmıyordu
+            // (ölü kod). Council UUID'si explicit geçirilir; Task 2'de ledger UUID
+            // geri yazılınca closeTrade de bağlanacak.
+            // Atlas/Hermes skorları Task 2'de decision.atlasDecision/hermesDecision'dan
+            // beslenecek; şimdilik 0 — reason metni ve dominantSignal Orion ağırlıklı.
+            await ExecutionGovernor.shared.didExecute(
+                trade: trade,
+                scores: (0, orionScore, regimeAetherScore, 0, nil),
+                decisionId: decision.id.uuidString
+            )
         } else {
             log("❌ \(symbol): Alım REDDEDİLDİ — \(ExecutionLogger.shared.lastTradeError ?? "?")")
             ArgusLogger.error("executeBuy: ALIM REDDEDİLDİ - \(symbol): \(ExecutionLogger.shared.lastTradeError ?? "?")", category: "TRADEBRAIN")
