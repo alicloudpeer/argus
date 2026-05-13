@@ -1,4 +1,18 @@
 import Foundation
+import CryptoKit
+
+// MARK: - Faz V (2026-05-12): Council Weights Snapshot
+/// Convene başında alınan atomic weights snapshot'ı. Kararın hangi öğrenilmiş
+/// ağırlıklar üzerinden verildiğini deterministik olarak tanımlar — audit
+/// trail için DecisionEvent/DecisionChangeEvent payload'larında referans
+/// edilir. `snapshotId` weights'in canonical JSON'unun SHA256 hash'i; aynı
+/// içerikteki snapshot her zaman aynı ID üretir (deterministik).
+struct CouncilWeightsSnapshot: Sendable {
+    let weights: CouncilMemberWeights
+    /// 16-char hex prefix of SHA256(JSONEncoder().encode(weights)).
+    let snapshotId: String
+    let capturedAt: Date
+}
 
 // MARK: - Chiron Council Learning Service
 /// Learns from council voting records to adjust member weights
@@ -109,6 +123,37 @@ actor ChironCouncilLearningService {
     /// Global fallback: `chiron.weights.<engine>.*`
     fileprivate static func weightsCacheKey(symbol: String, engine: AutoPilotEngine) -> String {
         "chiron.weights.\(engine.rawValue).\(symbol)"
+    }
+
+    // MARK: - Faz V: Weights Snapshot
+
+    /// Atomic weights snapshot — `getCouncilWeights` ile aynı UserDefaults'tan
+    /// okur ama içeriğin SHA256 content-hash'iyle birlikte döner. Convene
+    /// başında bir kez çağrılır; snapshot ID konsey kararını eşsiz
+    /// tanımlayan deterministik referans olarak DecisionEvent/DecisionChangeEvent
+    /// payload'larına yazılır. Aynı weights → aynı ID (replay/diff için
+    /// yararlı).
+    nonisolated func getWeightsSnapshot(symbol: String, engine: AutoPilotEngine) -> CouncilWeightsSnapshot {
+        let weights = getCouncilWeights(symbol: symbol, engine: engine)
+        return CouncilWeightsSnapshot(
+            weights: weights,
+            snapshotId: Self.computeSnapshotId(weights: weights),
+            capturedAt: Date()
+        )
+    }
+
+    /// Deterministic 16-char hex ID — SHA256(weights JSON) ilk 16 karakteri.
+    /// Tam SHA değil çünkü event payload'da kısa görünmesi tercih ediliyor;
+    /// 64-bit hex çakışma olasılığı ihmal edilebilir (per-session audit için).
+    fileprivate static func computeSnapshotId(weights: CouncilMemberWeights) -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]  // canonical: sıralı key, tekrarlanabilir hash
+        guard let data = try? encoder.encode(weights) else {
+            return "unknown-encode"
+        }
+        let digest = SHA256.hash(data: data)
+        let hex = digest.compactMap { String(format: "%02x", $0) }.joined()
+        return String(hex.prefix(16))
     }
 
     /// Actor içinden çağrılır (learnFromRecord sonrası). Öğrenilmiş weights'i

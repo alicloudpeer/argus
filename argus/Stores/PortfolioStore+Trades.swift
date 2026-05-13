@@ -240,6 +240,27 @@ extension PortfolioStore {
                 rMultiple: rMultiple,
                 exitReason: reason ?? "MANUAL"
             )
+
+            // Task 11 (2026-05-13): Modül performans karnesi — her Council
+            // üyesinin oyu gerçek PnL yönü ile karşılaştırılır. Sıralama
+            // önemli: closeTrade → recordOutcome → ModulePerformanceTracker.
+            // Trade.decisionContext.decisionId Council convene anında
+            // doldurulur (Buy yolunda); legacy/manual trade'lerde nil olabilir
+            // → modül performansı kayıt edilmez (gürültü engellenir).
+            if let decisionId = trade.decisionContext?.decisionId {
+                let votes = ArgusLedger.shared.queryModuleVotes(decisionId: decisionId)
+                if !votes.isEmpty {
+                    // Structured Task — caller bloklanmaz ama task hiyerarşisi
+                    // içinde kalır (Task.detached değil, lifecycle inheritance).
+                    Task {
+                        await ModulePerformanceTracker.shared.recordTradeOutcome(
+                            decisionId: decisionId,
+                            actualPnL: pnl,
+                            moduleVotes: votes
+                        )
+                    }
+                }
+            }
         } else {
             ArgusLogger.warning(.portfoy, "Trade \(trade.symbol) kapatılıyor ama ledgerTradeId yok — Task 1 öncesi açılmış olabilir")
         }

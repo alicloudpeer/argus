@@ -16,6 +16,23 @@ final class ArgusLedger: Sendable {
     // Acts as a bridge between DataGateway and AGORA without changing method signatures.
     private var latestSnapshots: [String: [String: String]] = [:] // Symbol -> { Type -> Hash }
     private let contextLock = NSLock()
+
+    // MARK: - Faz IV (2026-05-12): Decision Change Tracking
+    // Sembol başına son logged DecisionEvent referansı — yeni `logDecision`
+    // çağrısında action veya confidence delta'sı eşik üstüyse otomatik
+    // `DecisionChangeEvent` yazılır. SQL truth her zaman events table'da;
+    // bu sadece in-memory hızlı erişim cache'i. Cold start'ta ilk read
+    // SQL'den lazy load eder.
+    //
+    // Faz V (2026-05-12): Cache entry'sine `weightSnapshotId` eklendi —
+    // konseyin hangi öğrenilmiş ağırlıklarla karar verdiğini izlemek için.
+    // DecisionChangeEvent payload'unda from/to snapshotId görünür: weight
+    // değişimi ile karar değişimi arasındaki ilişkiyi audit edebiliriz.
+    private var lastDecisions: [String: (action: String, confidence: Double, decisionId: UUID, weightSnapshotId: String?)] = [:]
+    private let lastDecisionsLock = NSLock()
+    /// Confidence delta'sı bu eşik (mutlak) üstüyse aksiyon değişmese bile
+    /// DecisionChangeEvent yazılır. Confidence tipik 0-1 ölçeğinde — 0.05 = %5.
+    private let decisionConfidenceDeltaThreshold: Double = 0.05
     
     // MARK: - Initialization
     private init() {
@@ -413,15 +430,38 @@ final class ArgusLedger: Sendable {
         vetoes: [String],
         origin: String, // UI_SCAN, AUTOPILOT, BACKTEST
         runId: String? = nil,
-        currentPrice: Double? = nil
+        currentPrice: Double? = nil,
+        // Faz V (2026-05-12): hangi öğrenilmiş ağırlıkların kullanıldığını
+        // tanımlayan deterministik snapshot ID. ChironCouncilLearningService.
+        // getWeightsSnapshot çıktısından gelir; nil = legacy çağırı.
+        weightSnapshotId: String? = nil,
+        // Task 11 (2026-05-13): Council convene anında üretilen modül oy
+        // dökümü — `[ModuleVoteRecord]` JSON string olarak gelir. nil ise
+        // payload'a yazılmaz (geriye uyumluluk; eski çağırılar etkilenmez).
+        // Trade kapanışında `queryModuleVotes(decisionId:)` bu alanı okur.
+        moduleVotes: String? = nil
     ) {
         let now = Date().iso8601
         let snapshots = getSnapshotRefs(symbol: symbol)
-        
+
         // Calculate Data Hash (Composite of all snapshots)
         let dataHash = snapshots.values.sorted().joined(separator: "|")
         let dataVersionHash = sha256(data: dataHash.data(using: .utf8) ?? Data())
-        
+
+        // Task 11: modül oy dökümü JSON string → `[Any]` (gerçek array) olarak
+        // payload'a yerleştir. JSONSerialization string'i tekrar parse etmez —
+        // string olarak yazılırsa nested JSON-in-JSON olur (çift escape).
+        // Decode başarısız olursa (malformed input) payload'tan çıkarılır;
+        // sessiz veri kaybı yerine açık log.
+        var moduleVotesParsed: Any = NSNull()
+        if let raw = moduleVotes,
+           let data = raw.data(using: .utf8),
+           let arr = try? JSONSerialization.jsonObject(with: data) as? [Any] {
+            moduleVotesParsed = arr
+        } else if moduleVotes != nil {
+            print("🚨 ArgusLedger: module_votes JSON parse failed for decision \(decisionId.uuidString.prefix(8))")
+        }
+
         let payload: [String: Any] = [
             "action": action,
             "confidence": confidence,
@@ -430,26 +470,53 @@ final class ArgusLedger: Sendable {
             "origin": origin,
             "snapshots": snapshots,
             "current_price": currentPrice ?? 0.0,
-            
+
             // Scientific Meta
             "as_of_utc": now, // For now, decision time is data time (until historical fetch is ready)
             "data_version_hash": dataVersionHash,
             "engine_config_hash": currentConfigHash(),
             "instrument_type": "STOCK",
-            "market_region": symbol.contains(".IS") ? "BIST" : "US"
+            "market_region": symbol.contains(".IS") ? "BIST" : "US",
+
+            // Faz V: weight snapshot id (nil → NSNull placeholder JSON-safe).
+            "weight_snapshot_id": weightSnapshotId ?? NSNull(),
+
+            // Task 11: modül oy dökümü ([ModuleVoteRecord] JSON dizisi).
+            "module_votes": moduleVotesParsed
         ]
         
         let runIdentifier = runId ?? SessionID.shared.id
-        
+
+        // Faz IV (2026-05-12): Önce önceki kararı oku ve delta detect et.
+        // BU MUTLAKA yeni DecisionEvent queue.async write'ından ÖNCE olmalı:
+        // aksi halde cache miss durumunda `readLastDecision` SQL'i sorguladığında
+        // queue serial olduğu için yeni yazılmış event'i "previous" olarak
+        // okur (self-reference race). Sıralama:
+        //   1. detectAndLogDecisionChange — önceki kararla karşılaştır, gerekirse
+        //      DecisionChangeEvent queue'a yaz (async).
+        //   2. DecisionEvent queue'a yaz (async).
+        //   3. Cache'i yeni kararla güncelle (defer içinde).
+        // Queue FIFO olduğu için DB'ye yazım sırası: ChangeEvent → DecisionEvent.
+        // Bu, audit trail'i "transition X→Y kaydedildi" → "yeni karar Y kaydedildi"
+        // sırasında okumayı sağlar; semantik açıdan tutarlı.
+        detectAndLogDecisionChange(
+            symbol: symbol,
+            newAction: action,
+            newConfidence: confidence,
+            newDecisionId: decisionId,
+            newWeightSnapshotId: weightSnapshotId,
+            runId: runIdentifier
+        )
+
         // Record Event
         let eventSql = """
         INSERT INTO events (event_id, event_type, event_time_utc, run_id, decision_id, symbol, payload_json, app_build, engine_version, processed)
         VALUES (?, 'DecisionEvent', ?, ?, ?, ?, ?, ?, 'ARGUS-3.0', 0);
         """
-        
+
         let payloadJson = asJsonString(payload) ?? "{}"
         let appBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
-        
+
         queue.async {
             self.ensureConnection()
             var stmt: OpaquePointer?
@@ -461,7 +528,7 @@ final class ArgusLedger: Sendable {
                 sqlite3_bind_text(stmt, 5, (symbol as NSString).utf8String, -1, nil)
                 sqlite3_bind_text(stmt, 6, (payloadJson as NSString).utf8String, -1, nil)
                 sqlite3_bind_text(stmt, 7, (appBuild as NSString).utf8String, -1, nil)
-                
+
                 if sqlite3_step(stmt) != SQLITE_DONE {
                     print("🚨 ArgusLedger: Decision Log Error")
                 }
@@ -469,7 +536,147 @@ final class ArgusLedger: Sendable {
             sqlite3_finalize(stmt)
         }
     }
-    
+
+    // MARK: - Faz IV: Decision Change Detection
+
+    /// Sembolün önceki kararını çağırır, delta varsa DecisionChangeEvent yazar.
+    /// Sonra cache'i yeni kararla günceller. Eşik üstü olmayan değişimler
+    /// (örn. action aynı + confidence delta < 0.05) yine de cache'i günceller
+    /// ama event yazmaz — küçük dalgalanmalar audit trail'i kirletmez.
+    private func detectAndLogDecisionChange(
+        symbol: String,
+        newAction: String,
+        newConfidence: Double,
+        newDecisionId: UUID,
+        newWeightSnapshotId: String?,
+        runId: String
+    ) {
+        let previous = readLastDecision(symbol: symbol)
+        defer {
+            updateLastDecisionCache(
+                symbol: symbol,
+                action: newAction,
+                confidence: newConfidence,
+                decisionId: newDecisionId,
+                weightSnapshotId: newWeightSnapshotId
+            )
+        }
+
+        guard let prev = previous else {
+            // İlk karar — change event yok, sadece cache başlat.
+            return
+        }
+
+        let actionChanged = prev.action != newAction
+        let confidenceDelta = newConfidence - prev.confidence
+        let significantConfidenceShift = abs(confidenceDelta) >= decisionConfidenceDeltaThreshold
+
+        guard actionChanged || significantConfidenceShift else { return }
+
+        logDecisionChangeEvent(
+            symbol: symbol,
+            fromAction: prev.action,
+            toAction: newAction,
+            fromConfidence: prev.confidence,
+            toConfidence: newConfidence,
+            confidenceDelta: confidenceDelta,
+            fromDecisionId: prev.decisionId,
+            toDecisionId: newDecisionId,
+            fromWeightSnapshotId: prev.weightSnapshotId,
+            toWeightSnapshotId: newWeightSnapshotId,
+            runId: runId
+        )
+    }
+
+    /// In-memory cache'ten okur; cache miss'te SQL'den çeker.
+    private func readLastDecision(symbol: String) -> (action: String, confidence: Double, decisionId: UUID, weightSnapshotId: String?)? {
+        if let cached = lastDecisionsLock.withLock({ lastDecisions[symbol] }) {
+            return cached
+        }
+        // Cache miss — SQL'den lazy load (cold start veya yeni sembol)
+        let sql = """
+        SELECT decision_id, payload_json FROM events
+        WHERE event_type = 'DecisionEvent' AND symbol = ?
+        ORDER BY event_time_utc DESC LIMIT 1;
+        """
+        return queue.sync { () -> (String, Double, UUID, String?)? in
+            ensureConnection()
+            var stmt: OpaquePointer?
+            defer { sqlite3_finalize(stmt) }
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return nil }
+            sqlite3_bind_text(stmt, 1, (symbol as NSString).utf8String, -1, nil)
+            guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+            guard let decIdCStr = sqlite3_column_text(stmt, 0),
+                  let payloadCStr = sqlite3_column_text(stmt, 1) else { return nil }
+            let decIdStr = String(cString: decIdCStr)
+            let payloadStr = String(cString: payloadCStr)
+            guard let decId = UUID(uuidString: decIdStr) else { return nil }
+            guard let data = payloadStr.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+            let action = json["action"] as? String ?? "neutral"
+            let confidence = (json["confidence"] as? Double) ?? 0.0
+            // Faz V: payload'dan weight_snapshot_id'i çek. Eski event'lerde
+            // olmayabilir → nil. NSNull JSON serializer'dan geri okurken
+            // `NSNull` instance veya yok olarak gelir; ikisini de nil say.
+            let snapshotIdRaw = json["weight_snapshot_id"]
+            let snapshotId = snapshotIdRaw as? String
+            return (action, confidence, decId, snapshotId)
+        }
+    }
+
+    private func updateLastDecisionCache(
+        symbol: String,
+        action: String,
+        confidence: Double,
+        decisionId: UUID,
+        weightSnapshotId: String?
+    ) {
+        lastDecisionsLock.withLock {
+            lastDecisions[symbol] = (action, confidence, decisionId, weightSnapshotId)
+        }
+    }
+
+    /// DecisionChangeEvent — events table'ına yazılan ayrı event tipi.
+    /// Schema değişikliği gerektirmez; payload_json delta detaylarını taşır.
+    /// `decision_id` field'ı YENİ decision'ı işaret eder (foreign key gibi),
+    /// `from_decision_id` payload içinde — eski kararı izlemek için.
+    /// Faz V: from/to weight snapshot id'leri de payload'a yazılır — weight
+    /// değişimi ile karar değişimi arasındaki nedensellik audit edilebilir.
+    private func logDecisionChangeEvent(
+        symbol: String,
+        fromAction: String,
+        toAction: String,
+        fromConfidence: Double,
+        toConfidence: Double,
+        confidenceDelta: Double,
+        fromDecisionId: UUID,
+        toDecisionId: UUID,
+        fromWeightSnapshotId: String?,
+        toWeightSnapshotId: String?,
+        runId: String
+    ) {
+        let payload: [String: Any] = [
+            "symbol": symbol,
+            "from_action": fromAction,
+            "to_action": toAction,
+            "from_confidence": fromConfidence,
+            "to_confidence": toConfidence,
+            "confidence_delta": confidenceDelta,
+            "action_changed": fromAction != toAction,
+            "from_decision_id": fromDecisionId.uuidString,
+            "to_decision_id": toDecisionId.uuidString,
+            "from_weight_snapshot_id": fromWeightSnapshotId ?? NSNull(),
+            "to_weight_snapshot_id": toWeightSnapshotId ?? NSNull(),
+            "weights_changed": (fromWeightSnapshotId != nil && toWeightSnapshotId != nil && fromWeightSnapshotId != toWeightSnapshotId)
+        ]
+        recordEvent(
+            type: "DecisionChangeEvent",
+            decisionId: toDecisionId.uuidString,
+            symbol: symbol,
+            payload: payload
+        )
+    }
+
     // MARK: - Config Hash
 
     /// Deterministic hash of key Grand Council decision parameters.
@@ -811,6 +1018,59 @@ final class ArgusLedger: Sendable {
             exitReason: exitReason,
             closedAt: closedAt
         )
+    }
+
+    // MARK: - Task 11 (2026-05-13): Module Vote Lookup
+    //
+    // Decision → Trade → Outcome zincirinin "modül performansı" yan kolu için
+    // payload'tan module_votes dizisini çeker. Tablo şeması değişmiyor: votes
+    // `events.payload_json` içinde, ayrı kolon yok. `DecisionEvent` event_type
+    // ile filtreleme; aynı symbol için birden fazla decision olabilir, biz
+    // belirli `decision_id`'yi arıyoruz.
+    //
+    // Geriye uyumluluk:
+    // - Task 11 öncesi decisions'larda module_votes alanı yok → boş dizi.
+    // - module_votes alanı var ama malformed → boş dizi (sessiz korumacılık;
+    //   trade lifecycle bozulmamalı).
+    func queryModuleVotes(decisionId: String) -> [ModuleVoteRecord] {
+        let sql = """
+        SELECT payload_json FROM events
+        WHERE event_type = 'DecisionEvent' AND decision_id = ?
+        LIMIT 1;
+        """
+
+        return queue.sync { () -> [ModuleVoteRecord] in
+            ensureConnection()
+            var stmt: OpaquePointer?
+            defer { sqlite3_finalize(stmt) }
+
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
+                return []
+            }
+            sqlite3_bind_text(stmt, 1, (decisionId as NSString).utf8String, -1, nil)
+
+            guard sqlite3_step(stmt) == SQLITE_ROW,
+                  sqlite3_column_type(stmt, 0) != SQLITE_NULL,
+                  let payloadCStr = sqlite3_column_text(stmt, 0) else {
+                return []
+            }
+
+            let payloadStr = String(cString: payloadCStr)
+            guard let data = payloadStr.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let votesArray = json["module_votes"] as? [[String: Any]] else {
+                return []
+            }
+
+            // Re-encode + decode ile JSONDecoder'ın strict tip kontrolünü
+            // kullanırız — manuel dict parsing'i pas geçer (ileride alan eklendiğinde
+            // ModuleVoteRecord değişimini tek yere lokalize eder).
+            guard let votesData = try? JSONSerialization.data(withJSONObject: votesArray),
+                  let votes = try? JSONDecoder().decode([ModuleVoteRecord].self, from: votesData) else {
+                return []
+            }
+            return votes
+        }
     }
 
     /// Records a lesson learned from a trade.
@@ -1469,8 +1729,18 @@ extension ArgusLedger {
         let alterSql = "ALTER TABLE events ADD COLUMN processed INTEGER DEFAULT 0;"
         queue.sync {
             ensureConnection()
-            // Hata olursa (kolon zaten varsa) önemseme
-            sqlite3_exec(db, alterSql, nil, nil, nil)
+            // SQLite ADD COLUMN IF NOT EXISTS desteklemez; zaten migrate edilmiş
+            // DB'de "duplicate column name" beklenir — sadece bunu yut. Disk dolu,
+            // lock, no-such-table gibi diğer hatalar sessiz silent failure olmasın.
+            var errMsg: UnsafeMutablePointer<CChar>?
+            let rc = sqlite3_exec(db, alterSql, nil, nil, &errMsg)
+            if rc != SQLITE_OK {
+                let msg = errMsg.map { String(cString: $0) } ?? ""
+                sqlite3_free(errMsg)
+                if !msg.lowercased().contains("duplicate column name") {
+                    print("🚨 ArgusLedger: events.processed migration failed: \(msg)")
+                }
+            }
         }
         
         let sql = "UPDATE events SET processed = 1 WHERE event_id = ?;"

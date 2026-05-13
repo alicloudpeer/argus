@@ -479,6 +479,15 @@ actor ArgusGrandCouncil {
             kellyMultiplier: kellyMult
         )
 
+        // Task 11 (2026-05-13): modül performans karnesi — her Council üyesinin
+        // oyu (`module`, `action` canonical "buy"/"sell"/"hold", `confidence` 0..1)
+        // ledger payload'ına yazılır. Trade kapanışında her modülün oyu gerçek
+        // PnL yönü ile karşılaştırılır (`ModulePerformanceTracker`).
+        // `contributors` boşsa (test/sentetik durum) nil geç — payload'a yazılmaz.
+        let grandModuleVotesJSON: String? = encodeModuleVotesJSON(
+            contributors: grandDecision.contributors
+        )
+
         // ARGUS 3.0: THE HOOK (GLOBAL)
         ArgusLedger.shared.logDecision(
             decisionId: grandDecision.id,
@@ -497,7 +506,8 @@ actor ArgusGrandCouncil {
             vetoes: grandDecision.vetoes.map { "\($0.module): \($0.reason)" },
             origin: origin,
             currentPrice: candles.last?.close,
-            weightSnapshotId: weightSnapshot.snapshotId
+            weightSnapshotId: weightSnapshot.snapshotId,
+            moduleVotes: grandModuleVotesJSON
         )
 
         // 4. Update Cache
@@ -1402,6 +1412,46 @@ struct ModuleContribution: Sendable, Equatable, Codable {
     let action: ProposedAction
     let confidence: Double
     let reasoning: String
+}
+
+// MARK: - Task 11 (2026-05-13): Module Vote JSON Encoder
+//
+// `[ModuleContribution]` (Council içi tip) → `[ModuleVoteRecord]` (ledger
+// persist tipi) → JSON string. `ModuleContribution.reasoning` saklanmaz —
+// veri hacmini düşük tut, anlamlı 3 alan yeterli (module/action/confidence).
+//
+// Boş contributor → `nil` döner; logDecision tarafı nil parametre ile
+// `module_votes` payload alanını yazmaz (geriye uyumlu).
+//
+// `ProposedAction` canonical string mapping bu dosyaya fileprivate yapılarak
+// `OrionCouncilProtocol.swift` (foundational tip dosyası) değiştirilmedi —
+// Task 11 dağılımı tek dosyaya lokalize.
+fileprivate extension ProposedAction {
+    /// "buy" / "sell" / "hold" — ledger ve modül performans istatistiği için
+    /// kararlı İngilizce form. `rawValue` Türkçe (UI) saklanır.
+    var canonicalActionString: String {
+        switch self {
+        case .buy:  return "buy"
+        case .sell: return "sell"
+        case .hold: return "hold"
+        }
+    }
+}
+
+fileprivate func encodeModuleVotesJSON(contributors: [ModuleContribution]) -> String? {
+    guard !contributors.isEmpty else { return nil }
+    let records = contributors.map { c in
+        ModuleVoteRecord(
+            module: c.module,
+            action: c.action.canonicalActionString,
+            confidence: c.confidence
+        )
+    }
+    guard let data = try? JSONEncoder().encode(records),
+          let str = String(data: data, encoding: .utf8) else {
+        return nil
+    }
+    return str
 }
 
 struct ModuleVeto: Sendable, Equatable, Codable {
