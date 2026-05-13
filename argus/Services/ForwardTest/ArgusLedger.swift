@@ -275,6 +275,74 @@ final class ArgusLedger: Sendable {
         }
     }
 
+    // MARK: - Tier Migration (Faz 1.B.2)
+
+    /// Belirli bir tablodaki `tier` kolonu üzerinde toplu güncelleme.
+    /// DataTieringEngine bu helper'ı çağırarak 90g→warm, 1y→cold yuvarlamasını
+    /// yapar. SQL idempotent: birden fazla çalıştırılırsa state bozulmaz
+    /// (`fromTier` filtresi nedeniyle aynı satır iki kez güncellenmez).
+    ///
+    /// - Parameters:
+    ///   - table: "events" | "trades" | "outcomes" — sadece bu üç tablo desteklenir.
+    ///   - dateColumn: Kıyaslama yapılacak ISO8601 tarih kolonu (events:
+    ///     event_time_utc; trades: entry_date; outcomes: closed_at).
+    ///   - fromTier: Kaynak tier ("hot" veya "warm").
+    ///   - toTier: Hedef tier ("warm" veya "cold").
+    ///   - cutoff: Bu tarihten ESKİ olanlar güncellenir (ISO8601 string < cutoff).
+    /// - Returns: Etkilenen satır sayısı.
+    @discardableResult
+    func migrateTier(
+        table: String,
+        dateColumn: String,
+        fromTier: String,
+        toTier: String,
+        cutoff: Date
+    ) -> Int {
+        // Identifier interpolation güvenli — caller her zaman literal string verir
+        // (DataTieringEngine içinde hard-coded). SQL injection yüzeyi yok.
+        let sql = """
+        UPDATE \(table)
+           SET tier = ?
+         WHERE tier = ?
+           AND \(dateColumn) < ?;
+        """
+        let cutoffString = cutoff.iso8601
+        var affected = 0
+        queue.sync {
+            ensureConnection()
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return }
+            defer { sqlite3_finalize(stmt) }
+            sqlite3_bind_text(stmt, 1, (toTier as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(stmt, 2, (fromTier as NSString).utf8String, -1, nil)
+            sqlite3_bind_text(stmt, 3, (cutoffString as NSString).utf8String, -1, nil)
+            if sqlite3_step(stmt) == SQLITE_DONE {
+                affected = Int(sqlite3_changes(db))
+            }
+        }
+        return affected
+    }
+
+    /// Tablo başına tier dağılımı: ["hot": 12000, "warm": 4500, "cold": 200].
+    /// Settings → Veri Defteri ekranı bu çıktıyı çizgi grafik veya kart olarak gösterir.
+    func countByTier(table: String) -> [String: Int] {
+        var result: [String: Int] = [:]
+        let sql = "SELECT tier, COUNT(*) FROM \(table) GROUP BY tier;"
+        queue.sync {
+            ensureConnection()
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return }
+            defer { sqlite3_finalize(stmt) }
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                guard let cstr = sqlite3_column_text(stmt, 0) else { continue }
+                let tier = String(cString: cstr)
+                let count = Int(sqlite3_column_int64(stmt, 1))
+                result[tier] = count
+            }
+        }
+        return result
+    }
+
     // MARK: - Schema Inspection (test + UI introspection)
 
     /// PRAGMA table_info ile belirtilen tablonun kolon adlarını döner.

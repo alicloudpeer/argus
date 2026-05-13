@@ -28,6 +28,7 @@
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* PremortemEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A8B9C0D1E2 /* PremortemEngineTests.swift */; };
 		CC2A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */; };
 		0EE62F21F17349A8B09346A4 /* LedgerTierColumnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */; };
+		43C6C15BCFE44B35937088E2 /* DataTieringEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 767A282833374E84A24ECA29 /* DataTieringEngineTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +66,7 @@
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* PremortemEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PremortemEngineTests.swift; sourceTree = "<group>"; };
 		CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KararKartiViewModelTests.swift; sourceTree = "<group>"; };
 		6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LedgerTierColumnTests.swift; sourceTree = "<group>"; };
+		767A282833374E84A24ECA29 /* DataTieringEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataTieringEngineTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -158,6 +160,7 @@
 				CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */,
 				56A98C5FEAAC4C79BCD20524 /* SellLifecycleOrderingTests.swift */,
 				6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */,
+				767A282833374E84A24ECA29 /* DataTieringEngineTests.swift */,
 			);
 			path = Council;
 			sourceTree = "<group>";
@@ -302,6 +305,7 @@
 				7E5FA7F34F5748A884128E49 /* KellyNegativeBlockTests.swift in Sources */,
 				58C31637AED5401A9F7FEB99 /* TradeLifecycleLedgerTests.swift in Sources */,
 				0EE62F21F17349A8B09346A4 /* LedgerTierColumnTests.swift in Sources */,
+				43C6C15BCFE44B35937088E2 /* DataTieringEngineTests.swift in Sources */,
 				8AF6D72DB23E493D968FD3AA /* SellLifecycleOrderingTests.swift in Sources */,
 				EA4E6EEAC49249F4ACE58240 /* OutcomesTableTests.swift in Sources */,
 				E11A11A11A11A11A11A11A11 /* ModulePerformanceTrackerTests.swift in Sources */,
