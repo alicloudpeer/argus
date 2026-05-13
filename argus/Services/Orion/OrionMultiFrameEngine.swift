@@ -205,8 +205,36 @@ final class OrionMultiFrameEngine {
         if let a = adx {
             volumeScore = a > 25 ? min(100, 50 + a) : max(0, 50 - (25 - a))
         }
-        
-        let overallScore = (trendScore * 0.4) + (momentumScore * 0.4) + (volumeScore * 0.2)
+
+        // 2026-05-13 Task 4: Chiron'un öğrendiği master ağırlıkları artık burada
+        // kullanılıyor. Önceki sabit 0.4/0.4/0.2 ağırlıkları ChironCouncilLearning-
+        // Service'in master rolleri öğrenmesini hiçbir karara yansıtmıyordu — tam
+        // ölü öğrenme döngüsü. Mapping:
+        //   trendScore    → trendMaster
+        //   momentumScore → momentumMaster
+        //   volumeScore   → priceMaster (hacim/fiyat ekseni)
+        // structureMaster + patternMaster MultiFrameEngine'de üretilmiyor (pattern
+        // detection OrionAnalysisService'in alt-bileşeni); şimdilik bu master
+        // ağırlıkları MultiFrameEngine kompozisyonunda kullanılmıyor.
+        //
+        // Timeframe → Engine: scalp + swing → .pulse, position → .corse.
+        let engine: AutoPilotEngine = (timeframe.strategyBucket == .position) ? .corse : .pulse
+        let chiron = ChironCouncilLearningService.shared.getCouncilWeights(symbol: symbol, engine: engine)
+        let normalizer = chiron.trendMaster + chiron.momentumMaster + chiron.priceMaster
+        let trendW: Double
+        let momentumW: Double
+        let volumeW: Double
+        if normalizer > 0.001 {
+            trendW = chiron.trendMaster / normalizer
+            momentumW = chiron.momentumMaster / normalizer
+            volumeW = chiron.priceMaster / normalizer
+        } else {
+            // Defensive fallback — Chiron weights bozulmuşsa eski sabit kompozisyon
+            trendW = 0.4
+            momentumW = 0.4
+            volumeW = 0.2
+        }
+        let overallScore = (trendScore * trendW) + (momentumScore * momentumW) + (volumeScore * volumeW)
         
         let signal: TimeframeAnalysis.Signal
         if overallScore >= 75 { signal = .strongBuy }
@@ -298,29 +326,42 @@ final class OrionMultiFrameEngine {
         var bullishCount = 0
         var bearishCount = 0
         var conflicting: [Timeframe] = []
-        
+
+        // Faz I.4 (2026-05-12) — m5 gürültü dampener (1.0 → 0.5).
+        // 5 dakikalık TF tek başına sinyal flippinin başlıca kaynağı; konsensus
+        // skorunda %5 → %2.5 ağırlığa düştü. Alignment sayımına dahil edilmiyor
+        // (tek başına bullish/bearishCount'u zıplatıyordu). Daha üst TF'ler
+        // (1h+) sahipliği koruyor.
         for analysis in analyses {
-            let weight = Double(analysis.timeframe.priority)
+            let noiseDamper: Double = analysis.timeframe == .m5 ? 0.5 : 1.0
+            let weight = Double(analysis.timeframe.priority) * noiseDamper
             weightedScore += analysis.overallScore * weight
             totalWeight += weight
-            
+
+            // m5 alignment sayımına dahil değil — gürültülü TF'in tek başına
+            // fullAlignment ↔ partialAlignment ↔ conflict zıplatması engelleniyor.
+            if analysis.timeframe == .m5 { continue }
             if analysis.overallScore >= 60 { bullishCount += 1 }
             else if analysis.overallScore <= 40 { bearishCount += 1 }
         }
         
         let avgScore = totalWeight > 0 ? weightedScore / totalWeight : 50
-        
+
         let overallSignal: TimeframeAnalysis.Signal
         if avgScore >= 75 { overallSignal = .strongBuy }
         else if avgScore >= 60 { overallSignal = .buy }
         else if avgScore >= 40 { overallSignal = .neutral }
         else if avgScore >= 25 { overallSignal = .sell }
         else { overallSignal = .strongSell }
-        
+
+        // Faz I.4: bullishCount/bearishCount artık m5'i hariç tutuyor; alignment
+        // payda da m5 hariç olmalı. Yoksa fullAlignment hiçbir zaman tetiklenmez
+        // (bullishCount=5, analyses.count=6 mantıksızca eşitsiz olur).
+        let alignmentDenominator = analyses.filter { $0.timeframe != .m5 }.count
         let alignment: ConsensusResult.AlignmentStatus
-        if bullishCount == analyses.count || bearishCount == analyses.count {
+        if alignmentDenominator > 0 && (bullishCount == alignmentDenominator || bearishCount == alignmentDenominator) {
             alignment = .fullAlignment
-        } else if bullishCount >= analyses.count / 2 || bearishCount >= analyses.count / 2 {
+        } else if alignmentDenominator > 0 && (bullishCount >= alignmentDenominator / 2 || bearishCount >= alignmentDenominator / 2) {
             alignment = .partialAlignment
         } else {
             alignment = .conflict
