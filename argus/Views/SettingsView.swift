@@ -211,13 +211,19 @@ extension SettingsView {
             }
 
             settingsGroup("Veri") {
-                settingsLinkRow(title: "Önbellek", last: true) {
+                settingsLinkRow(title: "Önbellek") {
                     SettingsSubPage(title: "Önbellek") {
                         VStack(spacing: 12) {
                             StorageCleanupSection()
                         }
                         .padding(.horizontal, 16)
                         .padding(.top, 14)
+                    }
+                }
+                // Faz 1.B.4 + 1.B.5: Veri Defteri — boyut, tier dağılımı, manuel yuvarlama, 250 MB uyarısı
+                settingsLinkRow(title: "Veri defteri", last: true) {
+                    SettingsSubPage(title: "Veri defteri") {
+                        VeriDefteriView()
                     }
                 }
             }

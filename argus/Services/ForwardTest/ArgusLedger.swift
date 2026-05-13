@@ -275,6 +275,21 @@ final class ArgusLedger: Sendable {
         }
     }
 
+    // MARK: - Storage Inspection (Faz 1.B.4)
+
+    /// SQLite veritabanı dosyasının boyutu (byte). Dosya yoksa veya okunamıyorsa
+    /// `nil`. Settings → Veri Defteri ekranı bu değeri kullanıcıya gösterir +
+    /// 250 MB tavanını aşıyorsa sarı banner uyarısı tetikler.
+    nonisolated func databaseFileSizeBytes() -> Int64? {
+        let url = URL(fileURLWithPath: dbPath)
+        guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let size = attrs[.size] as? Int64
+        else {
+            return nil
+        }
+        return size
+    }
+
     // MARK: - Tier Migration (Faz 1.B.2)
 
     /// Belirli bir tablodaki `tier` kolonu üzerinde toplu güncelleme.
