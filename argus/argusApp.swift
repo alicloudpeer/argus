@@ -59,6 +59,12 @@ struct argusApp: App {
             // kalmış olabilecek API anahtarlarını Keychain'e taşı ve UserDefaults'ı temizle.
             KeychainManager.shared.migrateLegacyUserDefaultsKeys()
 
+            // Faz 0 Task 3: ArgusValidator gece otomatik tetik. register TEK kez,
+            // app launch'ta — iOS bu kimliği BGTaskScheduler havuzuna ekler.
+            // scheduleNextRun her tetikten sonra zinciri devam ettirir (handler içinde).
+            ArgusValidatorScheduler.shared.register()
+            ArgusValidatorScheduler.shared.scheduleNextRun()
+
             // Inject into Singleton immediately
             Task { @MainActor in
                 LearningPersistenceManager.shared.setContext(modelContainer.mainContext)

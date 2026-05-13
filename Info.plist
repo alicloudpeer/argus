@@ -55,6 +55,17 @@
         <false/>
     </dict>
 
+    <!-- MARK: Background Tasks (Faz 0 Task 3) -->
+    <!--
+        ArgusValidator gece otomatik tetiği. Identifier mutlaka
+        ArgusValidatorScheduler.taskIdentifier ile birebir aynı olmalı;
+        aksi halde iOS submit anında BGTaskSchedulerErrorDomain.unavailable atar.
+    -->
+    <key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+        <string>com.argus.validator.daily</string>
+    </array>
+
     <!-- MARK: BorsaPy Backend Config (Secrets.xcconfig'ten substitute edilir) -->
     <!--
         BORSAPY_URL: BIST veri sağlayıcısının URL'i (HTTPS önerilir, lokal dev'de http://localhost:8899).
