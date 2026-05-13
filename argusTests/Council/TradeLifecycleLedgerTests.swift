@@ -7,15 +7,40 @@ import XCTest
 /// Task 2 dönüş UUID'sini Trade.ledgerTradeId'ye yazar ve closeTrade ile
 /// satım anında ledger satırını kapatır.
 ///
-/// Test izolasyonu — ArgusLedger.shared gerçek DB'ye yazar; her test
-/// `TEST_LIFECYCLE_xxxx` ön ekli unique sembol kullanır.
+/// Test izolasyonu — ArgusLedger.shared gerçek üretim SQLite dosyasına
+/// yazar; her test class'a özgü prefix'lerle (`TEST_LIFECYCLE_*`,
+/// `TEST_FIELD_*`, `TEST_UPDATE_*`) sembol üretir, tearDown'da bu prefix'li
+/// satırlar `deleteOpenTrades(symbolPrefix:)` ile temizlenir (helper status
+/// filtrelemez; OPEN+CLOSED siler). PortfolioStore.resetPortfolio() de
+/// çağrılır — buy/updateLedgerId testlerinin bıraktığı in-memory state için.
 @MainActor
 final class TradeLifecycleLedgerTests: XCTestCase {
+
+    // Bu sınıfın yazdığı tüm test satırlarını işaretleyen prefix'ler.
+    // tearDown bu prefix'lerle ledger temizliği yapar.
+    private static let lifecyclePrefix = "TEST_LIFECYCLE_"
+    private static let fieldPrefix = "TEST_FIELD_"
+    private static let updatePrefix = "TEST_UPDATE_"
+
+    override func tearDown() async throws {
+        // Üretim DB pollution önleme: bu sınıfın yazdığı tüm test satırlarını sil.
+        // Singleton ArgusLedger gerçek SQLite dosyasına yazıyor; aksi halde
+        // her test çalıştırmasında TEST_LIFECYCLE_/TEST_FIELD_/TEST_UPDATE_
+        // satırları birikir ve UI queries test kayıtlarını gösterir.
+        // deleteOpenTrades helper'ı status filtrelemez — OPEN+CLOSED siler.
+        await ArgusLedger.shared.deleteOpenTrades(symbolPrefix: Self.lifecyclePrefix)
+        await ArgusLedger.shared.deleteOpenTrades(symbolPrefix: Self.fieldPrefix)
+        await ArgusLedger.shared.deleteOpenTrades(symbolPrefix: Self.updatePrefix)
+        // updateLedgerId / buy testleri PortfolioStore singleton state'ini
+        // değiştirir; sonraki test class'lara taşmasın diye sıfırla.
+        PortfolioStore.shared.resetPortfolio()
+        try await super.tearDown()
+    }
 
     /// didExecute UUID dönmeli; aynı UUID ile closeTrade çağrılınca ledger
     /// satırı kapanmalı — UUID round-trip.
     func test_didExecuteReturnsUUID_andCloseTradeUsesIt() async {
-        let symbol = "TEST_LIFECYCLE_\(Int.random(in: 1000...9999))"
+        let symbol = "\(Self.lifecyclePrefix)\(UUID().uuidString)"
 
         let trade = Trade(
             symbol: symbol,
@@ -58,7 +83,7 @@ final class TradeLifecycleLedgerTests: XCTestCase {
     /// Trade modeline eklenen ledgerTradeId alanı set/get çalışmalı, default nil.
     func test_tradeLedgerTradeIdField_canBeSetAndRead() {
         var trade = Trade(
-            symbol: "TEST_FIELD",
+            symbol: "\(Self.fieldPrefix)\(UUID().uuidString)",
             entryPrice: 50.0,
             quantity: 5.0,
             entryDate: Date(),
@@ -77,7 +102,7 @@ final class TradeLifecycleLedgerTests: XCTestCase {
     /// bulunamayan id'de false dönmeli.
     func test_updateLedgerId_onExistingTrade_returnsTrueAndStoresUUID() {
         PortfolioStore.shared.resetPortfolio()
-        let symbol = "TEST_UPDATE_\(Int.random(in: 1000...9999))"
+        let symbol = "\(Self.updatePrefix)\(UUID().uuidString)"
 
         guard let trade = PortfolioStore.shared.buy(
             symbol: symbol,
