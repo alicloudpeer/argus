@@ -18,6 +18,7 @@
 		7E5FA7F34F5748A884128E49 /* KellyNegativeBlockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87961FE910874CF9A994B73C /* KellyNegativeBlockTests.swift */; };
 		81D696466A0111B912D68DAD /* CachePolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0283C4A3BA0D41C0B5F480C /* CachePolicyTests.swift */; };
 		8AF6D72DB23E493D968FD3AA /* SellLifecycleOrderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56A98C5FEAAC4C79BCD20524 /* SellLifecycleOrderingTests.swift */; };
+		EA4E6EEAC49249F4ACE58240 /* OutcomesTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ECADC30C0BF438292CA6E1C /* OutcomesTableTests.swift */; };
 		8AFF37EAA21CE2182ACD8D6F /* V2AdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55DA450A3FA73951B71CD5C /* V2AdapterTests.swift */; };
 		92CECFE54025424D083C98AA /* ExecutionGovernorDidExecuteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A2DDE3411C7F448448EE9A /* ExecutionGovernorDidExecuteTests.swift */; };
 		AB436D70FE7B5F8B78356C03 /* TradeValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35ED3317CB184C016BF90764 /* TradeValidatorTests.swift */; };
@@ -44,6 +45,7 @@
 		35ED3317CB184C016BF90764 /* TradeValidatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TradeValidatorTests.swift; sourceTree = "<group>"; };
 		502E9EAD831847AA974B9B1F /* ArgusValidatorSchedulerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArgusValidatorSchedulerTests.swift; sourceTree = "<group>"; };
 		56A98C5FEAAC4C79BCD20524 /* SellLifecycleOrderingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SellLifecycleOrderingTests.swift; sourceTree = "<group>"; };
+		4ECADC30C0BF438292CA6E1C /* OutcomesTableTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OutcomesTableTests.swift; sourceTree = "<group>"; };
 		578DC6BD61064A0B294EF85D /* argusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = argusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		87961FE910874CF9A994B73C /* KellyNegativeBlockTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KellyNegativeBlockTests.swift; sourceTree = "<group>"; };
 		A6E351BA28975EDAC0E1BA62 /* PulsingFABViewTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PulsingFABViewTests.swift; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				C913988B9F15B35614DF2A3E /* Council */,
+				37C34F628BE0412294018564 /* ForwardTest */,
 				B65C2FD8FD8E1AFDAC1D27EE /* PrometheusOrderingTests.swift */,
 				A6FBA5E501D58DD56C9B6A43 /* WhiplashRegressionTests.swift */,
 				A6E351BA28975EDAC0E1BA62 /* PulsingFABViewTests.swift */,
@@ -101,6 +104,14 @@
 				C9EEADD1CC91A09D5A2BE819 /* ViewModels */,
 			);
 			path = argusTests;
+			sourceTree = "<group>";
+		};
+		37C34F628BE0412294018564 /* ForwardTest */ = {
+			isa = PBXGroup;
+			children = (
+				4ECADC30C0BF438292CA6E1C /* OutcomesTableTests.swift */,
+			);
+			path = ForwardTest;
 			sourceTree = "<group>";
 		};
 		5AB74A7131971BE9B1067DCD /* Utilities */ = {
@@ -280,6 +291,7 @@
 				7E5FA7F34F5748A884128E49 /* KellyNegativeBlockTests.swift in Sources */,
 				58C31637AED5401A9F7FEB99 /* TradeLifecycleLedgerTests.swift in Sources */,
 				8AF6D72DB23E493D968FD3AA /* SellLifecycleOrderingTests.swift in Sources */,
+				EA4E6EEAC49249F4ACE58240 /* OutcomesTableTests.swift in Sources */,
 				C20B1CCD02CAE1503C8FD35D /* PrometheusOrderingTests.swift in Sources */,
 				AEFF607FFE088E82CFBB7DE7 /* PulsingFABViewTests.swift in Sources */,
 				621C39A2DFD04C5184E8A83C /* PortfolioStoreSmokeTests.swift in Sources */,

@@ -46,45 +46,55 @@ class ArgusValidator {
     /// İstatistikleri ve Bilimsel Metrikleri Hesaplar
     func calculateScientificMetrics() async -> ScientificStats {
         let results = await loadProcessedResults()
-        
+
         guard !results.isEmpty else {
             return .empty
         }
-        
+
         // Temel Metrikler
         let total = Double(results.count)
         let wins = results.filter { $0.wasCorrect }
         let winRate = Double(wins.count) / total
-        
+
         // PnL Analizi (Sadece Argus Kararları için anlamlıdır, Prometheus sadece yön tahminidir)
         // Ancak genelleştirilmiş bir "Change Analysis" yapabiliriz.
         let returns = results.map { $0.actualChange }
         let totalReturn = returns.reduce(0, +)
         let averageReturn = totalReturn / total
-        
+
         // Sharpe Ratio (Basitleştirilmiş: Risk Free Rate = 0 kabul edilerek)
         // Std Dev of Returns
         let sumSquaredDiffs = returns.map { pow($0 - averageReturn, 2) }.reduce(0, +)
         let stdDev = sqrt(sumSquaredDiffs / total)
         let sharpeRatio = stdDev == 0 ? 0 : (averageReturn / stdDev)
-        
+
         // Maximum Drawdown (Kümülatif Getiri Eğrisinden)
         var peak = -Double.infinity
         var maxDrawdown = 0.0
         var cumulative = 0.0
-        
+
         for ret in returns {
             cumulative += ret
             if cumulative > peak { peak = cumulative }
             let drawdown = peak - cumulative
             if drawdown > maxDrawdown { maxDrawdown = drawdown }
         }
-        
+
         // Profit Factor (Brüt Kar / Brüt Zarar)
         let grossProfit = returns.filter { $0 > 0 }.reduce(0, +)
         let grossLoss = abs(returns.filter { $0 < 0 }.reduce(0, +))
         let profitFactor = grossLoss == 0 ? grossProfit : grossProfit / grossLoss
-        
+
+        // Task 12 (2026-05-12): R-multiple — Van Tharp (1998) edge ölçüsü.
+        // "1 birim risk için ortalama kaç birim kâr?" — Sharpe + Win Rate'in yanında
+        // bilimsel risk-adjusted return metriği. Stop'u olmayan trade'ler hesaplamaya
+        // dahil edilmez (rMultiple == nil filtrelenir). Lookback Sharpe ile aynı pencere
+        // değil — tüm validate edilmiş outcome'lar (since=.distantPast) — Sharpe forecast
+        // ürününe dayanır, R-multiple ise gerçekleşmiş portföy trade'lerine.
+        let outcomes = ledger.queryAllOutcomes(since: .distantPast)
+        let rValues = outcomes.compactMap { $0.rMultiple }
+        let avgRMultiple = rValues.isEmpty ? 0 : rValues.reduce(0, +) / Double(rValues.count)
+
         return ScientificStats(
             totalHypotheses: Int(total),
             validatedHypotheses: Int(total), // Şimdilik hepsi
@@ -93,6 +103,7 @@ class ArgusValidator {
             sharpeRatio: sharpeRatio,
             maxDrawdown: maxDrawdown,
             profitFactor: profitFactor,
+            avgRMultiple: avgRMultiple,
             lastUpdated: Date()
         )
     }
@@ -342,7 +353,21 @@ struct ScientificStats: Sendable {
     let sharpeRatio: Double
     let maxDrawdown: Double
     let profitFactor: Double
+    /// Task 12 (2026-05-12): Ortalama R-multiple — Van Tharp (1998) edge ölçüsü.
+    /// `0` değeri "henüz veri yok" (boş outcomes ya da stop'suz trade'ler) anlamına gelir;
+    /// UI ayrımı için outcome count'u ayrıca göstermek gerekir.
+    let avgRMultiple: Double
     let lastUpdated: Date
-    
-    static let empty = ScientificStats(totalHypotheses: 0, validatedHypotheses: 0, winRate: 0, averageReturn: 0, sharpeRatio: 0, maxDrawdown: 0, profitFactor: 0, lastUpdated: Date())
+
+    static let empty = ScientificStats(
+        totalHypotheses: 0,
+        validatedHypotheses: 0,
+        winRate: 0,
+        averageReturn: 0,
+        sharpeRatio: 0,
+        maxDrawdown: 0,
+        profitFactor: 0,
+        avgRMultiple: 0,
+        lastUpdated: Date()
+    )
 }

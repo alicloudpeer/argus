@@ -147,7 +147,7 @@ final class ArgusLedger: Sendable {
             new_weight REAL NOT NULL,
             reason TEXT,
             trade_id TEXT,
-            
+
             -- Observatory: Extended Learning Tracking
             regime TEXT,           -- Trend, Chop, RiskOff
             window_days INTEGER,   -- 30, 60, 90
@@ -156,21 +156,49 @@ final class ArgusLedger: Sendable {
             trigger_value REAL     -- Tetikleyici metrik değeri
         );
         """
-        
+
+        // Task 12 (2026-05-12): Outcomes — Ledger üçüncü katman.
+        // Decision → Trade → **Outcome** zinciri. Her trade kapanışında insert edilir.
+        // FK CASCADE: trade silindiğinde outcome'lar da otomatik silinir
+        // (test izolasyonu deleteOpenTrades(symbolPrefix:) ile kolaylaşır).
+        let createOutcomes = """
+        CREATE TABLE IF NOT EXISTS outcomes (
+            outcome_id TEXT PRIMARY KEY,
+            trade_id TEXT NOT NULL,
+            realized_pnl REAL NOT NULL,
+            realized_pnl_pct REAL NOT NULL,
+            holding_minutes INTEGER NOT NULL,
+            r_multiple REAL,
+            mae_pct REAL,
+            mfe_pct REAL,
+            exit_reason TEXT NOT NULL,
+            closed_at TEXT NOT NULL,
+            FOREIGN KEY (trade_id) REFERENCES trades(trade_id) ON DELETE CASCADE
+        );
+        """
+
         let indices = [
             "CREATE INDEX IF NOT EXISTS idx_events_time ON events(event_time_utc);",
             "CREATE INDEX IF NOT EXISTS idx_events_symbol_time ON events(symbol, event_time_utc);",
             "CREATE INDEX IF NOT EXISTS idx_events_decision ON events(decision_id);",
             "CREATE INDEX IF NOT EXISTS idx_trades_symbol ON trades(symbol);",
             "CREATE INDEX IF NOT EXISTS idx_trades_status ON trades(status);",
-            "CREATE INDEX IF NOT EXISTS idx_lessons_trade ON lessons(trade_id);"
+            "CREATE INDEX IF NOT EXISTS idx_lessons_trade ON lessons(trade_id);",
+            // Task 12: Outcomes indices
+            "CREATE INDEX IF NOT EXISTS idx_outcomes_trade_id ON outcomes(trade_id);",
+            "CREATE INDEX IF NOT EXISTS idx_outcomes_closed_at ON outcomes(closed_at);"
         ]
-        
+
         execute(sql: createBlobs)
         execute(sql: createEvents)
         execute(sql: createTrades)
         execute(sql: createLessons)
         execute(sql: createWeightHistory)
+        execute(sql: createOutcomes)
+        // FK CASCADE etkin olmazsa trades silindiğinde outcomes orphan kalır.
+        // SQLite default PRAGMA foreign_keys=OFF; her connection'da açmak zorunlu.
+        // Performans etkisi yok (constraint check), tek satırlık idempotent pragma.
+        execute(sql: "PRAGMA foreign_keys = ON;")
         for idx in indices { execute(sql: idx) }
 
         // Idempotent SQLite schema migrations for existing databases.
@@ -588,6 +616,203 @@ final class ArgusLedger: Sendable {
         }
     }
     
+    // MARK: - Task 12 (2026-05-12): Outcomes API
+    //
+    // Ledger üçüncü katman — decisions → trades → outcomes. Trade kapanış anında
+    // recordOutcome çağrılır (PortfolioStore.applySellStateMutation içinden).
+    // R-multiple: Van Tharp (1998) — "1 birim risk için kaç birim kâr" ölçüsü.
+
+    /// R-multiple hesabı (sadece long pozisyon, Faz 1).
+    /// Short pozisyon Faz 2'ye bırakıldı: risk yön çevirisi (entry - stop yerine stop - entry).
+    ///
+    /// - Parameters:
+    ///   - entryPrice: Trade giriş fiyatı.
+    ///   - exitPrice: Trade çıkış fiyatı.
+    ///   - initialStop: Trade açılışındaki stop-loss seviyesi (Optional).
+    /// - Returns: R-multiple veya `nil`.
+    ///   `nil` koşulları: stop yok / stop ≤ 0 / stop = entry / stop > entry (invalid for long).
+    static func calculateRMultiple(
+        entryPrice: Double,
+        exitPrice: Double,
+        initialStop: Double?
+    ) -> Double? {
+        guard let stop = initialStop, stop > 0, stop != entryPrice else { return nil }
+        // Long pozisyon: risk = entry - stop (positive olmalı; stop entry'nin altında)
+        let risk = entryPrice - stop
+        guard risk > 0 else { return nil }  // stop entry'nin üstündeyse invalid (short ise Faz 2)
+        let pnl = exitPrice - entryPrice
+        return pnl / risk
+    }
+
+    /// Trade kapanış anında outcome insert. Hata olursa log basar ve UUID döndürür —
+    /// caller bilmiyor zaten (defensive — outcome eksikliği trade lifecycle'ı bozmamalı).
+    @discardableResult
+    func recordOutcome(
+        tradeId: UUID,
+        realizedPnL: Double,
+        realizedPnLPct: Double,
+        holdingMinutes: Int,
+        rMultiple: Double?,
+        exitReason: String
+    ) -> UUID {
+        let outcomeId = UUID()
+        let now = Date().iso8601
+
+        // MAE/MFE bind null — Faz 2 (QuoteHandler tick-by-tick) populated edecek.
+        let sql = """
+        INSERT INTO outcomes (
+            outcome_id, trade_id, realized_pnl, realized_pnl_pct,
+            holding_minutes, r_multiple, mae_pct, mfe_pct,
+            exit_reason, closed_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        """
+
+        queue.sync {
+            ensureConnection()
+            var stmt: OpaquePointer?
+            if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_text(stmt, 1, (outcomeId.uuidString as NSString).utf8String, -1, nil)
+                sqlite3_bind_text(stmt, 2, (tradeId.uuidString as NSString).utf8String, -1, nil)
+                sqlite3_bind_double(stmt, 3, realizedPnL)
+                sqlite3_bind_double(stmt, 4, realizedPnLPct)
+                sqlite3_bind_int(stmt, 5, Int32(holdingMinutes))
+
+                if let r = rMultiple {
+                    sqlite3_bind_double(stmt, 6, r)
+                } else {
+                    sqlite3_bind_null(stmt, 6)
+                }
+
+                // MAE/MFE — her zaman null (Faz 1)
+                sqlite3_bind_null(stmt, 7)
+                sqlite3_bind_null(stmt, 8)
+
+                sqlite3_bind_text(stmt, 9, (exitReason as NSString).utf8String, -1, nil)
+                sqlite3_bind_text(stmt, 10, (now as NSString).utf8String, -1, nil)
+
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    let err = String(cString: sqlite3_errmsg(db))
+                    print("🚨 ArgusLedger: Outcome insert error: \(err)")
+                } else {
+                    let rStr = rMultiple.map { String(format: "%.2fR", $0) } ?? "n/a"
+                    print("🎯 ArgusLedger: Outcome recorded trade=\(tradeId.uuidString.prefix(8)) pnl=\(String(format: "%.2f", realizedPnL)) r=\(rStr)")
+                }
+            } else {
+                let err = String(cString: sqlite3_errmsg(db))
+                print("🚨 ArgusLedger: Outcome prepare error: \(err)")
+            }
+            sqlite3_finalize(stmt)
+        }
+
+        return outcomeId
+    }
+
+    /// Trade'e ait outcome'u getirir (varsa). Lifecycle'da bir trade bir outcome'a sahip
+    /// olabilir; PK trade_id değil outcome_id, fakat tekil insert pattern beklenir.
+    func queryOutcome(forTradeId tradeId: UUID) -> Outcome? {
+        let sql = """
+        SELECT outcome_id, trade_id, realized_pnl, realized_pnl_pct,
+               holding_minutes, r_multiple, mae_pct, mfe_pct,
+               exit_reason, closed_at
+        FROM outcomes
+        WHERE trade_id = ?
+        LIMIT 1;
+        """
+
+        return queue.sync { () -> Outcome? in
+            ensureConnection()
+            var stmt: OpaquePointer?
+            var result: Outcome? = nil
+
+            if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_text(stmt, 1, (tradeId.uuidString as NSString).utf8String, -1, nil)
+
+                if sqlite3_step(stmt) == SQLITE_ROW {
+                    result = parseOutcomeRow(stmt: stmt)
+                }
+            }
+            sqlite3_finalize(stmt)
+            return result
+        }
+    }
+
+    /// Validator için: belirtilen tarih sonrası kapanmış tüm outcome'ları döner.
+    /// `since` UTC timestamp olarak yorumlanır; closed_at ISO8601 string karşılaştırması
+    /// SQLite'da lexicographic — ISO8601 format zaten kronolojik sıralı.
+    func queryAllOutcomes(since: Date) -> [Outcome] {
+        let sinceIso = since.iso8601
+        let sql = """
+        SELECT outcome_id, trade_id, realized_pnl, realized_pnl_pct,
+               holding_minutes, r_multiple, mae_pct, mfe_pct,
+               exit_reason, closed_at
+        FROM outcomes
+        WHERE closed_at >= ?
+        ORDER BY closed_at ASC;
+        """
+
+        return queue.sync { () -> [Outcome] in
+            ensureConnection()
+            var stmt: OpaquePointer?
+            var results: [Outcome] = []
+
+            if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
+                sqlite3_bind_text(stmt, 1, (sinceIso as NSString).utf8String, -1, nil)
+
+                while sqlite3_step(stmt) == SQLITE_ROW {
+                    if let outcome = parseOutcomeRow(stmt: stmt) {
+                        results.append(outcome)
+                    }
+                }
+            }
+            sqlite3_finalize(stmt)
+            return results
+        }
+    }
+
+    /// Outcome row → struct. Nullable kolonlar (r_multiple, mae_pct, mfe_pct) için
+    /// `sqlite3_column_type == SQLITE_NULL` kontrolü zorunlu — aksi halde NULL → 0.0
+    /// silent corruption olur.
+    private func parseOutcomeRow(stmt: OpaquePointer?) -> Outcome? {
+        guard let stmt = stmt,
+              let outcomeIdPtr = sqlite3_column_text(stmt, 0),
+              let tradeIdPtr = sqlite3_column_text(stmt, 1),
+              let exitReasonPtr = sqlite3_column_text(stmt, 8),
+              let closedAtPtr = sqlite3_column_text(stmt, 9) else { return nil }
+
+        let outcomeId = UUID(uuidString: String(cString: outcomeIdPtr)) ?? UUID()
+        let tradeId = UUID(uuidString: String(cString: tradeIdPtr)) ?? UUID()
+        let realizedPnL = sqlite3_column_double(stmt, 2)
+        let realizedPnLPct = sqlite3_column_double(stmt, 3)
+        let holdingMinutes = Int(sqlite3_column_int(stmt, 4))
+
+        let rMultiple: Double? = sqlite3_column_type(stmt, 5) == SQLITE_NULL
+            ? nil
+            : sqlite3_column_double(stmt, 5)
+        let maePct: Double? = sqlite3_column_type(stmt, 6) == SQLITE_NULL
+            ? nil
+            : sqlite3_column_double(stmt, 6)
+        let mfePct: Double? = sqlite3_column_type(stmt, 7) == SQLITE_NULL
+            ? nil
+            : sqlite3_column_double(stmt, 7)
+
+        let exitReason = String(cString: exitReasonPtr)
+        let closedAt = Date.fromISO8601(String(cString: closedAtPtr)) ?? Date()
+
+        return Outcome(
+            outcomeId: outcomeId,
+            tradeId: tradeId,
+            realizedPnL: realizedPnL,
+            realizedPnLPct: realizedPnLPct,
+            holdingMinutes: holdingMinutes,
+            rMultiple: rMultiple,
+            maePct: maePct,
+            mfePct: mfePct,
+            exitReason: exitReason,
+            closedAt: closedAt
+        )
+    }
+
     /// Records a lesson learned from a trade.
     func recordLesson(tradeId: UUID, lesson: String, deviationPercent: Double? = nil, weightChanges: [String: Double]? = nil) {
         let lessonId = UUID()

@@ -221,6 +221,25 @@ extension PortfolioStore {
         // safety sağlar. ledgerTradeId nil ise Task 1 öncesi açılmış (legacy) trade — log.
         if let ledgerId = trade.ledgerTradeId {
             ArgusLedger.shared.closeTrade(tradeId: ledgerId, exitPrice: currentPrice)
+
+            // Task 12 (2026-05-12): Outcomes — Ledger üçüncü katman.
+            // Decision → Trade → **Outcome** zincirinin kapanış halkası.
+            // R-multiple Van Tharp (1998); stop yoksa nil (calculateRMultiple handle eder).
+            // Holding süresi dakika cinsinden; intraday trade'lerde holdingDays=0 olabilir.
+            let holdingMinutes = Int(Date().timeIntervalSince(trade.entryDate) / 60)
+            let rMultiple = ArgusLedger.calculateRMultiple(
+                entryPrice: trade.entryPrice,
+                exitPrice: currentPrice,
+                initialStop: trade.stopLoss
+            )
+            ArgusLedger.shared.recordOutcome(
+                tradeId: ledgerId,
+                realizedPnL: pnl,
+                realizedPnLPct: trade.profitPercentage,
+                holdingMinutes: holdingMinutes,
+                rMultiple: rMultiple,
+                exitReason: reason ?? "MANUAL"
+            )
         } else {
             ArgusLogger.warning(.portfoy, "Trade \(trade.symbol) kapatılıyor ama ledgerTradeId yok — Task 1 öncesi açılmış olabilir")
         }
