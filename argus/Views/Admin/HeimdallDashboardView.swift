@@ -30,6 +30,7 @@ struct HeimdallDashboardView: View {
         }
         .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
         .onAppear {
             Task { await loadData() }
         }

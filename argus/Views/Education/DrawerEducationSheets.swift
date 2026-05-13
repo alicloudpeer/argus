@@ -27,6 +27,7 @@ struct AlkindusEducationSheet: View {
         }
         .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
     }
 
     private var introSection: some View {

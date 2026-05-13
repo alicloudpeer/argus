@@ -124,5 +124,6 @@ struct SectorDetailView: View {
             }
         }
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
     }
 }

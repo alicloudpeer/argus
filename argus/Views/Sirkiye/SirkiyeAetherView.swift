@@ -60,6 +60,7 @@ struct SirkiyeAetherView: View {
             }
         }
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
         .task {
             await loadData(forceRefresh: false)
         }

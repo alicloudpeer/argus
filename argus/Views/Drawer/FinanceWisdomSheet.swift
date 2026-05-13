@@ -35,6 +35,7 @@ struct FinanceWisdomSheet: View {
         }
         .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: - Filter Bar

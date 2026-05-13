@@ -41,6 +41,7 @@ struct FeedbackSheet: View {
         }
         .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: - Type Selection

@@ -120,6 +120,7 @@ struct DiscoverView: View {
                 }
             }
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
         .onAppear {
             market.loadDiscoverData()
         }

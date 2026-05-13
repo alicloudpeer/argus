@@ -46,6 +46,7 @@ struct StrategyDashboardView: View {
         }
         .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
         .task {
             await loadData()
         }

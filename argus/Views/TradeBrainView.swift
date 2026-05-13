@@ -134,6 +134,7 @@ struct TradeBrainView: View {
             }
         }
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
         .sheet(isPresented: $showPlanDetail) {
             if let plan = selectedPlan {
                 PositionPlanDetailView(

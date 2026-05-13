@@ -54,6 +54,7 @@ struct HermesFeedView: View {
             }
         }
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
         .task {
             await feedState.loadFeed(scope: selectedScope, watchlist: market.watchlist)
         }

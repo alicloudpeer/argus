@@ -69,6 +69,7 @@ struct ArgusAcademyHubSheet: View {
         }
         .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
         .sheet(item: $selectedSheet) { sheet in
             academyContent(for: sheet)
         }

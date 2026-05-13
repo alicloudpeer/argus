@@ -84,6 +84,7 @@ struct RoadmapView: View {
             }
         }
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
     }
 }
 

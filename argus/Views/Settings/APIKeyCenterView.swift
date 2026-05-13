@@ -57,6 +57,8 @@ struct APIKeyCenterView: View {
 
     // MARK: State
 
+    @Environment(\.dismiss) private var dismiss
+
     @State private var searchText = ""
     @State private var filter: KeyFilter = .all
     @State private var categoryFilter: Category?
@@ -362,7 +364,17 @@ struct APIKeyCenterView: View {
 
     private var topBar: some View {
         VStack(spacing: DesignTokens.Spacing.s10) {
-            HStack(alignment: .center) {
+            HStack(alignment: .center, spacing: DesignTokens.Spacing.sm) {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "chevron.left")
+                        .font(DesignTokens.Fonts.custom(size: 16, weight: .medium))
+                        .foregroundColor(DesignTokens.Colors.textPrimary)
+                        .frame(width: 36, height: 36)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Geri")
+
                 Text("API anahtarları")
                     .font(DesignTokens.Fonts.custom(size: 22, weight: .semibold))
                     .foregroundColor(DesignTokens.Colors.textPrimary)

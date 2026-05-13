@@ -113,6 +113,7 @@ struct NotificationsView: View {
             }
         }
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
         .sheet(item: $selectedNotification) { note in
             ArgusReportDetailView(notification: note)
         }

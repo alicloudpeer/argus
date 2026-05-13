@@ -235,6 +235,7 @@ struct TermDetailSheet: View {
         }
         .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
     }
 
     private func sectionContent(_ title: String, content: String, isCode: Bool = false) -> some View {

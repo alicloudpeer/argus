@@ -60,6 +60,7 @@ struct ArgusOrionSheet: View {
                 }
             }
             .navigationBarHidden(true)
+            .presentationDragIndicator(.visible)
         }
     }
 }

@@ -52,6 +52,7 @@ struct ModuleSheetShell<Content: View>: View {
         }
         .background(DesignTokens.Colors.background.ignoresSafeArea())
         .navigationBarHidden(true)
+        .presentationDragIndicator(.visible)
     }
 }
 

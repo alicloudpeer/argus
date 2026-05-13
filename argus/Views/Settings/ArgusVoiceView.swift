@@ -228,6 +228,7 @@ struct ArgusVoiceView: View {
                 }
             }
             .navigationBarHidden(true)
+            .presentationDragIndicator(.visible)
             .onAppear {
                 let decisions = Array(SignalStateViewModel.shared.argusDecisions.values)
                 viewModel.updateContext(decisions: decisions, portfolio: RiskViewModel.shared.portfolio)
