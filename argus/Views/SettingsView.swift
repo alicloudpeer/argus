@@ -197,6 +197,10 @@ extension SettingsView {
                 settingsLinkRow(title: "Trend hassasiyeti", value: trendSensitivityShortLabel) {
                     SettingsSubPage(title: "Trend hassasiyeti") { trendSensitivitySubPage }
                 }
+                // Faz 1.C: Modül Karnesi — ModulePerformanceTracker verisi görseli
+                settingsLinkRow(title: "Modül karnesi") {
+                    SettingsSubPage(title: "Modül karnesi") { ModulKarneView() }
+                }
                 settingsLinkRow(title: "API anahtarları", last: true) { APIKeyCenterView() }
             }
 
