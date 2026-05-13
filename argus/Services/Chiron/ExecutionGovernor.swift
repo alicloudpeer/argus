@@ -201,28 +201,33 @@ actor ExecutionGovernor {
 
     // MARK: - Journaling Hook (ARGUS 3.0: Migrated to ArgusLedger)
     
+    @discardableResult
     func didExecute(
         trade: Trade,
         scores: (Double, Double, Double, Double, Double?),
         decisionId: String? = nil
-    ) async {
+    ) async -> UUID {
         // Create entry reason from scores
         let reason = "Atlas: \(Int(scores.0)), Orion: \(Int(scores.1)), Aether: \(Int(scores.2)), Hermes: \(Int(scores.3))"
         let dominantSignal = scores.1 > scores.0 ? "Orion" : "Atlas"
 
-        // 2026-05-12 Faz 0 Task 1: decisionId açık parametre olarak alınabilir
+        // Faz 0 Task 1: decisionId açık parametre olarak alınabilir
         // (TradeBrainExecutor.executeBuy doğrudan decision.id.uuidString geçirir).
         // Fallback: trade.decisionContext.decisionId, son çare trade.id.uuidString.
         let resolvedDecisionId = decisionId
             ?? trade.decisionContext?.decisionId
             ?? trade.id.uuidString
-        ArgusLedger.shared.openTrade(
+        // Faz 0 Task 2: openTrade'in döndürdüğü UUID'yi geri ver — caller
+        // PortfolioStore.updateLedgerId ile Trade.ledgerTradeId'ye yazar; satım
+        // anında closeTrade bu UUID üzerinden ledger satırını kapatır.
+        let ledgerTradeId = ArgusLedger.shared.openTrade(
             symbol: trade.symbol,
             price: trade.entryPrice,
             reason: reason,
             dominantSignal: dominantSignal,
             decisionId: resolvedDecisionId
         )
+        return ledgerTradeId
     }
 }
 

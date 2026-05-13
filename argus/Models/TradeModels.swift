@@ -49,6 +49,12 @@ struct Trade: Identifiable, Codable {
     var voiceReport: String? // Cached Argus Voice Report
     var decisionContext: DecisionContext? // Snapshot of the decision (Why/How/Who)
     var agoraTrace: AgoraTrace? // AGORA V2 Trace
+
+    // Faz 0 Task 2: ArgusLedger trades tablosundaki satırın UUID'si.
+    // Alım anında didExecute → openTrade'in döndürdüğü UUID PortfolioStore.updateLedgerId
+    // ile buraya yazılır. Satım anında closeTrade(tradeId:) bu UUID ile ledger satırını kapatır.
+    // Legacy trade'lerde nil — closeTrade çağrısı atlanır, log warning verilir.
+    var ledgerTradeId: UUID?
     
     // NEW: Chiron Öğrenme için Orion Snapshot
     var entryOrionSnapshot: OrionComponentSnapshot?
@@ -108,6 +114,7 @@ struct Trade: Identifiable, Codable {
         case voiceReport, decisionContext, agoraTrace
         case entryOrionSnapshot, exitOrionSnapshot
         case entryCommissionPerShare
+        case ledgerTradeId
     }
     
     init(from decoder: Decoder) throws {
@@ -137,6 +144,10 @@ struct Trade: Identifiable, Codable {
         // Y4: Legacy trade'lerde alan yok → 0; eski PnL davranışı korunur. Yeni trade'lerde
         // buy() bu alanı set eder, sell/trim proration'u bu değere dayanır.
         entryCommissionPerShare = try container.decodeIfPresent(Double.self, forKey: .entryCommissionPerShare) ?? 0.0
+
+        // Faz 0 Task 2: ledgerTradeId — eski kayıtlarda yok → nil. Yeni trade'lerde
+        // PortfolioStore.updateLedgerId tarafından set edilir.
+        ledgerTradeId = try? container.decodeIfPresent(UUID.self, forKey: .ledgerTradeId)
 
         // Migration Logic: Currency
         if let c = try container.decodeIfPresent(Currency.self, forKey: .currency) {

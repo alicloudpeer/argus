@@ -83,6 +83,27 @@ extension PortfolioStore {
         return trade
     }
 
+    // MARK: - Ledger Link (Faz 0 Task 2)
+
+    /// ExecutionGovernor.didExecute → ArgusLedger.openTrade zinciri sonrası dönen
+    /// ledger UUID'sini ilgili Trade'e yansıtır. Satım anında ArgusLedger.closeTrade
+    /// bu UUID üzerinden ledger satırını kapatır — Decision↔Trade↔Outcome UUID
+    /// zincirinin kapanış halkası.
+    ///
+    /// - Returns: Eşleşen trade bulunduysa `true`, bulunmadıysa `false`.
+    @discardableResult
+    func updateLedgerId(tradeId: UUID, ledgerId: UUID) -> Bool {
+        guard let index = trades.firstIndex(where: { $0.id == tradeId }) else {
+            ArgusLogger.warning(.portfoy, "updateLedgerId: trade bulunamadı id=\(tradeId)")
+            return false
+        }
+        var trade = trades[index]
+        trade.ledgerTradeId = ledgerId
+        trades[index] = trade
+        saveToDisk()
+        return true
+    }
+
     // MARK: - Sell (Full Close)
 
     @discardableResult
@@ -131,6 +152,15 @@ extension PortfolioStore {
             exitOrionSnapshot: nil
         )
         TradeLogStore.shared.append(tradeLog)
+
+        // Faz 0 Task 2: ArgusLedger trades tablosundaki satırı kapat (sync, Task.detached
+        // dışında — deterministik trade lifecycle). closeTrade kendi queue.sync ile thread
+        // safety sağlar. ledgerTradeId nil ise Task 1 öncesi açılmış (legacy) trade — log.
+        if let ledgerId = trade.ledgerTradeId {
+            ArgusLedger.shared.closeTrade(tradeId: ledgerId, exitPrice: currentPrice)
+        } else {
+            ArgusLogger.warning(.portfoy, "Trade \(trade.symbol) kapatılıyor ama ledgerTradeId yok — Task 1 öncesi açılmış olabilir")
+        }
 
         // Öğrenme sistemlerine geri besleme — trade kapanınca hepsini tetikle
         let _symbol           = trade.symbol
