@@ -458,7 +458,10 @@ extension AutoPilotStore {
 
             switch action.action {
             case .sellAll:
-                _ = portfolioStore.sell(
+                // Task 7: checkPlanTriggers() async — sellAsync ile learning chain'in
+                // tamamlanmasını bekle. Sıralı plan adımlarında "trade kapalı ama Chiron
+                // henüz öğrenmedi" race riski yok.
+                _ = await portfolioStore.sellAsync(
                     tradeId: trade.id,
                     currentPrice: currentPrice,
                     reason: "PLAN_SELL_ALL: \(action.description)"
@@ -468,7 +471,7 @@ extension AutoPilotStore {
             case .sellPercent(let percent):
                 let clampedPercent = max(1, min(percent, 100))
                 if clampedPercent >= 100 {
-                    _ = portfolioStore.sell(
+                    _ = await portfolioStore.sellAsync(
                         tradeId: trade.id,
                         currentPrice: currentPrice,
                         reason: "PLAN_SELL_100: \(action.description)"
@@ -486,7 +489,7 @@ extension AutoPilotStore {
             case .reduceAndHold(let percent):
                 let clampedPercent = max(1, min(percent, 100))
                 if clampedPercent >= 100 {
-                    _ = portfolioStore.sell(
+                    _ = await portfolioStore.sellAsync(
                         tradeId: trade.id,
                         currentPrice: currentPrice,
                         reason: "PLAN_REDUCE_100: \(action.description)"

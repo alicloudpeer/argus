@@ -106,8 +106,71 @@ extension PortfolioStore {
 
     // MARK: - Sell (Full Close)
 
+    /// Senkron `sell()` — UI button tap'leri, QuoteHandler subscription tick'leri
+    /// gibi sync caller'lar için. State mutation tamamlanmış olarak döner; öğrenme
+    /// cascade'i `Task { }` ile fire-and-forget tetiklenir (caller bloklanmaz,
+    /// learning chain arka planda devam eder).
+    ///
+    /// Caller learning chain tamamlanmasını beklemek istiyorsa `sellAsync` kullanmalı.
     @discardableResult
     func sell(tradeId: UUID, currentPrice: Double, reason: String? = nil) -> Double? {
+        guard let snapshot = applySellStateMutation(
+            tradeId: tradeId,
+            currentPrice: currentPrice,
+            reason: reason
+        ) else { return nil }
+
+        // Fire-and-forget — sync caller bloklanmaz. Task 7: önceki `Task.detached`
+        // davranışıyla uyumlu, learning chain arka planda await sırasıyla çalışır.
+        Task { [weak self] in
+            await self?.feedLearningSystems(snapshot: snapshot)
+        }
+        return snapshot.pnl
+    }
+
+    /// Async `sell()` — deterministik öğrenme zinciri tamamlanmasına ihtiyaç duyan
+    /// caller'lar için. Dönüş anında ChironLearning + ChironDataLake + Council
+    /// learning + TradeBrain + Alkindus + RAG cascade'i await edilmiş olur.
+    ///
+    /// Test kullanımı: side-effect (örn. ChironDataLake.loadTradeHistory) `await
+    /// sellAsync(...)` sonrası senkron sorgulanabilir, flaky değil.
+    @discardableResult
+    func sellAsync(tradeId: UUID, currentPrice: Double, reason: String? = nil) async -> Double? {
+        guard let snapshot = applySellStateMutation(
+            tradeId: tradeId,
+            currentPrice: currentPrice,
+            reason: reason
+        ) else { return nil }
+
+        await feedLearningSystems(snapshot: snapshot)
+        return snapshot.pnl
+    }
+
+    // MARK: - Sell Internals (Task 7 refactor)
+
+    /// `sell()` ve `sellAsync()` tarafından paylaşılan state mutation payload'ı.
+    /// `feedLearningSystems(...)` bu snapshot'tan tüm cascade çağrılarını yapar
+    /// — böylece sync ve async sell aynı argüman yüzeyini taşır, divergence riski yok.
+    struct SellSnapshot {
+        let symbol: String
+        let pnl: Double
+        let pnlPercent: Double
+        let entryPrice: Double
+        let exitPrice: Double
+        let entryDate: Date
+        let holdingDays: Int
+        let engine: AutoPilotEngine
+        let entryOrionScore: Double?
+        let exitReason: String
+    }
+
+    /// State mutation + transaction log + ledger close (sync). Cascade tetiklenmez —
+    /// onu `feedLearningSystems(snapshot:)` yapar. Trade bulunamazsa `nil`.
+    private func applySellStateMutation(
+        tradeId: UUID,
+        currentPrice: Double,
+        reason: String?
+    ) -> SellSnapshot? {
         guard let index = trades.firstIndex(where: { $0.id == tradeId && $0.isOpen }) else {
             print("❌ PortfolioEngine: Trade bulunamadı: \(tradeId)")
             return nil
@@ -162,89 +225,6 @@ extension PortfolioStore {
             ArgusLogger.warning(.portfoy, "Trade \(trade.symbol) kapatılıyor ama ledgerTradeId yok — Task 1 öncesi açılmış olabilir")
         }
 
-        // Öğrenme sistemlerine geri besleme — trade kapanınca hepsini tetikle
-        let _symbol           = trade.symbol
-        let _pnlAbsolute      = pnl
-        let _pnlPercent       = trade.profitPercentage
-        let _entryPrice       = trade.entryPrice
-        let _exitPrice        = currentPrice
-        let _entryDate        = trade.entryDate
-        let _holdingDays      = Calendar.current.dateComponents([.day], from: trade.entryDate, to: Date()).day ?? 0
-        let _engine           = trade.engine ?? .manual
-        let _entryOrionScore  = trade.entryOrionSnapshot?.momentumScore
-        let _exitReason       = reason ?? "MANUAL"
-
-        Task.detached(priority: .background) {
-            // 1a. Chiron öğrenmesi — ağırlık optimizasyonu
-            let outcome: ChironLearningSystem.TradeExperience.TradeOutcome
-            if _pnlAbsolute > 0      { outcome = .winner }
-            else if _pnlAbsolute < 0 { outcome = .loser }
-            else                     { outcome = .scratch }
-
-            let weights = await ChironLearningSystem.shared.getCurrentState().weights
-            await ChironLearningSystem.shared.recordTrade(
-                symbol:        _symbol,
-                weights:       weights,
-                outcome:       outcome,
-                duration:      Date().timeIntervalSince(_entryDate),
-                profitPercent: _pnlPercent
-            )
-
-            // 1c. ChironDataLakeService — TradeOutcomeRecord ile öğrenme havuzu beslemesi.
-            // ChironLearningJob.analyzeSymbol() bu havuzdan okuyarak ağırlıkları günceller.
-            // Eski sürümde sadece PaperBroker ve backtest DataLake'e yazıyordu; gerçek
-            // trade'ler "kayıp veri" idi → 5 trade minimum'a ulaşılmadığı için
-            // analyzeSymbol early-return yapıyor, hiç öğrenme tetiklenmiyordu.
-            let dataLakeRecord = TradeOutcomeRecord(
-                symbol: _symbol,
-                engine: _engine,
-                entryDate: _entryDate,
-                exitDate: Date(),
-                entryPrice: _entryPrice,
-                exitPrice: _exitPrice,
-                pnlPercent: _pnlPercent,
-                exitReason: _exitReason,
-                orionScoreAtEntry: _entryOrionScore,
-                regime: ChironRegimeEngine.shared.globalResult.regime
-            )
-            await ChironDataLakeService.shared.logTrade(dataLakeRecord)
-
-            // 1b. ChironCouncilLearningService — feedback loop'un KAPANIŞ adımı.
-            // Eski sürümde bu çağrı yoktu; pending CouncilVotingRecord'lar sonsuza dek
-            // kuyrukta kalıp completedRecords hiç büyümüyordu.
-            let councilOutcome: ChironTradeOutcome = _pnlAbsolute >= 0 ? .win : .loss
-            await ChironCouncilLearningService.shared.updateOutcome(
-                symbol:     _symbol,
-                outcome:    councilOutcome,
-                pnlPercent: _pnlPercent
-            )
-
-            // 2. TradeBrain öğrenmesi
-            await AutoPilotStore.shared.triggerLearningForClosedTrade(
-                symbol:      _symbol,
-                entryPrice:  _entryPrice,
-                exitPrice:   _exitPrice,
-                holdingDays: _holdingDays
-            )
-
-            // 3. Alkindus olgunlaşma — yeni veri geldi, bekleyen kararları değerlendir
-            await AlkindusCalibrationEngine.shared.periodicMatureCheck()
-
-            // 4. RAG — tamamlanan trade'i vektör hafızasına kaydet
-            await AlkindusRAGEngine.shared.syncChironTrade(
-                id: UUID().uuidString,
-                symbol: _symbol,
-                engine: "PORTFOLIO",
-                entryPrice: _entryPrice,
-                exitPrice: _exitPrice,
-                pnlPercent: _pnlPercent,
-                holdingDays: _holdingDays,
-                orionScore: nil,
-                atlasScore: nil,
-                regime: ChironRegimeEngine.shared.globalResult.regime.rawValue
-            )
-        }
-
         // Log Transaction
         var transaction = Transaction(
             id: UUID(),
@@ -264,7 +244,94 @@ extension PortfolioStore {
 
         let currencySymbol = isBist ? "₺" : "$"
         print("✅ PortfolioEngine: SELL \(trade.symbol) @ \(currencySymbol)\(currentPrice), PnL: \(currencySymbol)\(String(format: "%.2f", pnl))")
-        return pnl
+
+        return SellSnapshot(
+            symbol: trade.symbol,
+            pnl: pnl,
+            pnlPercent: trade.profitPercentage,
+            entryPrice: trade.entryPrice,
+            exitPrice: currentPrice,
+            entryDate: trade.entryDate,
+            holdingDays: Calendar.current.dateComponents([.day], from: trade.entryDate, to: Date()).day ?? 0,
+            engine: trade.engine ?? .manual,
+            entryOrionScore: trade.entryOrionSnapshot?.momentumScore,
+            exitReason: reason ?? "MANUAL"
+        )
+    }
+
+    /// Tüm öğrenme sistemlerine geri besleme — Chiron weights + DataLake + Council +
+    /// TradeBrain + Alkindus calibration + RAG. Sırası önemli: önce kayıt (DataLake),
+    /// sonra outcome update'leri, en sonda RAG sync. `sell()` ve `sellAsync()` tarafından
+    /// paylaşılır. Sync sell `Task { }` ile fire-and-forget çağırır, async sell `await` eder.
+    func feedLearningSystems(snapshot: SellSnapshot) async {
+        // 1a. Chiron öğrenmesi — ağırlık optimizasyonu
+        let outcome: ChironLearningSystem.TradeExperience.TradeOutcome
+        if snapshot.pnl > 0      { outcome = .winner }
+        else if snapshot.pnl < 0 { outcome = .loser }
+        else                     { outcome = .scratch }
+
+        let weights = await ChironLearningSystem.shared.getCurrentState().weights
+        await ChironLearningSystem.shared.recordTrade(
+            symbol:        snapshot.symbol,
+            weights:       weights,
+            outcome:       outcome,
+            duration:      Date().timeIntervalSince(snapshot.entryDate),
+            profitPercent: snapshot.pnlPercent
+        )
+
+        // 1c. ChironDataLakeService — TradeOutcomeRecord ile öğrenme havuzu beslemesi.
+        // ChironLearningJob.analyzeSymbol() bu havuzdan okuyarak ağırlıkları günceller.
+        // Eski sürümde sadece PaperBroker ve backtest DataLake'e yazıyordu; gerçek
+        // trade'ler "kayıp veri" idi → 5 trade minimum'a ulaşılmadığı için
+        // analyzeSymbol early-return yapıyor, hiç öğrenme tetiklenmiyordu.
+        let dataLakeRecord = TradeOutcomeRecord(
+            symbol: snapshot.symbol,
+            engine: snapshot.engine,
+            entryDate: snapshot.entryDate,
+            exitDate: Date(),
+            entryPrice: snapshot.entryPrice,
+            exitPrice: snapshot.exitPrice,
+            pnlPercent: snapshot.pnlPercent,
+            exitReason: snapshot.exitReason,
+            orionScoreAtEntry: snapshot.entryOrionScore,
+            regime: ChironRegimeEngine.shared.globalResult.regime
+        )
+        await ChironDataLakeService.shared.logTrade(dataLakeRecord)
+
+        // 1b. ChironCouncilLearningService — feedback loop'un KAPANIŞ adımı.
+        // Eski sürümde bu çağrı yoktu; pending CouncilVotingRecord'lar sonsuza dek
+        // kuyrukta kalıp completedRecords hiç büyümüyordu.
+        let councilOutcome: ChironTradeOutcome = snapshot.pnl >= 0 ? .win : .loss
+        await ChironCouncilLearningService.shared.updateOutcome(
+            symbol:     snapshot.symbol,
+            outcome:    councilOutcome,
+            pnlPercent: snapshot.pnlPercent
+        )
+
+        // 2. TradeBrain öğrenmesi
+        await AutoPilotStore.shared.triggerLearningForClosedTrade(
+            symbol:      snapshot.symbol,
+            entryPrice:  snapshot.entryPrice,
+            exitPrice:   snapshot.exitPrice,
+            holdingDays: snapshot.holdingDays
+        )
+
+        // 3. Alkindus olgunlaşma — yeni veri geldi, bekleyen kararları değerlendir
+        await AlkindusCalibrationEngine.shared.periodicMatureCheck()
+
+        // 4. RAG — tamamlanan trade'i vektör hafızasına kaydet
+        await AlkindusRAGEngine.shared.syncChironTrade(
+            id: UUID().uuidString,
+            symbol: snapshot.symbol,
+            engine: "PORTFOLIO",
+            entryPrice: snapshot.entryPrice,
+            exitPrice: snapshot.exitPrice,
+            pnlPercent: snapshot.pnlPercent,
+            holdingDays: snapshot.holdingDays,
+            orionScore: nil,
+            atlasScore: nil,
+            regime: ChironRegimeEngine.shared.globalResult.regime.rawValue
+        )
     }
 
     // MARK: - Update Stops (SL / TP)
