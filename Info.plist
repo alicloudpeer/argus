@@ -63,7 +63,7 @@
     -->
     <key>BGTaskSchedulerPermittedIdentifiers</key>
     <array>
-        <string>com.argus.validator.daily</string>
+        <string>ArgusTeam.argus.validator.daily</string>
     </array>
 
     <!-- MARK: BorsaPy Backend Config (Secrets.xcconfig'ten substitute edilir) -->

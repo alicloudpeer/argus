@@ -20,7 +20,10 @@ final class ArgusValidatorScheduler {
     static let shared = ArgusValidatorScheduler()
 
     /// Info.plist `BGTaskSchedulerPermittedIdentifiers` ile birebir eşleşmeli.
-    static let taskIdentifier = "com.argus.validator.daily"
+    /// Apple BGTaskScheduler identifier'ın PRODUCT_BUNDLE_IDENTIFIER ile başlamasını
+    /// zorunlu kılar — aksi halde `submit()` her zaman BGTaskSchedulerErrorDomain
+    /// error 3 (notPermitted) atar. Bu nedenle prefix `ArgusTeam.argus`.
+    static let taskIdentifier = "ArgusTeam.argus.validator.daily"
 
     /// Hedef tetikleme saati (lokal). iOS bu saati `earliestBeginDate` olarak alır;
     /// gerçek tetikleme cihaz uygunluğuna göre sonrasında olabilir.
@@ -37,13 +40,19 @@ final class ArgusValidatorScheduler {
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: Self.taskIdentifier,
             using: nil
-        ) { [weak self] task in
-            guard let self else { return }
-            // weak self gereklidir: BGTaskScheduler handler'ı uzun yaşar; singleton
-            // zaten yaşam boyu var ama hijyen için. MainActor sınırlama altında
-            // `handleAppRefresh` çağrısı için Task içine al.
+        ) { task in
+            // Singleton'a [weak self] gerekmez (lifetime app yaşamı boyunca).
+            // Runtime'da iOS BGProcessingTask da gönderebilir (örn. identifier
+            // çakışması, ileride app refresh dışı bir tipe geçilirse); bu yüzden
+            // `as!` yerine guard let — yanlış tip gelirse görevi başarısız işaretle,
+            // çökme yerine graceful fail.
+            guard let refreshTask = task as? BGAppRefreshTask else {
+                task.setTaskCompleted(success: false)
+                return
+            }
+            // MainActor sınırlama altında handleAppRefresh çağrısı için Task içine al.
             Task { @MainActor in
-                self.handleAppRefresh(task: task as! BGAppRefreshTask)
+                ArgusValidatorScheduler.shared.handleAppRefresh(task: refreshTask)
             }
         }
     }
@@ -65,7 +74,9 @@ final class ArgusValidatorScheduler {
     }
 
     /// Lokal saatte bir sonraki 03:00. Şu an 03:00'dan sonraysa yarın 03:00.
-    private func nextRunDate() -> Date {
+    /// `internal` (default) — `@testable import` ile test'lerden çağrılabilir;
+    /// public API yüzeyinde değil.
+    func nextRunDate() -> Date {
         let calendar = Calendar.current
         let now = Date()
         var components = calendar.dateComponents([.year, .month, .day], from: now)
