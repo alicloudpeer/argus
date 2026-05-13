@@ -222,7 +222,10 @@ extension AutoPilotStore {
                                 category: "OTOPİLOT"
                             )
                         } else {
-                            _ = self.portfolioStore.sell(
+                            // 2026-05-13 Task 7.1: processSignals LIQUIDATE yolu da
+                            // sellAsync'e taşındı (checkPlanTriggers ile symmetrik).
+                            // Learning chain deterministik tamamlanır.
+                            _ = await self.portfolioStore.sellAsync(
                                 tradeId: openTrade.id,
                                 currentPrice: currentPrice,
                                 reason: "AUTOPILOT_SIGNAL_LIQUIDATE"
@@ -505,6 +508,15 @@ extension AutoPilotStore {
                 }
 
             case .alert(let message):
+                // Faz III (2026-05-12): Plan alert'i artık plana review bayrağı da
+                // basıyor. Eski model: Konsey ÇIK → auto sellAll. Yeni model:
+                // alert + requiresReview → kullanıcı tezi gözden geçirir, kendi
+                // karar verir. journeyLog'da iz kalır.
+                PositionPlanStore.shared.markPlanForReview(
+                    tradeId: trade.id,
+                    reason: message,
+                    triggeredBy: "Plan Trigger"
+                )
                 let alert = TradeBrainAlert(
                     type: .planTriggered,
                     symbol: trade.symbol,
