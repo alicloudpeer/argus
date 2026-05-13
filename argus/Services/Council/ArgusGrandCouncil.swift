@@ -1266,7 +1266,7 @@ actor ArgusGrandCouncil {
         //   • BUY/SELL: avg of agreeing voters' magnitude (abs(netSupport))
         //   • NEUTRAL : 1 - max(any directional strength) (kuvvetli yön yoksa
         //               HOLD'a yüksek güven)
-        //   • Floor   : 0.20 — mutlak sıfır göstermesin (paper trading UX)
+        //   • Floor   : 0.0 — sistem "bilmiyorum" diyebilmeli (Task 10, Yol B)
         let positiveContributors = contributors.filter { $0.action == finalAction.toProposedAction() }
         let avgConfidence: Double
         if !positiveContributors.isEmpty {
@@ -1279,8 +1279,10 @@ actor ArgusGrandCouncil {
             // BUY/SELL ama hiç destekleyen yok → orion fallback (magnitude)
             avgConfidence = abs(orion.netSupport)
         }
-        // Floor: sıfır göstermesin (paper trading UX, gerçek paraya geçilirse 0.0'a çek)
-        let finalConfidence = max(min(avgConfidence * hermesMultiplier, 1.0), 0.20)
+        // 2026-05-13 Task 10 hijyen (Yol B): paper trading UX floor'u 0.20 → 0.0.
+        // Sistem "bilmiyorum" diyebilmeli. UI etiketleri (AL/SAT/TUT) kalır;
+        // ArgusDecisionCardView confidence < 0.30 için "Düşük güven" rozeti gösterir.
+        let finalConfidence = max(min(avgConfidence * hermesMultiplier, 1.0), 0.0)
         
         return ArgusGrandDecision(
             id: UUID(),
