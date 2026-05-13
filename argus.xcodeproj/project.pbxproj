@@ -26,6 +26,7 @@
 		EA4E6EEAC49249F4ACE58240 /* OutcomesTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ECADC30C0BF438292CA6E1C /* OutcomesTableTests.swift */; };
 		E11A11A11A11A11A11A11A11 /* ModulePerformanceTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22B22B22B22B22B22B22B22 /* ModulePerformanceTrackerTests.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* PremortemEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A8B9C0D1E2 /* PremortemEngineTests.swift */; };
+		CC2A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		D9A0C0C62F2D000100000001 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		E2F610BF20804AF4A115E530 /* AutoPilotStoreSmokeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AutoPilotStoreSmokeTests.swift; sourceTree = "<group>"; };
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* PremortemEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PremortemEngineTests.swift; sourceTree = "<group>"; };
+		CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KararKartiViewModelTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -151,6 +153,7 @@
 				87961FE910874CF9A994B73C /* KellyNegativeBlockTests.swift */,
 				AA369556473747FBAF91AAF9 /* TradeLifecycleLedgerTests.swift */,
 				F1A2B3C4D5E6F7A8B9C0D1E2 /* PremortemEngineTests.swift */,
+				CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */,
 				56A98C5FEAAC4C79BCD20524 /* SellLifecycleOrderingTests.swift */,
 			);
 			path = Council;
@@ -289,6 +292,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* PremortemEngineTests.swift in Sources */,
+				CC2A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift in Sources */,
 				8AFF37EAA21CE2182ACD8D6F /* V2AdapterTests.swift in Sources */,
 				92CECFE54025424D083C98AA /* ExecutionGovernorDidExecuteTests.swift in Sources */,
 				5F88971614454F0E8F40156B /* ArgusValidatorSchedulerTests.swift in Sources */,
