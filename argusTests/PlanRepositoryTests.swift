@@ -83,6 +83,7 @@ final class PlanRepositoryTests: XCTestCase {
             phoenixAdvice: nil,
             orionDetails: nil,
             financialDetails: nil,
+            orionV2TotalScore: nil,
             bistDetails: nil,
             patterns: nil,
             kellyMultiplier: 1.0,

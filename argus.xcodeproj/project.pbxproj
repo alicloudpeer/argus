@@ -15,6 +15,7 @@
 		751AAC99E58F49E1BEDBAA72 /* PlanRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3461650B71914ECB87CDA0EB /* PlanRepositoryTests.swift */; };
 		81D696466A0111B912D68DAD /* CachePolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0283C4A3BA0D41C0B5F480C /* CachePolicyTests.swift */; };
 		8AFF37EAA21CE2182ACD8D6F /* V2AdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55DA450A3FA73951B71CD5C /* V2AdapterTests.swift */; };
+		92CECFE54025424D083C98AA /* ExecutionGovernorDidExecuteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A2DDE3411C7F448448EE9A /* ExecutionGovernorDidExecuteTests.swift */; };
 		AB436D70FE7B5F8B78356C03 /* TradeValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35ED3317CB184C016BF90764 /* TradeValidatorTests.swift */; };
 		AEFF607FFE088E82CFBB7DE7 /* PulsingFABViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E351BA28975EDAC0E1BA62 /* PulsingFABViewTests.swift */; };
 		C20B1CCD02CAE1503C8FD35D /* PrometheusOrderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C2FD8FD8E1AFDAC1D27EE /* PrometheusOrderingTests.swift */; };
@@ -40,6 +41,7 @@
 		A6E351BA28975EDAC0E1BA62 /* PulsingFABViewTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PulsingFABViewTests.swift; sourceTree = "<group>"; };
 		B0283C4A3BA0D41C0B5F480C /* CachePolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CachePolicyTests.swift; sourceTree = "<group>"; };
 		B55DA450A3FA73951B71CD5C /* V2AdapterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = V2AdapterTests.swift; sourceTree = "<group>"; };
+		D5A2DDE3411C7F448448EE9A /* ExecutionGovernorDidExecuteTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExecutionGovernorDidExecuteTests.swift; sourceTree = "<group>"; };
 		B65C2FD8FD8E1AFDAC1D27EE /* PrometheusOrderingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrometheusOrderingTests.swift; sourceTree = "<group>"; };
 		B752BB4514BA4781848F1A8E /* PlanTriggerEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlanTriggerEngineTests.swift; sourceTree = "<group>"; };
 		D965BC1D2F2CB3E20051704D /* argus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = argus.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				B55DA450A3FA73951B71CD5C /* V2AdapterTests.swift */,
+				D5A2DDE3411C7F448448EE9A /* ExecutionGovernorDidExecuteTests.swift */,
 			);
 			path = Council;
 			sourceTree = "<group>";
@@ -257,6 +260,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8AFF37EAA21CE2182ACD8D6F /* V2AdapterTests.swift in Sources */,
+				92CECFE54025424D083C98AA /* ExecutionGovernorDidExecuteTests.swift in Sources */,
 				C20B1CCD02CAE1503C8FD35D /* PrometheusOrderingTests.swift in Sources */,
 				AEFF607FFE088E82CFBB7DE7 /* PulsingFABViewTests.swift in Sources */,
 				621C39A2DFD04C5184E8A83C /* PortfolioStoreSmokeTests.swift in Sources */,

@@ -100,24 +100,26 @@ final class ArgusLedger: Sendable {
             as_of_date TEXT,          -- Data Knowledge Time (No Lookahead)
             entry_price REAL NOT NULL,
             entry_action TEXT NOT NULL, -- BUY, SELL
+            entry_reason TEXT,         -- Why we entered (Council action, plan trigger, etc.)
+            dominant_signal TEXT,      -- Strongest contributing signal at entry (audit)
             decision_id TEXT,
-            
+
             -- Experiment Meta
             instrument_type TEXT DEFAULT 'STOCK', -- STOCK, ETF, CRYPTO
             market_region TEXT DEFAULT 'US',      -- US, BIST
             data_version_hash TEXT,               -- Snapshot Hash
             engine_config_hash TEXT,              -- Model/Rule Hash
-            
+
             -- Exit & Outcome
             exit_date TEXT,
             exit_price REAL,
             exit_reason TEXT,
-            
+
             -- Scientific Metrics
             pnl_percent REAL,
             max_drawdown REAL,
             holding_period_days REAL,
-            
+
             -- Learning
             learned_weight_adjustment REAL,
             lesson_blob_id TEXT
@@ -170,6 +172,26 @@ final class ArgusLedger: Sendable {
         execute(sql: createLessons)
         execute(sql: createWeightHistory)
         for idx in indices { execute(sql: idx) }
+
+        // Idempotent SQLite schema migrations for existing databases.
+        // SQLite does not support ADD COLUMN IF NOT EXISTS; the duplicate-column
+        // error is expected for already-migrated DBs and is ignored on purpose
+        // (same pattern used by markEventProcessed for events.processed).
+        // Without this, INSERT/SELECT statements that reference these columns
+        // fail silently and openTrade never persists rows.
+        runIdempotentTradeMigrations()
+    }
+
+    private func runIdempotentTradeMigrations() {
+        let migrations = [
+            "ALTER TABLE trades ADD COLUMN entry_reason TEXT;",
+            "ALTER TABLE trades ADD COLUMN dominant_signal TEXT;"
+        ]
+        for sql in migrations {
+            // Errors (e.g. "duplicate column name") are intentionally swallowed:
+            // the migration is idempotent and a noop on already-migrated DBs.
+            sqlite3_exec(db, sql, nil, nil, nil)
+        }
     }
     
     // MARK: - Core API
@@ -458,9 +480,11 @@ final class ArgusLedger: Sendable {
         let tradeId = UUID()
         let now = Date().iso8601
         
+        // entry_action is NOT NULL in the schema; ExecutionGovernor.didExecute is the only
+        // caller (BUY path), so we hardcode it here. SELL legs are written via closeTrade.
         let sql = """
-        INSERT INTO trades (trade_id, symbol, status, entry_date, entry_price, entry_reason, dominant_signal, decision_id)
-        VALUES (?, ?, 'OPEN', ?, ?, ?, ?, ?);
+        INSERT INTO trades (trade_id, symbol, status, entry_date, entry_price, entry_action, entry_reason, dominant_signal, decision_id)
+        VALUES (?, ?, 'OPEN', ?, ?, 'BUY', ?, ?, ?);
         """
         
         queue.sync {
