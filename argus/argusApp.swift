@@ -64,6 +64,13 @@ struct argusApp: App {
             // scheduleNextRun her tetikten sonra zinciri devam ettirir (handler içinde).
             ArgusValidatorScheduler.shared.register()
             ArgusValidatorScheduler.shared.scheduleNextRun()
+            // Açılışta yakala fallback: iOS BGTask güvenilmezliğine karşı.
+            // Cihaz hiç şarjda değilse, kullanıcı Background App Refresh'i kapattıysa,
+            // app uzun süre açılmadıysa BGTask hiç tetiklenmemiş olabilir. Her açılışta
+            // 24 saatlik eşik kontrol edilir; bayat ise validation şimdi tetiklenir.
+            Task { @MainActor in
+                await ArgusValidatorScheduler.shared.runIfStale()
+            }
 
             // Inject into Singleton immediately
             Task { @MainActor in
