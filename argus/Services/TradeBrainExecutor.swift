@@ -1281,11 +1281,11 @@ class TradeBrainExecutor: ObservableObject {
 
         allocationMultiplier = min(max(allocationMultiplier, 0.35), 1.45)
         cooldownMultiplier = min(max(cooldownMultiplier, 0.75), 2.5)
-        // 2026-05-04 paper-tuned: BİRİKTİR taban 0.42 → 0.25, AGRESİF 0.48 → 0.30.
-        // Volatilite/event/zayıf-geçmiş çarpanları minConfidence'i yukarı çeker —
-        // riskli sembollerde tighten otomatik. Bu taban "tamamen gevşek" değil:
-        // %25 hâlâ council üyelerinin en az ¼'ünün net BUY oyu vermesini gerektirir.
-        let minConfFloor = decision.action == .accumulate ? 0.25 : 0.30
+        // 2026-05-13 Task 6 hijyen: paper-tuned tabanları dürüst kalibrasyona geri.
+        // Eski (paper): BİRİKTİR 0.25, AGRESİF 0.30.
+        // Yeni (dürüst): BİRİKTİR 0.42, AGRESİF 0.48 — council net BUY oyu için
+        // üye oranı eşiğini gerçek para disipliniyle hizalar.
+        let minConfFloor = decision.action == .accumulate ? 0.42 : 0.48
         minConfidence = min(max(minConfidence, minConfFloor), 0.85)
 
         let tier: SymbolExecutionProfile.RiskTier

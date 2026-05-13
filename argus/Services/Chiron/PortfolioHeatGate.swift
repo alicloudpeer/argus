@@ -41,7 +41,7 @@ struct PortfolioHeatGate: Sendable {
         case .cool:     return 1.0
         case .warm:     return 0.5
         case .hot:      return 0.2
-        case .critical: return 0.10 // was 0.0 — paper-tuned (learning over hard stop)
+        case .critical: return 0.0  // 2026-05-13 Task 6: paper-tuned 0.10 → 0.0 (hard-stop)
         }
     }
 }

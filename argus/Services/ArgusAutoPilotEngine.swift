@@ -47,7 +47,7 @@ struct AutoPilotConfig {
     /// 1/4'ünün net BUY oyu vermesini gerektirir; "tamamen gevşek" değil ama
     /// gerçek-para paranoyasını eğitim bağlamına taşımıyor.
     /// Gerçek paraya geçilirse 50.0+ değerine yeniden tighten edilmeli.
-    static let minimumConfidencePercent: Double = 25.0 // %25 (paper-tuned)
+    static let minimumConfidencePercent: Double = 50.0 // 2026-05-13 Task 6: paper-tuned 25 → 50 (dürüst sıkı kalibrasyon)
 }
 
 enum AutoPilotStrategy: String {
