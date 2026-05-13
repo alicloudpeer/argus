@@ -183,14 +183,27 @@ final class ArgusLedger: Sendable {
     }
 
     private func runIdempotentTradeMigrations() {
+        // Çağıran (createSchema → ensureConnection) zaten `queue.sync` içinde —
+        // burada tekrar `queue.sync` sarmalı YAZMA: deadlock olur.
         let migrations = [
             "ALTER TABLE trades ADD COLUMN entry_reason TEXT;",
             "ALTER TABLE trades ADD COLUMN dominant_signal TEXT;"
         ]
         for sql in migrations {
-            // Errors (e.g. "duplicate column name") are intentionally swallowed:
-            // the migration is idempotent and a noop on already-migrated DBs.
-            sqlite3_exec(db, sql, nil, nil, nil)
+            var errMsg: UnsafeMutablePointer<CChar>?
+            let rc = sqlite3_exec(db, sql, nil, nil, &errMsg)
+            if rc != SQLITE_OK {
+                let msg = errMsg.map { String(cString: $0) } ?? ""
+                sqlite3_free(errMsg)
+                // SQLite ADD COLUMN IF NOT EXISTS desteklemez; zaten migrate
+                // edilmiş DB'de "duplicate column name" beklenir — sadece bunu
+                // yut. Disk dolu, lock, no-such-table gibi diğer hataları log'a
+                // bas — sessiz silent failure ile aynı sınıfta hata bırakma.
+                if msg.lowercased().contains("duplicate column name") {
+                    continue
+                }
+                print("🚨 ArgusLedger: Trade migration failed (sql=\(sql)): \(msg)")
+            }
         }
     }
     
@@ -823,7 +836,35 @@ final class ArgusLedger: Sendable {
             }
         }
     }
-    
+
+    // MARK: - Test Helpers
+    /// Sadece test izolasyonu için: verilen prefix ile başlayan tüm trade
+    /// satırlarını siler. Production'da çağırılmamalı — UI bu metoda hiç
+    /// referans vermiyor. Test sembolleri (`TEST_DIDEXEC_*`) üretim DB'sini
+    /// kirletmesin diye tearDown'da kullanılır.
+    func deleteOpenTrades(symbolPrefix: String) async {
+        let sql = "DELETE FROM trades WHERE symbol LIKE ?;"
+        let pattern = symbolPrefix + "%"
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            queue.async {
+                self.ensureConnection()
+                var stmt: OpaquePointer?
+                if sqlite3_prepare_v2(self.db, sql, -1, &stmt, nil) == SQLITE_OK {
+                    sqlite3_bind_text(stmt, 1, (pattern as NSString).utf8String, -1, nil)
+                    if sqlite3_step(stmt) != SQLITE_DONE {
+                        let err = String(cString: sqlite3_errmsg(self.db))
+                        print("🚨 ArgusLedger: deleteOpenTrades step error: \(err)")
+                    }
+                } else {
+                    let err = String(cString: sqlite3_errmsg(self.db))
+                    print("🚨 ArgusLedger: deleteOpenTrades prepare error: \(err)")
+                }
+                sqlite3_finalize(stmt)
+                continuation.resume()
+            }
+        }
+    }
+
     /// Returns closed trades with limit.
     func getClosedTrades(limit: Int = 50) async -> [TradeRecord] {
         let sql = """
