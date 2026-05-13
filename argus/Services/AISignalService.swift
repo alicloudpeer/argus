@@ -49,14 +49,18 @@ class AISignalService: AISignalProvider {
             )
             
             // Sonuç yeterince iyiyse sinyal oluştur
+            // 2026-05-13 Task 8 (8.a-light): Bu sinyal Council karar akışına GİRMEZ.
+            // Sadece UI'da bilgi olarak görünür. reason string'i "In-sample backtest"
+            // etiketiyle başlar — kullanıcı bunun walk-forward gate'ten geçmiş bir
+            // canlı karar olmadığını net görmeli (data mining tuzağına karşı uyarı).
             if result.totalReturn > 10 && result.winRate > 50 {
                 let action: SignalAction = result.totalReturn > 0 ? .buy : .sell
                 let signal = AISignal(
                     symbol: symbol,
                     action: action,
                     confidenceScore: result.winRate,
-                    strategyName: "Argus Orion V2",
-                    reason: "Backtest: %\(String(format: "%.1f", result.totalReturn)) getiri, %\(String(format: "%.1f", result.winRate)) kazanma oranı",
+                    strategyName: "Argus Orion V2 (in-sample backtest)",
+                    reason: "⚠️ In-sample backtest sonucu — alım kararına bağlı değil. %\(String(format: "%.1f", result.totalReturn)) getiri, %\(String(format: "%.1f", result.winRate)) kazanma oranı.",
                     timestamp: Date()
                 )
                 signals.append(signal)
