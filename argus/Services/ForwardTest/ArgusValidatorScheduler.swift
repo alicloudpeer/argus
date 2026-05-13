@@ -127,9 +127,18 @@ final class ArgusValidatorScheduler {
     /// Validator'ı çalıştır ve sonuç sayısını döndür. Test'ler, UI manual tetik
     /// ve BGTask handler'ı için tek geçit. Tamamlanınca `lastRunAt` UserDefaults'a
     /// yazılır — açılışta-yakala fallback bu zamanı bakar.
+    ///
+    /// **Faz 1.B.3:** Validation sonrası DataTieringEngine de tetiklenir.
+    /// İki iş tek BGTask cycle'ında çalışır — iOS'un günde 2-3 sınırlı tetiği
+    /// optimal kullanılır. DataTieringEngine idempotent, validation sonrası
+    /// yan yana koşması güvenli.
     @discardableResult
     func runValidation() async -> [ForwardTestResult] {
         let results = await ArgusValidator.shared.validateMaturedHypotheses()
+        let tierResult = await DataTieringEngine.shared.runMigration()
+        if tierResult.totalRowsMoved > 0 {
+            ArgusLogger.info(.autopilot, "Validator+Tiering: \(results.count) hipotez | \(tierResult.totalRowsMoved) satır yuvarlandı")
+        }
         recordRun()
         return results
     }
