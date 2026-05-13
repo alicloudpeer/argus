@@ -41,13 +41,31 @@ struct KellyCriterionSizer {
             kellyFraction * confidence.multiplier
         }
 
-        /// Base percent'e uygulanacak çarpan (0.5x – 2.0x arası)
-        /// Merkez: 1.0x (kelly sayısı yok, historik veri yeterli değil)
+        /// Base percent'e uygulanacak çarpan (0.0x – 2.0x arası).
+        ///
+        /// Faz 0 Task 9: Negatif Kelly + yeterli örneklem → **0.0 (sinyal blok)**.
+        /// Önceki davranış: ef ≤ 0 iken bile `0.3` dönüyordu — Kelly formülünün
+        /// "matematiksel olarak kaybedeceksin" emrini bypass ediyordu. Yol Haritası
+        /// §4.3: edge ölçülmediği sürece sabit %0.25; ölçülünce yarım-Kelly.
+        ///
+        /// Davranış:
+        /// - Sample < 10 (`.low`): Kelly ≤ 0 iken **0.3** (kalibrasyon dönemi, az veri,
+        ///   küçük bahisle öğrenmeye devam — istatistiksel olarak tek-tek trade'ler
+        ///   anlamlı değil).
+        /// - Sample ≥ 10 (`.medium`/`.high`) ve Kelly ≤ 0: **0.0** (matematiksel
+        ///   blok — sistem henüz kârlı edge bulamadı). Caller (TradeBrainExecutor)
+        ///   0.0'ı sinyal reddi olarak yorumlar.
         var positionMultiplier: Double {
             let ef = effectiveFraction
-            if ef <= 0 { return 0.3 } // Negatif Kelly = çok küçük pozisyon
-            // ef=0.5 → 1.0x, ef=1.0 → 2.0x, ef=0.0 → 0.0x
-            // normalize: base 0.5 kelly = 1.0x multiplier
+            if ef <= 0 {
+                switch confidence {
+                case .low:
+                    return 0.3  // Kalibrasyon: az veri, küçük bahis devam
+                case .medium, .high:
+                    return 0.0  // Matematik: dur (sample yeterli, edge yok)
+                }
+            }
+            // ef=0.5 → 1.0x, ef=1.0 → 2.0x — normalize: base 0.5 kelly = 1.0x.
             let normalized = ef / 0.5
             return max(0.3, min(2.0, normalized))
         }

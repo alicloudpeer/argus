@@ -262,8 +262,13 @@ actor ArgusGrandCouncil {
             }
         }
 
-        // 2.6 Get Weights (Non-blocking now)
-        let weights = ChironCouncilLearningService.shared.getCouncilWeights(symbol: symbol, engine: engine)
+        // 2.6 Get Weights Snapshot (Faz V: atomic, audit-trail için ID dahil)
+        // Eski API `getCouncilWeights` sadece weights döndürüyordu; yenisi
+        // weights + deterministik snapshot ID (SHA256 prefix). ID, DecisionEvent
+        // ve DecisionChangeEvent payload'larına yazılır — "hangi öğrenilmiş
+        // ağırlıklarla karar verildi" sorgusu için referans.
+        let weightSnapshot = ChironCouncilLearningService.shared.getWeightsSnapshot(symbol: symbol, engine: engine)
+        let weights = weightSnapshot.weights
 
         // 2.7 Kelly Criterion — Alkindus geçmiş kararlarından pozisyon boyutu çarpanı
         let kellyProfile = await KellyCache.shared.getSystemProfile()
@@ -386,7 +391,8 @@ actor ArgusGrandCouncil {
                 ],
                 vetoes: [], // BIST logic handles vetoes internally currently
                 origin: origin,
-                currentPrice: candles.last?.close
+                currentPrice: candles.last?.close,
+                weightSnapshotId: weightSnapshot.snapshotId
             )
             
             // Update Cache & Return Early
@@ -490,7 +496,8 @@ actor ArgusGrandCouncil {
             ],
             vetoes: grandDecision.vetoes.map { "\($0.module): \($0.reason)" },
             origin: origin,
-            currentPrice: candles.last?.close
+            currentPrice: candles.last?.close,
+            weightSnapshotId: weightSnapshot.snapshotId
         )
 
         // 4. Update Cache
@@ -692,19 +699,21 @@ actor ArgusGrandCouncil {
         let isPanic = aether.marketMode == .panic
         let isFear = aether.marketMode == .fear
         
-        // 2026-05-05 (Round 9) FIX: Aether stance → action mapping düzeltildi.
-        // Eski sürüm `cautious` ve `defensive` ikisini de `.hold` yapıyordu. AetherV2
-        // tipik 55-75 bandında `cautious` üretir (orta-üstü olumlu makro). `.hold`'a
-        // düşünce totalHold ağırlığı baskın oluyor, BUY eşiği aşılmıyor → her sembolde
-        // GÖZLE. Şimdi:
-        // - cautious (orta-üstü, 55-75) → .buy (olumlu eğilim, AL'a destek)
-        // - defensive (orta-altı, 30-55) → .hold (dikkatli)
-        // - riskOff/riskOn/.sell mevcut davranış korundu.
+        // 2026-05-13 Faz 0 Task 5: Round 9 (2026-05-05) 'cautious → .buy' geri alındı.
+        // Gerekçe (Yol Haritası §6.5): "Sembol seçim agresifliği yerine sembol seçim
+        // seyrekliği daha doğru." Round 9 motivasyonu (her sembolde GÖZLE bug'ı)
+        // gerçek bug'a (Aether'in baskın gelmesi) işaret ediyordu, çözüm olmadı —
+        // sadece BUY tetikleyici hâline geldi, erken-agresiflik üretti.
+        //
+        // Şimdi: cautious (55-75) → .hold; gerçekten güçlü makro için riskOn şart.
+        // - riskOn (75+) → .buy
+        // - cautious/defensive → .hold
+        // - riskOff (25 altı) → .sell
         let aetherAction: ProposedAction
         switch aether.stance {
-        case .riskOn, .cautious:
+        case .riskOn:
             aetherAction = .buy
-        case .defensive:
+        case .cautious, .defensive:
             aetherAction = .hold
         case .riskOff:
             aetherAction = .sell

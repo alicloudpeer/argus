@@ -680,11 +680,21 @@ class TradeBrainExecutor: ObservableObject {
             // ama nominal (>0) raw cumulative %20 altına düşse bile floor uygulanır.
             let rawCumulative = regimeMultiplier * kellyMultiplier * correlMultiplier
             guard rawCumulative > 0 else {
-                log("🛑 \(symbol): Rejim bloğu — Aether:\(Int(regimeAetherScore)) Rejim:\(currentRegime.rawValue)")
-                await TradeBrainExecutionTracker.shared.recordSkip(
-                    symbol: symbol,
-                    reason: "Rejim bloğu (Aether=\(Int(regimeAetherScore)))"
-                )
+                // Faz 0 Task 9: Kelly 0.0 (sample ≥10, negatif edge) ile Rejim 0.0
+                // (deep risk-off) ayrı sebepler — log/skip mesajı net ayrılır.
+                if kellyMultiplier == 0.0 {
+                    log("🚫 \(symbol): Kelly negatif (örneklem ≥10) — Sinyal blok. Sistem henüz kârlı edge bulamadı.")
+                    await TradeBrainExecutionTracker.shared.recordSkip(
+                        symbol: symbol,
+                        reason: "Kelly negatif — sistem henüz kârlı edge bulamadı"
+                    )
+                } else {
+                    log("🛑 \(symbol): Rejim bloğu — Aether:\(Int(regimeAetherScore)) Rejim:\(currentRegime.rawValue)")
+                    await TradeBrainExecutionTracker.shared.recordSkip(
+                        symbol: symbol,
+                        reason: "Rejim bloğu (Aether=\(Int(regimeAetherScore)))"
+                    )
+                }
                 return
             }
             finalMultiplier = max(0.20, rawCumulative)
