@@ -27,6 +27,7 @@
 		E11A11A11A11A11A11A11A11 /* ModulePerformanceTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22B22B22B22B22B22B22B22 /* ModulePerformanceTrackerTests.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* PremortemEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A8B9C0D1E2 /* PremortemEngineTests.swift */; };
 		CC2A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */; };
+		0EE62F21F17349A8B09346A4 /* LedgerTierColumnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		E2F610BF20804AF4A115E530 /* AutoPilotStoreSmokeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AutoPilotStoreSmokeTests.swift; sourceTree = "<group>"; };
 		F1A2B3C4D5E6F7A8B9C0D1E2 /* PremortemEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PremortemEngineTests.swift; sourceTree = "<group>"; };
 		CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KararKartiViewModelTests.swift; sourceTree = "<group>"; };
+		6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LedgerTierColumnTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -155,6 +157,7 @@
 				F1A2B3C4D5E6F7A8B9C0D1E2 /* PremortemEngineTests.swift */,
 				CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */,
 				56A98C5FEAAC4C79BCD20524 /* SellLifecycleOrderingTests.swift */,
+				6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */,
 			);
 			path = Council;
 			sourceTree = "<group>";
@@ -298,6 +301,7 @@
 				5F88971614454F0E8F40156B /* ArgusValidatorSchedulerTests.swift in Sources */,
 				7E5FA7F34F5748A884128E49 /* KellyNegativeBlockTests.swift in Sources */,
 				58C31637AED5401A9F7FEB99 /* TradeLifecycleLedgerTests.swift in Sources */,
+				0EE62F21F17349A8B09346A4 /* LedgerTierColumnTests.swift in Sources */,
 				8AF6D72DB23E493D968FD3AA /* SellLifecycleOrderingTests.swift in Sources */,
 				EA4E6EEAC49249F4ACE58240 /* OutcomesTableTests.swift in Sources */,
 				E11A11A11A11A11A11A11A11 /* ModulePerformanceTrackerTests.swift in Sources */,

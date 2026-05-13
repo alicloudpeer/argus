@@ -101,10 +101,16 @@ final class ArgusLedger: Sendable {
             processed INTEGER DEFAULT 0,
             outcome_score REAL,
             horizon_pnl_percent REAL,
-            validation_date TEXT
+            validation_date TEXT,
+
+            -- Faz 1.B Task 1: Veri katmanı (sıcak/ılık/soğuk arşiv)
+            -- 'hot' (default) — son 90 gün, tam payload
+            -- 'warm' — 90g-1y, raw payload silinmiş, daily aggregate'e yuvarlanmış
+            -- 'cold' — 1y+, aylık aggregate satırına yuvarlanmış
+            tier TEXT NOT NULL DEFAULT 'hot'
         );
         """
-        
+
         // ARGUS 3.0: Unified Trade Log (Scientific Schema)
         let createTrades = """
         CREATE TABLE IF NOT EXISTS trades (
@@ -139,10 +145,13 @@ final class ArgusLedger: Sendable {
 
             -- Learning
             learned_weight_adjustment REAL,
-            lesson_blob_id TEXT
+            lesson_blob_id TEXT,
+
+            -- Faz 1.B Task 1: Veri katmanı (events ile aynı anlam)
+            tier TEXT NOT NULL DEFAULT 'hot'
         );
         """
-        
+
         let createLessons = """
         CREATE TABLE IF NOT EXISTS lessons (
             lesson_id TEXT PRIMARY KEY,
@@ -190,6 +199,8 @@ final class ArgusLedger: Sendable {
             mfe_pct REAL,
             exit_reason TEXT NOT NULL,
             closed_at TEXT NOT NULL,
+            -- Faz 1.B Task 1: Veri katmanı (parent trade'in tier'ı ile sync edilir)
+            tier TEXT NOT NULL DEFAULT 'hot',
             FOREIGN KEY (trade_id) REFERENCES trades(trade_id) ON DELETE CASCADE
         );
         """
@@ -203,7 +214,13 @@ final class ArgusLedger: Sendable {
             "CREATE INDEX IF NOT EXISTS idx_lessons_trade ON lessons(trade_id);",
             // Task 12: Outcomes indices
             "CREATE INDEX IF NOT EXISTS idx_outcomes_trade_id ON outcomes(trade_id);",
-            "CREATE INDEX IF NOT EXISTS idx_outcomes_closed_at ON outcomes(closed_at);"
+            "CREATE INDEX IF NOT EXISTS idx_outcomes_closed_at ON outcomes(closed_at);",
+            // Faz 1.B Task 1: Tier indices — DataTieringEngine WHERE tier='hot'
+            // sorguları + Settings → Veri Defteri ekranında tier dağılımı sayımı
+            // (GROUP BY tier) hızlı olsun.
+            "CREATE INDEX IF NOT EXISTS idx_events_tier ON events(tier);",
+            "CREATE INDEX IF NOT EXISTS idx_trades_tier ON trades(tier);",
+            "CREATE INDEX IF NOT EXISTS idx_outcomes_tier ON outcomes(tier);"
         ]
 
         execute(sql: createBlobs)
@@ -232,7 +249,13 @@ final class ArgusLedger: Sendable {
         // burada tekrar `queue.sync` sarmalı YAZMA: deadlock olur.
         let migrations = [
             "ALTER TABLE trades ADD COLUMN entry_reason TEXT;",
-            "ALTER TABLE trades ADD COLUMN dominant_signal TEXT;"
+            "ALTER TABLE trades ADD COLUMN dominant_signal TEXT;",
+            // Faz 1.B Task 1: Mevcut DB'lerde tier kolonu (yeni DB'lerde CREATE
+            // TABLE ile var). Idempotent: kolon zaten varsa "duplicate column
+            // name" yutulur (yukarıdaki pattern).
+            "ALTER TABLE events ADD COLUMN tier TEXT NOT NULL DEFAULT 'hot';",
+            "ALTER TABLE trades ADD COLUMN tier TEXT NOT NULL DEFAULT 'hot';",
+            "ALTER TABLE outcomes ADD COLUMN tier TEXT NOT NULL DEFAULT 'hot';"
         ]
         for sql in migrations {
             var errMsg: UnsafeMutablePointer<CChar>?
@@ -251,7 +274,33 @@ final class ArgusLedger: Sendable {
             }
         }
     }
-    
+
+    // MARK: - Schema Inspection (test + UI introspection)
+
+    /// PRAGMA table_info ile belirtilen tablonun kolon adlarını döner.
+    /// Faz 1.B test'leri (tier kolonu mevcut mu?) ve gelecek Veri Defteri UI
+    /// için kullanılır. Tablo yoksa boş array döner.
+    func columnNames(forTable table: String) -> [String] {
+        var names: [String] = []
+        // PRAGMA table_info(name) kolon listesini SELECT olarak döndürür.
+        // Identifier interpolation güvenli: yalnızca dahili çağrılarla kullanılır,
+        // SQL injection yüzeyi yok (caller her zaman literal string geçer).
+        let sql = "PRAGMA table_info(\(table));"
+        queue.sync {
+            ensureConnection()
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return }
+            defer { sqlite3_finalize(stmt) }
+            // Kolon indeksleri: 0=cid, 1=name, 2=type, 3=notnull, 4=dflt, 5=pk
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                if let cstr = sqlite3_column_text(stmt, 1) {
+                    names.append(String(cString: cstr))
+                }
+            }
+        }
+        return names
+    }
+
     // MARK: - Core API
     
     /// Writes a compressed blob to storage. Returns the SHA-256 hash.
