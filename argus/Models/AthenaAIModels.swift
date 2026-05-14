@@ -6,7 +6,6 @@ import Foundation
 /// Modelin girdisi olan özellik vektörü (High-Level Factors)
 struct AthenaFeatureVector: Codable, Sendable {
     // 0-100 Normalized Factor Scores
-    let valueScore: Double
     let qualityScore: Double
     let momentumScore: Double
     let sizeScore: Double
@@ -20,7 +19,6 @@ struct AthenaModelWeights: Codable, Sendable {
 
     // Linear factor weights
     var bias: Double
-    var valueWeight: Double
     var qualityWeight: Double
     var momentumWeight: Double
     var sizeWeight: Double
@@ -33,20 +31,15 @@ struct AthenaModelWeights: Codable, Sendable {
     var regimeModifiers: [String: RegimeModifier]?
 
     struct InteractionWeights: Codable, Sendable {
-        var valueQuality: Double
-        var valueMomentum: Double
         var qualityMomentum: Double
         var momentumRisk: Double
-        var valueRisk: Double
         // Quadratic (diminishing returns)
-        var valueSq: Double
         var qualitySq: Double
         var momentumSq: Double
         var riskSq: Double
     }
 
     struct RegimeModifier: Codable, Sendable {
-        var valueMult: Double
         var qualityMult: Double
         var momentumMult: Double
         var sizeMult: Double

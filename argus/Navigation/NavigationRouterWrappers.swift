@@ -9,7 +9,7 @@ import SwiftUI
 
 // MARK: - Poseidon Wrapper
 /// Route: .poseidon → PoseidonView(score: WhaleScore)
-/// PoseidonService.analyzeSmartMoney requires (symbol, candles)
+/// PoseidonService.analyzeVolumeFlow requires (symbol, candles)
 struct PoseidonRouterView: View {
     @State private var score: WhaleScore?
     @State private var isLoading = true
@@ -34,11 +34,11 @@ struct PoseidonRouterView: View {
             let symbol = WatchlistStore.shared.items.first ?? "SPY"
             // Try cached candles first
             if let candleData = MarketDataStore.shared.candles[symbol]?.value, candleData.count >= 20 {
-                score = await PoseidonService.shared.analyzeSmartMoney(symbol: symbol, candles: candleData)
+                score = await PoseidonService.shared.analyzeVolumeFlow(symbol: symbol, candles: candleData)
             } else {
                 // Fetch candles then analyze
                 if let candles = try? await ArgusDataService.shared.fetchCandles(symbol: symbol) {
-                    score = await PoseidonService.shared.analyzeSmartMoney(symbol: symbol, candles: candles)
+                    score = await PoseidonService.shared.analyzeVolumeFlow(symbol: symbol, candles: candles)
                 }
             }
             isLoading = false

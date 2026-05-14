@@ -16,6 +16,8 @@ struct ArgusIntelligenceDiagView: View {
     @State private var velocityData: VelocityDiagData? = nil
     @State private var kellyData: KellyDiagData? = nil
     @State private var oppCostData: OppCostDiagData? = nil
+    @State private var prometheusTRData: PrometheusTRDiagData? = nil
+    @State private var prometheusSpotlight: [PrometheusSpotlight.Entry] = []
 
     var body: some View {
         ScrollView {
@@ -62,6 +64,9 @@ struct ArgusIntelligenceDiagView: View {
                     }
                     diagSection("FIRSATÇILIK MALİYETİ", icon: "dollarsign.arrow.circlepath", color: .orange) {
                         oppCostSection()
+                    }
+                    diagSection("PROMETHEUS KARNESI", icon: "scope", color: .purple) {
+                        prometheusSection()
                     }
                 }
             }
@@ -348,14 +353,35 @@ struct ArgusIntelligenceDiagView: View {
         async let velData = loadVelocityData()
         async let klyData = loadKellyData()
         async let ocData = loadOppCostData()
+        async let prData = loadPrometheusTRData()
+        async let spotlight = loadPrometheusSpotlight()
 
         let (t, c, a, r) = await (tradeStats, chironStats, alkindusStats, ragStats)
         snapshot = DiagSnapshot(trade: t, chiron: c, alkindus: a, rag: r)
         velocityData = await velData
         kellyData = await klyData
         oppCostData = await ocData
+        prometheusTRData = await prData
+        prometheusSpotlight = await spotlight
         lastRefresh = Date()
         isLoading = false
+    }
+
+    private func loadPrometheusTRData() async -> PrometheusTRDiagData {
+        let stats = await PrometheusTrackRecord.shared.getStats()
+        return PrometheusTRDiagData(
+            sampleSize: stats.sampleSize,
+            directionAccuracy: stats.directionAccuracy,
+            skillScore: stats.skillScore,
+            magnitudeRMSE: stats.magnitudeRMSE,
+            weightBonus: stats.weightBonus,
+            summary: stats.summaryLine,
+            isSpotlightCapable: stats.isSpotlightCapable
+        )
+    }
+
+    private func loadPrometheusSpotlight() async -> [PrometheusSpotlight.Entry] {
+        await PrometheusSpotlight.shared.currentEntries()
     }
 
     private func loadTradeStats() async -> TradeStats {
@@ -436,6 +462,7 @@ struct ArgusIntelligenceDiagView: View {
     private func loadOppCostData() async -> OppCostDiagData {
         let summary = await OpportunityCostTracker.shared.getSummary(lastNDays: 30)
         let signal = await OpportunityCostTracker.shared.calibrationSignal()
+        let pending = await OpportunityCostTracker.shared.getPendingCount()
         return OppCostDiagData(
             totalMissed: summary.totalMissed,
             goodSkips: summary.goodSkips,
@@ -444,7 +471,9 @@ struct ArgusIntelligenceDiagView: View {
             skipAccuracy: summary.skipAccuracy,
             calibrationSignal: signal.description,
             isTooCautious: summary.isTooCautious,
-            isWellCalibrated: summary.isWellCalibrated
+            isWellCalibrated: summary.isWellCalibrated,
+            topMissed: summary.topMissed,
+            pendingCount: pending
         )
     }
 
@@ -626,8 +655,108 @@ struct ArgusIntelligenceDiagView: View {
                 diagRow(label: "Kalibrasyon", value: oc.calibrationSignal,
                         valueColor: oc.isWellCalibrated ? .green : oc.isTooCautious ? .orange : .yellow)
 
+                if oc.pendingCount > 0 {
+                    diagRow(label: "Bekleyen (7 gün)", value: "\(oc.pendingCount)", valueColor: .secondary)
+                }
+
                 if oc.isTooCautious {
                     warningBadge("Sistem çok temkinli: Fırsatların büyük çoğunluğu kaçırılıyor — eşikler gözden geçirilmeli")
+                }
+
+                // T3.2: En çok kaçırılan fırsatlar
+                if !oc.topMissed.isEmpty {
+                    Divider().padding(.vertical, 4)
+                    Text("En Çok Kaçırılan")
+                        .font(.caption.bold())
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 16)
+                    ForEach(oc.topMissed) { opp in
+                        HStack {
+                            Text(opp.symbol)
+                                .font(.caption.bold())
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Text(String(format: "%+.1f%%", opp.returnIfHeld ?? 0))
+                                .font(.caption.monospacedDigit())
+                                .foregroundColor(.red)
+                            Text(opp.reasonSkipped.rawValue)
+                                .font(.system(size: 9))
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 2)
+                    }
+                }
+            }
+        } else {
+            emptyState("Yükleniyor...")
+        }
+    }
+
+    // MARK: - Prometheus Track Record Section
+
+    @ViewBuilder
+    private func prometheusSection() -> some View {
+        if let pr = prometheusTRData {
+            if pr.sampleSize == 0 {
+                emptyState("Henüz forward test sonucu yok (7 günlük olgunlaşma bekleniyor)")
+            } else {
+                HStack(spacing: 0) {
+                    bigStat(value: "\(pr.sampleSize)", label: "Örneklem")
+                    Divider().frame(height: 40).background(DesignTokens.Colors.Overlay.l10)
+                    bigStat(
+                        value: String(format: "%.0f%%", pr.directionAccuracy * 100),
+                        label: "Yön Doğruluğu",
+                        color: pr.directionAccuracy >= 0.55 ? .green : (pr.directionAccuracy >= 0.50 ? .yellow : .red)
+                    )
+                    Divider().frame(height: 40).background(DesignTokens.Colors.Overlay.l10)
+                    bigStat(
+                        value: String(format: "%+.2f", pr.skillScore),
+                        label: "Skill Skoru",
+                        color: pr.skillScore > 0.30 ? .green : (pr.skillScore > 0 ? .yellow : .red)
+                    )
+                }
+                .padding(.vertical, 8)
+
+                diagRow(label: "Magnitude RMSE",
+                        value: String(format: "%.2f%%", pr.magnitudeRMSE),
+                        valueColor: pr.magnitudeRMSE < 3 ? .green : (pr.magnitudeRMSE < 6 ? .yellow : .red))
+                diagRow(label: "Council Ağırlık Bonus",
+                        value: String(format: "+%.0f%% (toplam %%%.0f)", pr.weightBonus * 100, (0.03 + pr.weightBonus) * 100),
+                        valueColor: pr.weightBonus > 0 ? .green : .secondary)
+                diagRow(label: "Spotlight Yetkili",
+                        value: pr.isSpotlightCapable ? "Evet ✓" : "Hayır",
+                        valueColor: pr.isSpotlightCapable ? .green : .secondary)
+
+                if pr.skillScore < 0 && pr.sampleSize >= 20 {
+                    warningBadge("Prometheus naive baseline'dan kötü performans gösteriyor. Geçici devre dışı bırakma düşünülmeli.")
+                }
+
+                // Spotlight listesi
+                if !prometheusSpotlight.isEmpty {
+                    Divider().padding(.vertical, 4)
+                    Text("🔭 Aktif Spotlight (\(prometheusSpotlight.count))")
+                        .font(.caption.bold())
+                        .foregroundColor(.purple)
+                        .padding(.horizontal, 16)
+                    ForEach(prometheusSpotlight) { entry in
+                        HStack {
+                            Text(entry.direction.emoji)
+                            Text(entry.symbol)
+                                .font(.caption.bold())
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Text(String(format: "%+.1f%%", entry.predictedChange))
+                                .font(.caption.monospacedDigit())
+                                .foregroundColor(entry.direction == .up ? .green : .red)
+                            Text(String(format: "%.0f%%", entry.confidence))
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 2)
+                    }
                 }
             }
         } else {
@@ -760,4 +889,16 @@ private struct OppCostDiagData {
     let calibrationSignal: String
     let isTooCautious: Bool
     let isWellCalibrated: Bool
+    let topMissed: [OpportunityCostTracker.MissedOpportunity]
+    let pendingCount: Int
+}
+
+private struct PrometheusTRDiagData {
+    let sampleSize: Int
+    let directionAccuracy: Double
+    let skillScore: Double
+    let magnitudeRMSE: Double
+    let weightBonus: Double
+    let summary: String
+    let isSpotlightCapable: Bool
 }

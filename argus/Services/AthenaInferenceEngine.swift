@@ -16,17 +16,16 @@ final class AthenaInferenceEngine {
             self.currentWeights = loaded
         } else {
             self.currentWeights = AthenaModelWeights(
-                version: "Athena-V2-Fallback",
+                version: "Athena-V3-Fallback",
                 bias: 0.0,
-                valueWeight: 1.8,
                 qualityWeight: 2.0,
                 momentumWeight: 2.0,
                 sizeWeight: 1.2,
                 riskWeight: 1.5,
                 interactionWeights: .init(
-                    valueQuality: 1.2, valueMomentum: 0.6, qualityMomentum: 0.8,
-                    momentumRisk: -0.9, valueRisk: 0.4,
-                    valueSq: -0.5, qualitySq: -0.4, momentumSq: -0.3, riskSq: -0.6
+                    qualityMomentum: 0.8,
+                    momentumRisk: -0.9,
+                    qualitySq: -0.4, momentumSq: -0.3, riskSq: -0.6
                 )
             )
         }
@@ -49,7 +48,7 @@ final class AthenaInferenceEngine {
         guard let parsed = try? decoder.decode(AthenaModelWeights.self, from: data) else {
             return nil
         }
-        let all = [parsed.valueWeight, parsed.qualityWeight, parsed.momentumWeight,
+        let all = [parsed.qualityWeight, parsed.momentumWeight,
                    parsed.sizeWeight, parsed.riskWeight]
         guard all.allSatisfy({ $0 >= 0 && $0 <= 10 }) else { return nil }
         return parsed
@@ -63,7 +62,6 @@ final class AthenaInferenceEngine {
     
     /// Run inference on a feature vector with optional regime conditioning.
     func predict(features: AthenaFeatureVector, regime: MarketRegime = .neutral) -> AthenaPrediction {
-        let v = features.valueScore / 100.0
         let q = features.qualityScore / 100.0
         let m = features.momentumScore / 100.0
         let s = features.sizeScore / 100.0
@@ -71,23 +69,18 @@ final class AthenaInferenceEngine {
 
         // Regime-conditioned linear weights
         let rm = currentWeights.regimeModifiers?[regime.rawValue]
-        let wv = currentWeights.valueWeight * (rm?.valueMult ?? 1.0)
         let wq = currentWeights.qualityWeight * (rm?.qualityMult ?? 1.0)
         let wm = currentWeights.momentumWeight * (rm?.momentumMult ?? 1.0)
         let ws = currentWeights.sizeWeight * (rm?.sizeMult ?? 1.0)
         let wr = currentWeights.riskWeight * (rm?.riskMult ?? 1.0)
 
-        var score = (v * wv) + (q * wq) + (m * wm) + (s * ws) + (r * wr) + currentWeights.bias
+        var score = (q * wq) + (m * wm) + (s * ws) + (r * wr) + currentWeights.bias
 
         // Polynomial interaction terms
         if let ix = currentWeights.interactionWeights {
-            score += v * q * ix.valueQuality
-            score += v * m * ix.valueMomentum
             score += q * m * ix.qualityMomentum
             score += m * r * ix.momentumRisk
-            score += v * r * ix.valueRisk
             // Quadratic (captures diminishing returns at extremes)
-            score += v * v * ix.valueSq
             score += q * q * ix.qualitySq
             score += m * m * ix.momentumSq
             score += r * r * ix.riskSq
@@ -114,7 +107,6 @@ final class AthenaInferenceEngine {
     private func determineDominantFactor(features: AthenaFeatureVector, weights: AthenaModelWeights, regime: MarketRegime = .neutral) -> String {
         let rm = weights.regimeModifiers?[regime.rawValue]
         let contributions = [
-            ("Value", features.valueScore * weights.valueWeight * (rm?.valueMult ?? 1.0)),
             ("Quality", features.qualityScore * weights.qualityWeight * (rm?.qualityMult ?? 1.0)),
             ("Momentum", features.momentumScore * weights.momentumWeight * (rm?.momentumMult ?? 1.0)),
             ("Size", features.sizeScore * weights.sizeWeight * (rm?.sizeMult ?? 1.0)),
@@ -140,7 +132,6 @@ final class AthenaInferenceEngine {
         // ilkesini korur (kalibre edilmemiş modelde aşırı güven riskli).
 
         let scores: [Double] = [
-            features.valueScore,
             features.qualityScore,
             features.momentumScore,
             features.sizeScore,

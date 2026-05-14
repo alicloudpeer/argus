@@ -589,8 +589,6 @@ struct HoloPanelView: View {
                         VStack(spacing: 8) {
                             v5FactorRow("Momentum", value: athena.momentumFactorScore,
                                         color: InstitutionalTheme.Colors.Motors.prometheus)
-                            v5FactorRow("Değer", value: athena.valueFactorScore,
-                                        color: InstitutionalTheme.Colors.holo)
                             v5FactorRow("Kalite", value: athena.qualityFactorScore,
                                         color: InstitutionalTheme.Colors.aurora)
                         }

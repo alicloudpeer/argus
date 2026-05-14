@@ -235,8 +235,15 @@ final class PlanTriggerEngine {
             guard let gd = grandDecision else { return false }
 
             switch trigger {
-            case .councilActionChanged(let from, _):
-                return gd.action != from
+            case .councilActionChanged(let from, let to):
+                // Faz III (2026-05-12): Önceki uygulama "to" parametresini görmezden
+                // geliyordu (`gd.action != from`). Bu yüzden balancedPlan'daki ardışık
+                // iki trigger — trim ve liquidate — Council herhangi bir yöne kaydığında
+                // hepsi tetikleniyordu. Sonuç: bir tick'te trim adımı (%30 azalt),
+                // sonraki tick'te liquidate adımı (tamamını sat) ardışık fire ediyordu.
+                // Doğru semantik: "Council ŞU ANDA spesifik hedef state'te ve giriş
+                // state'inden farklı".
+                return gd.action != from && gd.action == to
 
             case .councilConfidenceDropped:
                 return false  // ileride implement

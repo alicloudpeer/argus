@@ -5,7 +5,7 @@ actor PoseidonService {
     
     /// Generates a complete Whale Score based on VOLUME ANALYSIS (Real Data).
     /// Detects Accumulation, Distribution, and Volume Anomalies.
-    func analyzeSmartMoney(symbol: String, candles: [Candle]) async -> WhaleScore {
+    func analyzeVolumeFlow(symbol: String, candles: [Candle]) async -> WhaleScore {
         guard candles.count >= 20 else {
             return WhaleScore(symbol: symbol, totalScore: 50, insiderScore: 50, institutionalScore: 50, darkPoolScore: 50, summary: "Yetersiz Veri")
         }
@@ -25,14 +25,13 @@ actor PoseidonService {
         if volAnalysis.isAccumulation { instScore = 85.0 } // Stealth accumulation
         else if volAnalysis.isDistribution { instScore = 20.0 } // Dumping
         
-        // 3. Technical Context for "Smart Money"
-        // Smart money buys fear (Low RSI accumulation) and sells greed (High RSI distribution)
-        var smartMoneyContext = 50.0
-        if rsi < 40 && volAnalysis.isAccumulation { smartMoneyContext = 90.0 } // Perfect Buy
-        else if rsi > 70 && volAnalysis.isDistribution { smartMoneyContext = 10.0 } // Perfect Sell
-        
+        // 3. Volume Flow Context
+        var flowContext = 50.0
+        if rsi < 40 && volAnalysis.isAccumulation { flowContext = 90.0 }
+        else if rsi > 70 && volAnalysis.isDistribution { flowContext = 10.0 }
+
         // 4. Composite
-        let total = (instScore * 0.4) + (darkPoolScore * 0.3) + (smartMoneyContext * 0.3)
+        let total = (instScore * 0.4) + (darkPoolScore * 0.3) + (flowContext * 0.3)
         
         // 5. Summary
         let summary = generateSummary(vol: volAnalysis, rsi: rsi)
@@ -41,7 +40,7 @@ actor PoseidonService {
         return WhaleScore(
             symbol: symbol,
             totalScore: total,
-            insiderScore: smartMoneyContext, // Mapping SmartContext to "Insider" slot for UI compatibility
+            insiderScore: flowContext,
             institutionalScore: instScore,
             darkPoolScore: darkPoolScore,
             summary: summary
@@ -59,15 +58,25 @@ actor PoseidonService {
     private func analyzeVolumeProfile(candles: [Candle]) -> VolumeProfile {
         let sorted = candles.suffix(21) // 20 avg + 1 current
         guard sorted.count > 1 else { return VolumeProfile(isSpiking: false, isAccumulation: false, isDistribution: false, avgVol: 0, lastVol: 0) }
-        
+
         let last = sorted.last!
         let window = sorted.dropLast()
-        
+
         let avgVol = window.map { Double($0.volume) }.reduce(0, +) / Double(window.count)
         let lastVol = Double(last.volume)
-        
-        // 1. Spike Check
-        let isSpiking = lastVol > (avgVol * 2.0)
+
+        // T2.14: Volatilite normalizasyonu — yüksek ATR günlerinde hacim
+        // doğal olarak artar, spike eşiğini buna göre ayarla.
+        let atr = PhoenixLogic.calculateATR(candles: Array(candles.suffix(21)), period: 14)
+        let lastRange = last.high - last.low
+        let volatilityRatio: Double
+        if let atrVal = atr, atrVal > 0 {
+            volatilityRatio = lastRange / atrVal
+        } else {
+            volatilityRatio = 1.0
+        }
+        let spikeThreshold = volatilityRatio > 1.5 ? 2.5 : 2.0
+        let isSpiking = lastVol > (avgVol * spikeThreshold)
         
         // 2. Price Action Analysis
         let open = last.open

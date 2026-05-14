@@ -20,6 +20,15 @@ final class MarketDataStore: ObservableObject {
     private var macroTasks: [String: Task<MacroData, Error>] = [:]
     private var fundamentalTasks: [String: Task<FinancialsData, Error>] = [:]
 
+    // MARK: - Per-symbol provider priority lock (2026-05-14)
+    /// `recordBatchQuote` çağrıldığında hangi provider'ın yazdığını sayısal öncelik
+    /// ile takip eder. Aynı round içinde Alpaca (priority 1) bir sembolü yazdıktan
+    /// sonra Stooq (priority 4) onun üzerine yazamaz — yoksa IEX-RT quote'un yerine
+    /// 15-min delayed kapanış geçer (Faz II "Quote Source Determinism" recordBatchQuote
+    /// için açıktı, sadece combined-map merge'inde çözülmüştü).
+    /// Refresh round başında `ensureQuotes` ilgili sembolleri sıfırlar.
+    private var lastQuotePriority: [String: Int] = [:]
+
     // MARK: - User Focus (Phase 6 PR-C.2)
     /// Detay sayfası açıldığında bu sembol set edilir. AutoPilot taraması
     /// kullanıcı bir sembolde odaklıyken çalışmamalı — onun yerine **odaklanılan
@@ -291,11 +300,18 @@ final class MarketDataStore: ObservableObject {
         return val
     }
 
-    /// Direct batch ingestion for slow buckets (BIST) that orchestrate
-    /// themselves outside of `ensureQuotes`. The bucket pushes results
-    /// here as soon as each symbol resolves, without blocking the
-    /// global warm-tier path.
-    func recordBatchQuote(symbol: String, quote: Quote, source: String = "Batch") {
+    /// Direct batch ingestion for slow buckets (BIST + global Alpaca/Stooq/Finnhub/Yahoo)
+    /// that orchestrate themselves outside of `ensureQuotes`. The bucket pushes results
+    /// here as soon as each symbol resolves, without blocking the global warm-tier path.
+    ///
+    /// `priority` low value = better provider. Aynı sembol için daha önce daha öncelikli
+    /// bir provider yazdıysa (Alpaca=1), sonra gelen daha düşük öncelikli yazımlar (Stooq=4)
+    /// reddedilir. Default 99 → eski API çağrıları her zaman yazar (geriye uyumlu).
+    func recordBatchQuote(symbol: String, quote: Quote, source: String = "Batch", priority: Int = 99) {
+        if let existing = lastQuotePriority[symbol], priority > existing {
+            return  // mevcut yazım daha öncelikli (daha düşük sayı)
+        }
+        lastQuotePriority[symbol] = priority
         _ = processQuoteSuccess(symbol: symbol, quote: quote, source: source)
     }
     
@@ -535,14 +551,32 @@ final class MarketDataStore: ObservableObject {
             await existing.value
             return
         }
+        // Yeni round → bucket'lar arasındaki priority yarışı sıfırlanır. Aksi halde
+        // önceki round'da Alpaca yazımı (priority 1) sonsuza dek Stooq'un (4) yazımını
+        // bloke ederdi ve fiyatlar güncellenmezdi.
+        for sym in needsFetch { self.lastQuotePriority[sym] = nil }
+
         let task = Task<Void, Never> { [weak self] in
             guard let self = self else { return }
+            // Bucket task'ları artık sonuçlarını gelir gelmez `recordBatchQuote` ile
+            // priority-aware yazıyor; dönen map sadece yedek/tamamlama amaçlı. Eski
+            // davranışta TaskGroup tüm bucket'lar bitmeden dönmüyordu — en yavaş
+            // bucket (Yahoo fallback 5-10s, BorsaPy cold-start) hızlı bucket'ları
+            // kilitliyordu. Şimdi UI Alpaca sonucunu 500ms'de görür.
             let map = await HeimdallOrchestrator.shared.requestQuotesBatch(symbols: needsFetch)
             for symbol in needsFetch {
                 if let quote = map[symbol] {
-                    _ = self.processQuoteSuccess(symbol: symbol, quote: quote, source: "Batch")
+                    // priority 99 → bucket zaten daha öncelikli yazdıysa override edilmez.
+                    self.recordBatchQuote(symbol: symbol, quote: quote, source: "Batch", priority: 99)
                 } else if self.quotes[symbol] == nil {
-                    self.quotes[symbol] = .missing(reason: "Batch returned no value")
+                    // BIST sembolleri `requestQuotesBatch`'in dönüş map'inde olmaz —
+                    // orchestrator bunları detached `streamBistBucket` task'ına gönderir
+                    // ve sonuç doğrudan `recordBatchQuote` ile yazılır. Non-BIST için
+                    // "batch gerçekten boş döndü" semantiği geçerli, davranışı koru.
+                    let destination = SymbolResolver.shared.marketDestination(for: symbol)
+                    if destination != .bist {
+                        self.quotes[symbol] = .missing(reason: "Batch returned no value")
+                    }
                 }
             }
         }

@@ -15,7 +15,8 @@ struct PhoenixLogic {
         candles: [Candle],
         symbol: String,
         timeframe: PhoenixTimeframe,
-        config: PhoenixConfig
+        config: PhoenixConfig,
+        atlasQualityScore: Double? = nil
     ) -> PhoenixAdvice {
         
         let n = candles.count
@@ -61,12 +62,29 @@ struct PhoenixLogic {
         let t2 = isDowntrend ? mid + (upper - mid) * 0.5 : upper
         
         // 4.5. R-SQUARED CHECK (Statistical Validity)
-        // Faz 3.1: Kademeli güven modeli — sabit eşik yerine R²'ye göre derecelendirme.
-        //   R² ≥ 0.60: tam güvenilir kanal (penalty yok)
-        //   R² 0.45–0.60: iyi kanal (15% penalty)
-        //   R² 0.30–0.45: orta kanal (35% penalty)
-        //   R² 0.20–0.30: zayıf kanal (60% penalty, ama hâlâ sinyal taşır)
-        //   R² < 0.20: kanal yok sayılır → erken çıkış
+        // Faz I.1 (2026-05-12) — Whiplash kök neden düzeltmesi:
+        //   Eski model: R² 0.19→0.21 sınırında `insufficient` (Phoenix abstain,
+        //   score 0) ↔ `active` (score 35-60) zıplaması. Konsey'e Phoenix oyu
+        //   bir karar turunda yok, bir sonrakinde tam yüklü geri geliyordu.
+        //   Faz 3.1'in tier'lı çarpanı sınır geçişini düzeltmemişti.
+        //
+        // Yeni model:
+        //   (a) Hard cutoff 0.20 → 0.05'e indirildi; arada düşük çarpan tier'ları
+        //       eklendi (0.10–0.20: 0.20, 0.05–0.10: 0.08). Multiplier kademeli
+        //       akıyor: 1.00 → 0.85 → 0.65 → 0.40 → 0.20 → 0.08 → kapalı.
+        //   (b) Multiplier semantiği `score *= mult` → `50 + (score-50)*mult`
+        //       olarak değiştirildi. Eski formül 95×0.4=38 hesabıyla GÜÇLÜ AL
+        //       sinyalini SAT'a deviriyordu; doğru semantik zayıf kanalda
+        //       sinyali yöne devirmek değil, nötrale çekmek.
+        //
+        // Tier yorumu:
+        //   R² ≥ 0.60: kanal tam güvenilir
+        //   R² 0.45–0.60: iyi
+        //   R² 0.30–0.45: orta
+        //   R² 0.20–0.30: zayıf ama anlamlı
+        //   R² 0.10–0.20: çok zayıf (sinyal taşır ama nötre yakın)
+        //   R² 0.05–0.10: hemen hemen anlamsız (sinyal kalıntısı)
+        //   R² < 0.05: kanal yok hükmünde → erken çıkış
         let rSquared = calculateRSquared(closes: analysisSlice.map { $0.close }, slope: slope, intercept: intercept)
 
         let channelReliabilityMultiplier: Double
@@ -75,8 +93,11 @@ struct PhoenixLogic {
         case 0.45..<0.60: channelReliabilityMultiplier = 0.85
         case 0.30..<0.45: channelReliabilityMultiplier = 0.65
         case 0.20..<0.30: channelReliabilityMultiplier = 0.40
+        case 0.10..<0.20: channelReliabilityMultiplier = 0.20
+        case 0.05..<0.10: channelReliabilityMultiplier = 0.08
         default:
-            // R² < 0.20: kanal istatistiksel olarak anlamsız, sinyal üretme
+            // R² < 0.05: kanal istatistiksel olarak yok hükmünde; sinyal kapat
+            // (eski 0.20 eşiği whiplash üretiyordu, yeni eşik 4× daha sıkı).
             return PhoenixAdvice.insufficient(symbol: symbol, timeframe: timeframe)
         }
         let channelReliable = rSquared >= 0.45 // UI/log için legacy flag
@@ -105,7 +126,12 @@ struct PhoenixLogic {
         // Detect market mode
         let isUptrend = slope > 0 && latest.close > mid
         
-        // 6. SCORING - Both reversion and trend-following
+        // 6. VALUE TRAP GUARD
+        if let aq = atlasQualityScore, aq < 40 {
+            return PhoenixAdvice.insufficient(symbol: symbol, timeframe: timeframe)
+        }
+
+        // 7. SCORING - Both reversion and trend-following
         var score = 50.0
         
         // MEAN REVERSION SCORING (Primary)
@@ -122,8 +148,15 @@ struct PhoenixLogic {
             score = 40 + (slope > 0 ? 10 : 0)  // Base 40-50 for uptrend
         }
         
-        // Faz 3.1: Channel reliability — kademeli çarpan
-        score *= channelReliabilityMultiplier
+        // Faz I.1 (2026-05-12): Multiplier semantik düzeltmesi.
+        // Eski `score *= mult` formülü: score=95 × mult=0.4 → 38 (SATIM bölgesi!)
+        // Bu, kötü R²'de güçlü AL sinyalini zıt yöne deviriyordu.
+        // Doğru semantik: zayıf kanal → sinyal nötrale yaklaşsın, yöne ASLA
+        // devrilmesin. Lineer interpolasyon 50 (nötr) etrafında:
+        //   mult=1.0 → score korunur
+        //   mult=0.5 → score nötre yarı yol yaklaşır
+        //   mult=0.0 → score nötre tam çekilir (50)
+        score = 50.0 + (score - 50.0) * channelReliabilityMultiplier
         
         // Volume Spike (confirmation)
         let vol = latest.volume

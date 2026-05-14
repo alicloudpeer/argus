@@ -47,7 +47,7 @@ struct DarkPoolPrint: Identifiable, Codable, Sendable {
     }
 }
 
-/// The composite "Smart Money" sentiment score.
+/// Hacim akışı bazlı bileşik skor.
 struct WhaleScore: Codable, Sendable {
     let symbol: String
     let totalScore: Double // 0-100 (0=Bearish Whirlpool, 100=Bullish Tsunami)

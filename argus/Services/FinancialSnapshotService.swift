@@ -95,7 +95,8 @@ actor FinancialSnapshotService {
             targetHighPrice: data.targetHighPrice,
             targetLowPrice: data.targetLowPrice,
             recommendationMean: data.recommendationMean,
-            analystCount: data.numberOfAnalystOpinions
+            analystCount: data.numberOfAnalystOpinions,
+            lastUpdated: nil
         )
     }
 }

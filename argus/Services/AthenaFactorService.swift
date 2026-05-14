@@ -20,15 +20,13 @@ final class AthenaFactorService {
     ) -> AthenaFactorResult {
         
         // 1. Extract Features (Rule-Based Feature Engineering)
-        let valueScore = calculateValueFactor(financials: financials)
         let qualityScore = calculateQualityFactor(atlasResult: atlasResult)
         let momentumScore = calculateMomentumFactor(orionScore: orionScore, candles: candles)
         let sizeScore = calculateSizeFactor(marketCap: financials?.marketCap)
         let riskScore = calculateRiskFactor(financials: financials, candles: candles)
-        
+
         // 2. Create Feature Vector
         let features = AthenaFeatureVector(
-            valueScore: valueScore,
             qualityScore: qualityScore,
             momentumScore: momentumScore,
             sizeScore: sizeScore,
@@ -44,7 +42,6 @@ final class AthenaFactorService {
         return AthenaFactorResult(
             symbol: symbol,
             date: Date(),
-            valueFactorScore: valueScore,
             qualityFactorScore: qualityScore,
             momentumFactorScore: momentumScore,
             sizeFactorScore: sizeScore,
@@ -54,51 +51,7 @@ final class AthenaFactorService {
         )
     }
     
-    // MARK: - 1. Value Factor
-    private func calculateValueFactor(financials: FinancialsData?) -> Double {
-        guard let fin = financials else { return 50.0 }
-        
-        var scores: [Double] = []
-        
-        // A. P/E Ratio
-        if let pe = fin.peRatio ?? fin.forwardPERatio {
-            // Lower is Better
-            if pe <= 0 { scores.append(20.0) } // Loss making or error
-            else if pe < 10 { scores.append(95.0) }
-            else if pe < 20 { scores.append(80.0) }
-            else if pe < 40 { scores.append(50.0) }
-            else { scores.append(20.0) }
-        }
-        
-        // B. P/B Ratio
-        if let pb = fin.priceToBook {
-            // Lower is Better
-            if pb < 1.0 { scores.append(90.0) }
-            else if pb < 3.0 { scores.append(70.0) }
-            else if pb < 6.0 { scores.append(40.0) }
-            else { scores.append(20.0) }
-        }
-        
-        // C. FCF Yield (Need Market Cap)
-        if let mcap = fin.marketCap, mcap > 0,
-           let ocf = fin.operatingCashflow {
-            
-            let capEx = abs(fin.capitalExpenditures ?? 0.0)
-            let fcf = ocf - capEx
-            let yield = (fcf / mcap) * 100.0
-            
-            // Higher is Better
-            if yield > 8.0 { scores.append(95.0) }
-            else if yield > 4.0 { scores.append(80.0) }
-            else if yield > 0.0 { scores.append(60.0) }
-            else { scores.append(30.0) }
-        }
-        
-        if scores.isEmpty { return 50.0 }
-        return scores.reduce(0, +) / Double(scores.count)
-    }
-    
-    // MARK: - 2. Quality Factor
+    // MARK: - 1. Quality Factor
     private func calculateQualityFactor(atlasResult: FundamentalScoreResult?) -> Double {
         guard let atlas = atlasResult else { return 50.0 }
         
@@ -217,11 +170,9 @@ final class AthenaFactorService {
             else { return low }
         }
         
-        let vWord = getWord(score: features.valueScore, low: "Pahalı", mid: "Makul", high: "Ucuz")
         let qWord = getWord(score: features.qualityScore, low: "Spekülatif", mid: "Solid", high: "Kaliteli")
         let sWord = features.sizeScore >= 70 ? "Mid-Cap" : (features.sizeScore >= 50 ? "Large-Cap" : "Mega-Cap")
-        
-        // Add Dominant Factor info
-        return "Athena (\(prediction.dominantFactor)): \(vWord) \(qWord) \(sWord)"
+
+        return "Athena (\(prediction.dominantFactor)): \(qWord) \(sWord)"
     }
 }

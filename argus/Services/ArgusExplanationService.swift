@@ -219,18 +219,40 @@ final class ArgusExplanationService: Sendable {
         encoder.outputFormatting = .prettyPrinted
         let decisionData = try encoder.encode(decision)
         let decisionString = String(data: decisionData, encoding: .utf8) ?? "{}"
-        
+
+        // T3.7: Council'ın gerçek modül puanlarını ve ağırlıklarını LLM'e açıkça aktar
+        // — uydurmasını engellemek için sayıları başa al ve isimlerle eşleştir.
+        let weights = decision.moduleWeights ?? [:]
+        func w(_ key: String) -> String {
+            let weight = weights[key] ?? 0
+            return weight > 0 ? String(format: "(ağırlık %%%.0f)", weight * 100) : ""
+        }
+        let moduleTable = """
+        MODÜL PUANLARI (Council'ın oy verdiği gerçek skorlar):
+          Teknik (Orion):   \(Int(decision.orionScore))/100 \(w("Orion"))
+          Temel (Atlas):    \(Int(decision.atlasScore))/100 \(w("Atlas"))
+          Makro (Aether):   \(Int(decision.aetherScore))/100 \(w("Aether"))
+          Haber (Hermes):   \(Int(decision.hermesScore))/100 \(w("Hermes"))
+          Faktör (Athena):  \(Int(decision.athenaScore))/100 \(w("Athena"))
+          Sektör (Demeter): \(Int(decision.demeterScore))/100 \(w("Demeter"))
+
+        FİNAL KARAR: \(decision.finalActionCore.rawValue) · Skor \(Int(decision.finalScoreCore))/100 · Not: \(decision.letterGradeCore)
+        """
+
         return """
         Aşağıdaki analiz verisini değerlendir ve Türkçe, profesyonel bir özet oluştur.
 
+        \(moduleTable)
+
         KURALLAR:
-        1. JSON yapısından veya iç modül isimlerinden (Orion, Atlas, Aether, Hermes) bahsetme.
-        2. Her iddiayı somut bir sayıyla destekle (F/K, RSI, skor gibi).
-        3. "title" kısa ve çarpıcı olsun (5-8 kelime).
-        4. "summary" 2 cümleyi geçmesin, veriye dayalı olsun.
-        5. "bullets" en fazla 3 madde, her biri somut veri içersin.
-        6. Teknik ve temel çelişiyorsa bunu belirt.
-        7. Veri yoksa o konuyu atla, UYDURMA.
+        1. Modül adlarını (Orion, Atlas, Aether, Hermes) kullanma — bunun yerine "Teknik/Temel/Makro/Haber/Faktör/Sektör" gibi rolleriyle bahset.
+        2. Her iddiayı yukarıdaki MODÜL PUANLARI'ndan birine dayandır. Sayıyı metne göm ("Teknik 78/100 ile güçlü").
+        3. Sayıları uydurma — yalnız yukarıdaki tablodaki ve VERİLER JSON'undakileri kullan.
+        4. "title" kısa ve çarpıcı olsun (5-8 kelime).
+        5. "summary" 2 cümleyi geçmesin, veriye dayalı olsun.
+        6. "bullets" en fazla 3 madde, her biri somut veri içersin.
+        7. Teknik ile temel çelişiyorsa bunu belirt.
+        8. Bir modül skoru 0 ise o modülü atla — UYDURMA.
 
         ÇIKTI FORMATI (JSON):
         {
@@ -238,10 +260,10 @@ final class ArgusExplanationService: Sendable {
           "summary": "Veriye dayalı 2 cümle özet.",
           "bullets": ["Somut veri içeren madde 1", "Somut veri içeren madde 2", "Risk veya fırsat"],
           "riskNote": "Varsa en büyük risk, yoksa null",
-          "toneTag": "balanced"
+          "toneTag": "bullish|bearish|balanced"
         }
 
-        VERİLER:
+        DETAYLI VERİLER:
         \(decisionString)
         """
     }

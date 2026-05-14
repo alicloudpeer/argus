@@ -260,9 +260,9 @@ class TradeBrainExecutor: ObservableObject {
                 category: "TRADEBRAIN"
             )
             
-            // Cooldown kontrolü
-            if let lastTime = lastExecutionTime[symbol],
-               Date().timeIntervalSince(lastTime) < cooldownSeconds {
+            // T2.22: CooldownRegistry'yi güncelle (tek kaynak) + geriye uyumluluk
+            let registryCooldown = await CooldownRegistry.shared.isInCooldown(symbol, type: .postTrade)
+            if registryCooldown || (lastExecutionTime[symbol].map { Date().timeIntervalSince($0) < cooldownSeconds } ?? false) {
                 skippedCooldown += 1
                 debugSkip(symbol: symbol, reason: "cooldown aktif")
                 if decision.action == .aggressiveBuy || decision.action == .accumulate {
@@ -1022,11 +1022,16 @@ class TradeBrainExecutor: ObservableObject {
             )
         }
 
-        // Cooldown ayarla
+        // Cooldown ayarla (eski + yeni registry)
         lastExecutionTime[symbol] = Date()
+        await CooldownRegistry.shared.enter(
+            symbol: symbol, type: .postTrade,
+            duration: baseCooldownSeconds * profile.cooldownMultiplier,
+            reason: "executeBuy"
+        )
         ArgusLogger.info("executeBuy: Cooldown ayarlandı - \(symbol)", category: "TRADEBRAIN")
     }
-    
+
     // MARK: - Emergency Sell (Liquidate Only)
     
     private func executeEmergencySell(
@@ -1049,8 +1054,12 @@ class TradeBrainExecutor: ObservableObject {
         // Plan tamamla
         PositionPlanStore.shared.completePlan(tradeId: trade.id)
         
-        // Cooldown
+        // Cooldown (eski + registry)
         lastExecutionTime[trade.symbol] = Date()
+        await CooldownRegistry.shared.enter(
+            symbol: trade.symbol, type: .postSell,
+            duration: 300, reason: "emergencySell"
+        )
     }
 
     private func executePolicyReduce(
@@ -1080,6 +1089,10 @@ class TradeBrainExecutor: ObservableObject {
             log("🛡️ \(trade.symbol): Policy TRIM %\(Int(trimPercent)) (\(policy.mode.rawValue))")
         }
         lastExecutionTime[trade.symbol] = Date()
+        await CooldownRegistry.shared.enter(
+            symbol: trade.symbol, type: .postTrade,
+            duration: 300, reason: "policyReduce"
+        )
     }
 
     private func forcedTrimPercent(

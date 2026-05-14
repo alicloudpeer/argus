@@ -68,6 +68,7 @@ struct FinancialSnapshot: Sendable, Codable {
     let targetLowPrice: Double?      // En düşük hedef
     let recommendationMean: Double?  // 1.0=Strong Buy, 5.0=Sell
     let analystCount: Int?           // Kaç analist
+    let lastUpdated: Date?             // Veri tarihi
     
     static func empty(symbol: String, price: Double) -> FinancialSnapshot {
         FinancialSnapshot(
@@ -81,7 +82,8 @@ struct FinancialSnapshot: Sendable, Codable {
             insiderOwnership: nil, institutionalOwnership: nil,
             sectorPE: nil, sectorPB: nil,
             targetMeanPrice: nil, targetHighPrice: nil, targetLowPrice: nil,
-            recommendationMean: nil, analystCount: nil
+            recommendationMean: nil, analystCount: nil,
+            lastUpdated: nil
         )
     }
 }

@@ -201,17 +201,20 @@ final class DemeterEngine: ObservableObject {
         let rsSlope = DemeterLabor.slope(Array(rsSeries.suffix(20)))
         let breadthScore = min(max(((rsSlope + 0.005) / 0.01) * 100.0, 0.0), 100.0)
         
-        // 4. Regime (20%)
-        // VIX < 20 -> RiskOn (+), VIX > 25 -> RiskOff (-)
-        // SPY > SMA200 -> RiskOn
-        let vixVal = vix.last?.close ?? 20.0
+        // 4. Regime (20%) — Chiron sentezinden oku, VIX çift sayımını önle
+        let chironRegime = ChironRegimeEngine.shared.globalResult.regime
         let spyMa200 = spy.suffix(200).map{$0.close}.reduce(0, +) / Double(min(spy.count, 200))
         let spyVal = spy.last?.close ?? 0.0
-        
-        var regimeBase = 50.0
-        if vixVal < 20 { regimeBase += 15 }
-        if vixVal > 25 { regimeBase -= 15 }
-        if spyVal > spyMa200 { regimeBase += 15 } else { regimeBase -= 15 }
+
+        var regimeBase: Double
+        switch chironRegime {
+        case .trend:     regimeBase = 70.0
+        case .neutral:   regimeBase = 55.0
+        case .chop:      regimeBase = 40.0
+        case .riskOff:   regimeBase = 25.0
+        case .newsShock: regimeBase = 30.0
+        }
+        if spyVal > spyMa200 { regimeBase += 10 } else { regimeBase -= 10 }
         let regimeScore = min(max(regimeBase, 0), 100)
         
         // TOTAL WEIGHTED
@@ -283,5 +286,70 @@ extension DemeterEngine {
     func scoreForSymbol(_ symbol: String) -> DemeterScore? {
         guard let sector = SectorMap.getSector(for: symbol) else { return nil }
         return sectorScores.first(where: { $0.sector == sector })
+    }
+}
+
+// MARK: - T2.10: Sembol-Sektör Göreceli Güç
+extension DemeterEngine {
+
+    struct StockSectorRelativeStrength: Sendable {
+        let symbol: String
+        let sector: String
+        let stockReturn20d: Double      // %
+        let sectorReturn20d: Double     // %
+        let alpha: Double               // stockReturn - sectorReturn
+        let isOutperforming: Bool       // alpha > 1.5%
+        let isUnderperforming: Bool     // alpha < -1.5%
+        let summary: String
+    }
+
+    /// Hissenin son 20 günde kendi sektör ETF'ine göre göreceli performansı.
+    /// "Tech sektörü yükseliyor ama bu hisse sektörden geriye düşüyor" gibi
+    /// göreceli zayıflık/güç sinyali üretir.
+    func relativeStrength(symbol: String, stockCandles: [Candle]) async -> StockSectorRelativeStrength? {
+        guard let sectorETF = SectorMap.getSector(for: symbol) else { return nil }
+        guard stockCandles.count >= 21 else { return nil }
+
+        // Sektör ETF mumlarını çek
+        guard let etfCandles = try? await HeimdallOrchestrator.shared.requestCandles(
+            symbol: sectorETF.rawValue, timeframe: "1d", limit: 65
+        ), etfCandles.count >= 21 else { return nil }
+
+        // Son 20 günlük getiri
+        let stockReturn = pctReturn(candles: stockCandles, period: 20)
+        let etfReturn = pctReturn(candles: etfCandles, period: 20)
+
+        guard let sr = stockReturn, let er = etfReturn else { return nil }
+
+        let alpha = sr - er
+        let isOut = alpha > 1.5
+        let isUnder = alpha < -1.5
+
+        let summary: String
+        if isOut {
+            summary = String(format: "Sektörden %.1f%% iyi performans (alpha+)", alpha)
+        } else if isUnder {
+            summary = String(format: "Sektörden %.1f%% geride (alpha-)", alpha)
+        } else {
+            summary = String(format: "Sektörle paralel (%.1f%%)", alpha)
+        }
+
+        return StockSectorRelativeStrength(
+            symbol: symbol,
+            sector: sectorETF.rawValue,
+            stockReturn20d: sr,
+            sectorReturn20d: er,
+            alpha: alpha,
+            isOutperforming: isOut,
+            isUnderperforming: isUnder,
+            summary: summary
+        )
+    }
+
+    private func pctReturn(candles: [Candle], period: Int) -> Double? {
+        guard candles.count > period else { return nil }
+        let recent = Array(candles.suffix(period + 1))
+        guard let first = recent.first?.close, let last = recent.last?.close, first > 0 else { return nil }
+        return (last - first) / first * 100
     }
 }

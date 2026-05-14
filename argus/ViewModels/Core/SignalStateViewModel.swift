@@ -59,6 +59,7 @@ final class SignalStateViewModel: ObservableObject {
     private init() {
         setupOrionStoreBinding()
         setupOrionScoresCache()
+        setupWatchlistCleanup()
         // SignalViewModel.init() AnalysisViewModel.shared erişiyor; bu init zinciri
         // sırasında SignalVM.shared erişimi cyclic crash yapabilir. Defer.
         DispatchQueue.main.async { [weak self] in
@@ -75,6 +76,23 @@ final class SignalStateViewModel: ObservableObject {
         SignalViewModel.shared.$demeterScores
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.demeterScores = $0 }
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Watchlist Cleanup
+    private func setupWatchlistCleanup() {
+        WatchlistStore.shared.$items
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] symbols in
+                guard let self else { return }
+                let active = Set(symbols)
+                self.argusDecisions = self.argusDecisions.filter { active.contains($0.key) }
+                self.argusExplanations = self.argusExplanations.filter { active.contains($0.key) }
+                self.grandDecisions = self.grandDecisions.filter { active.contains($0.key) }
+                self.athenaResults = self.athenaResults.filter { active.contains($0.key) }
+                self.phoenixResults = self.phoenixResults.filter { active.contains($0.key) }
+                self.chimeraSignals = self.chimeraSignals.filter { active.contains($0.key) }
+            }
             .store(in: &cancellables)
     }
 

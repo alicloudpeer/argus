@@ -431,19 +431,17 @@ struct AlkindusStats {
     let pendingCount: Int
     let lastUpdated: Date
 
-    // Get top performing module
     var topModule: (name: String, hitRate: Double)? {
         var best: (String, Double)? = nil
 
         for (module, cal) in calibration.modules {
-            // Consider only 60+ brackets
             let highBrackets = cal.brackets.filter { $0.key == "60-80" || $0.key == "80-100" }
             let totalAttempts = highBrackets.values.reduce(0.0) { $0 + $1.attempts }
             let totalCorrect = highBrackets.values.reduce(0.0) { $0 + $1.correct }
 
-            guard totalAttempts >= 5 else { continue } // Minimum sample size
+            guard totalAttempts >= 5 else { continue }
 
-            let rate = totalCorrect / totalAttempts
+            let rate = Self.wilsonLowerBound(correct: totalCorrect, attempts: totalAttempts)
             if best == nil || rate > best!.1 {
                 best = (module, rate)
             }
@@ -452,7 +450,6 @@ struct AlkindusStats {
         return best
     }
 
-    // Get weakest module
     var weakestModule: (name: String, hitRate: Double)? {
         var worst: (String, Double)? = nil
 
@@ -462,13 +459,39 @@ struct AlkindusStats {
 
             guard totalAttempts >= 5 else { continue }
 
-            let rate = totalCorrect / totalAttempts
+            let rate = Self.wilsonUpperBound(correct: totalCorrect, attempts: totalAttempts)
             if worst == nil || rate < worst!.1 {
                 worst = (module, rate)
             }
         }
 
         return worst
+    }
+
+    // MARK: - Wilson Score Interval (z=1.96, 95% CI)
+
+    static func wilsonLowerBound(correct: Double, attempts: Double) -> Double {
+        guard attempts > 0 else { return 0 }
+        let p = correct / attempts
+        let n = attempts
+        let z = 1.96
+        let z2 = z * z
+        let denominator = 1.0 + z2 / n
+        let center = p + z2 / (2 * n)
+        let spread = z * sqrt((p * (1 - p) + z2 / (4 * n)) / n)
+        return max(0, (center - spread) / denominator)
+    }
+
+    static func wilsonUpperBound(correct: Double, attempts: Double) -> Double {
+        guard attempts > 0 else { return 0 }
+        let p = correct / attempts
+        let n = attempts
+        let z = 1.96
+        let z2 = z * z
+        let denominator = 1.0 + z2 / n
+        let center = p + z2 / (2 * n)
+        let spread = z * sqrt((p * (1 - p) + z2 / (4 * n)) / n)
+        return min(1, (center + spread) / denominator)
     }
 }
 

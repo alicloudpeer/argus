@@ -43,14 +43,26 @@ actor PrometheusEngine {
         let prices = historicalPrices
         let horizon = horizonDays(for: prices.count)
         let tuning = tuneParameters(prices: prices)
-        let forecast = dampedHoltForecast(
+        let rawForecast = dampedHoltForecast(
             prices: prices,
             daysAhead: horizon,
             alpha: tuning.alpha,
             beta: tuning.beta,
             phi: tuning.phi
         )
-        
+
+        let stdDevPct = recentVolatilityPct(prices: prices)
+
+        // T2.24: Sanity clamps — vol-scaled cap + RSI veto.
+        // Trend median trim zaten dampedHoltForecast içinde uygulandı (Önlem 2).
+        let clampResult = applySanityClamps(
+            symbol: symbol,
+            forecast: rawForecast,
+            prices: prices,
+            stdDevPct: stdDevPct
+        )
+        let forecast = clampResult.forecast
+
         let intervals = buildPredictionIntervals(
             forecast: forecast,
             residualAbsErrors: tuning.absErrors,
@@ -65,9 +77,7 @@ actor PrometheusEngine {
             intervalWidthPct: intervals.intervalWidthPct
         )
         
-        // Volatilite ölçeği — recommendation eşikleri ve trend kategorileri için.
-        let stdDevPct = recentVolatilityPct(prices: prices)
-
+        // stdDevPct yukarıda zaten hesaplandı (sanity clamp için). Burada determineTrend'e geçer.
         let trend = determineTrend(
             prices: prices,
             forecast: forecast,
@@ -163,11 +173,33 @@ actor PrometheusEngine {
 
         var level = prices[0]
         var trend = prices[1] - prices[0]
+        // T2.24: Trend median trim — spike sırasında oluşan büyük trend tahmini
+        // 5 günlük horizon'a × cumulative çarpanıyla absürt değerlere uçuruyordu.
+        // Son N trend'in |median|'ından çok sapan trend'leri törpüleyerek
+        // stabilize ediyoruz. Damping (phi) tek başına yeterli değildi.
+        var trendHistory: [Double] = []
+        let trendWindow = 30
+        let trimMultiplier = 2.0
 
         for i in 1..<prices.count {
             let previousLevel = level
             level = alpha * prices[i] + (1 - alpha) * (previousLevel + phi * trend)
             trend = beta * (level - previousLevel) + (1 - beta) * phi * trend
+
+            // Son 30 trend'in absolute median'ından çok uzaklaşan trend'i clamp et.
+            // İşaret korunur — sadece büyüklük sınırlanır.
+            trendHistory.append(trend)
+            if trendHistory.count > trendWindow {
+                trendHistory.removeFirst()
+            }
+            if trendHistory.count >= 10 {
+                let absSorted = trendHistory.map(abs).sorted()
+                let median = absSorted[absSorted.count / 2]
+                let cap = max(median * trimMultiplier, 1e-6)
+                if abs(trend) > cap {
+                    trend = (trend > 0 ? 1 : -1) * cap
+                }
+            }
         }
 
         var forecasts: [Double] = []
@@ -257,6 +289,94 @@ actor PrometheusEngine {
         let mean = returns.reduce(0, +) / Double(returns.count)
         let variance = returns.reduce(0) { $0 + pow($1 - mean, 2) } / Double(returns.count - 1)
         return sqrt(variance) * 100.0
+    }
+
+    // MARK: - T2.24: Sanity Clamps (Önlem 1 + 4)
+
+    /// 14 günlük Wilder RSI — overbought/oversold tespiti için.
+    /// Prometheus actor'ı içinde lokal hesaplama; AnalysisService (MainActor)
+    /// bağımlılığını azaltmak için.
+    private func computeRSI(prices: [Double], period: Int = 14) -> Double? {
+        guard prices.count > period else { return nil }
+        let recent = Array(prices.suffix(period + 1))
+        var gains: [Double] = []
+        var losses: [Double] = []
+        for i in 1..<recent.count {
+            let change = recent[i] - recent[i - 1]
+            gains.append(max(0, change))
+            losses.append(max(0, -change))
+        }
+        let avgGain = gains.reduce(0, +) / Double(period)
+        let avgLoss = losses.reduce(0, +) / Double(period)
+        guard avgLoss > 0 else { return avgGain > 0 ? 100 : 50 }
+        let rs = avgGain / avgLoss
+        return 100 - (100 / (1 + rs))
+    }
+
+    /// Tahmin serisini iki tavanla disipline eder:
+    /// - Önlem 1: |%change| > 3 × stdDevPct × √h → vol-scaled tavan
+    /// - Önlem 4: RSI > 80 ise yukarı tahmini ±2σ ile sınırla; RSI < 20 ise aşağıyı.
+    /// Geriye işaret korunarak clamp uygulanır; dışarıya tek bir log düşer.
+    private struct SanityClampResult {
+        let forecast: [Double]
+        let wasClamped: Bool
+        let reason: String?
+    }
+
+    private func applySanityClamps(
+        symbol: String,
+        forecast: [Double],
+        prices: [Double],
+        stdDevPct: Double
+    ) -> SanityClampResult {
+        guard !forecast.isEmpty, let lastPrice = prices.last, lastPrice > 0 else {
+            return SanityClampResult(forecast: forecast, wasClamped: false, reason: nil)
+        }
+
+        var clamped = forecast
+        var clampReasons: [String] = []
+
+        // Önlem 1: Vol-scaled cap. h-uyumlu (her gün için ayrı tavan).
+        let baseSigma = max(stdDevPct, 0.5) // tabanı %0.5 — düşük volatil hisseler için
+        for h in 0..<clamped.count {
+            let horizonStep = Double(h + 1)
+            let capPct = 3.0 * baseSigma * sqrt(horizonStep)
+            let predicted = clamped[h]
+            let changePct = (predicted - lastPrice) / lastPrice * 100
+            if abs(changePct) > capPct {
+                let sign: Double = changePct > 0 ? 1 : -1
+                clamped[h] = lastPrice * (1.0 + sign * capPct / 100.0)
+                if h == clamped.count - 1 {
+                    clampReasons.append(String(format: "vol-cap (%.1f%% → %.1f%%)", changePct, sign * capPct))
+                }
+            }
+        }
+
+        // Önlem 4: RSI vetosu. Mean-reversion bilgisi.
+        let lastPredicted = clamped.last ?? lastPrice
+        let finalChange = (lastPredicted - lastPrice) / lastPrice * 100
+        if let rsi = computeRSI(prices: prices) {
+            let twoSigma = 2.0 * baseSigma * sqrt(Double(clamped.count))
+            if rsi > 80 && finalChange > twoSigma {
+                // Aşırı alım — bullish tahmini ±2σ ile kapla
+                let cappedFinal = lastPrice * (1.0 + twoSigma / 100.0)
+                clamped[clamped.count - 1] = cappedFinal
+                clampReasons.append(String(format: "RSI=%.0f overbought, bullish → 2σ", rsi))
+            } else if rsi < 20 && finalChange < -twoSigma {
+                let cappedFinal = lastPrice * (1.0 - twoSigma / 100.0)
+                clamped[clamped.count - 1] = cappedFinal
+                clampReasons.append(String(format: "RSI=%.0f oversold, bearish → 2σ", rsi))
+            }
+        }
+
+        let wasClamped = !clampReasons.isEmpty
+        let reason: String? = wasClamped ? clampReasons.joined(separator: " · ") : nil
+
+        if wasClamped {
+            print("🧯 Prometheus sanity clamp — \(symbol): \(reason ?? "")")
+        }
+
+        return SanityClampResult(forecast: clamped, wasClamped: wasClamped, reason: reason)
     }
 
     // MARK: - Scientific Tuning

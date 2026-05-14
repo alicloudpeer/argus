@@ -242,6 +242,33 @@ final class PlanRepository: ObservableObject {
         updatePlanStatus(tradeId: tradeId, status: .completed)
     }
 
+    /// Faz III (2026-05-12): Plan revize bayrağı.
+    /// Konsey "ÇIK"/"AZALT" alert'i fire olduğunda, regime shift olduğunda veya
+    /// kullanıcı tezi sorgulamak istediğinde çağrılır. Otomatik trade yapmaz —
+    /// sadece UI'da "Plan güncel değil" rozeti gösterilmesini sağlar ve
+    /// journeyLog'a iz bırakır.
+    func markPlanForReview(tradeId: UUID, reason: String, triggeredBy: String = "Plan Lifecycle") {
+        guard var plan = plans[tradeId] else { return }
+        // Idempotent: zaten review bayraklı plana ikinci kez aynı sebebi ekleme.
+        if plan.requiresReview == true,
+           plan.journeyLog.last?.reason == reason {
+            return
+        }
+        plan.requiresReview = true
+        plan.lastUpdated = Date()
+        plan.journeyLog.append(
+            PlanRevision(
+                timestamp: Date(),
+                reason: reason,
+                changeDescription: "Plan revize uyarısı: \(reason)",
+                triggeredBy: triggeredBy
+            )
+        )
+        plans[tradeId] = plan
+        savePlans()
+        print("📌 Plan revize bayrağı: \(plan.originalSnapshot.symbol) — \(reason)")
+    }
+
     // MARK: - Thesis Helpers
 
     private func generateThesis(for symbol: String, decision: ArgusGrandDecision) -> String {

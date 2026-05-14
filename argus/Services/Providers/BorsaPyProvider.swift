@@ -249,8 +249,13 @@ actor BorsaPyProvider {
     private var preferredBackendBaseURL: String?
     private var blockedBackendsUntil: [String: Date] = [:]
     private let backendCooldownSeconds: TimeInterval = 30
-    private let normalRequestTimeout: TimeInterval = 8
-    private let coldStartRequestTimeout: TimeInterval = 30
+    // Render free-tier cold sleep'e düştüğünde istekler 30-60s'de timeout veriyordu.
+    // Tek istek 8s × 4 retry × 304 sembol = uygulamayı uzun süre kilitliyor; bu sırada
+    // İş Yatırım + Yahoo .IS fallback'leri devreye girmiyor. Timeout'u kısaltıp circuit'i
+    // hızlı tetikleyerek diğer hatlara açıyoruz; warmUp() ayrı 90s ile cold ısıtmaya
+    // devam eder, oradan lastSuccessAt set olunca warm akış 5s ile çalışır.
+    private let normalRequestTimeout: TimeInterval = 5
+    private let coldStartRequestTimeout: TimeInterval = 10
     private var lastSuccessAt: Date?
     private let coldStartInactivityThreshold: TimeInterval = 900 // 15dk
     private let slowRequestThresholdSeconds: TimeInterval = 3
@@ -271,8 +276,8 @@ actor BorsaPyProvider {
 
     private var consecutiveTimeouts: Int = 0
     private var circuitOpenUntil: Date?
-    private let circuitFailThreshold = 4
-    private let circuitOpenDuration: TimeInterval = 120
+    private let circuitFailThreshold = 3
+    private let circuitOpenDuration: TimeInterval = 300
     private let circuitQueue = DispatchQueue(label: "argus.borsapy.circuit")
 
     func isCircuitOpen() -> Bool {
@@ -289,10 +294,18 @@ actor BorsaPyProvider {
 
     private func recordTimeout() {
         circuitQueue.sync {
+            // Circuit zaten açıkken yeni timeout sayma + openUntil'i resetleme.
+            // Eski davranış: her timeout sayacı artırıyor ve circuit'i 5dk uzatıyordu,
+            // sonuçta "(50 art arda timeout)" gibi yanıltıcı log'lar üretiyor ve
+            // sessizleştirme süresi hiç bitmiyordu.
+            if let until = circuitOpenUntil, Date() < until {
+                return
+            }
             consecutiveTimeouts += 1
             if consecutiveTimeouts >= circuitFailThreshold {
                 circuitOpenUntil = Date().addingTimeInterval(circuitOpenDuration)
-                print("🚫 BorsaPyProvider: Circuit BREAKER AÇIK — 5dk sessizleştirme (\(consecutiveTimeouts) art arda timeout)")
+                let minutes = Int(circuitOpenDuration / 60)
+                print("🚫 BorsaPyProvider: Circuit BREAKER AÇIK — \(minutes)dk sessizleştirme (\(consecutiveTimeouts) art arda timeout)")
             }
         }
     }

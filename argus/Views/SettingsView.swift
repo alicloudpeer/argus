@@ -8,8 +8,8 @@ struct SettingsView: View {
     @AppStorage("isDarkMode") private var isDarkMode = true
     @AppStorage("notify_all_signals") private var notifyAllSignals = true
     // Faz 1.A.4: Karar Kartı V2 deneysel toggle. Default OFF — kullanıcı opt-in
-    // seçer. Açıksa sembol detay sayfasında KararKartiV2View görünür (gelecek
-    // entegrasyon); şu anda Önizleme linki üzerinden de görülebilir.
+    // seçer. 2026-05-14: ArgusSanctumView'daki render kaldırıldı; toggle artık
+    // sadece Settings → Deneysel önizleme bölümünü gizler/gösterir.
     @AppStorage("karar_karti_v2_enabled") private var kararKartiV2Enabled = false
     @State private var showDrawer = false
     @StateObject private var deepLinkManager = DeepLinkManager.shared
@@ -204,12 +204,14 @@ extension SettingsView {
                 settingsLinkRow(title: "API anahtarları", last: true) { APIKeyCenterView() }
             }
 
-            // Faz 1.A.4: Deneysel — Karar Kartı V2 (Ne / Neden / Ne kadar emin / Neyi unuttum)
+            // Faz 1.A.4: Deneysel — Karar Kartı V2 önizleme (Ne / Neden / Ne kadar emin / Neyi unuttum)
             settingsGroup("Deneysel") {
                 settingsToggleRow(title: "Karar Kartı V2", isOn: $kararKartiV2Enabled)
-                settingsLinkRow(title: "Karar Kartı V2 önizleme", last: true) {
-                    SettingsSubPage(title: "Karar Kartı V2 önizleme") {
-                        KararKartiV2View(viewModel: KararKartiViewModel())
+                if kararKartiV2Enabled {
+                    settingsLinkRow(title: "Karar Kartı V2 önizleme", last: true) {
+                        SettingsSubPage(title: "Karar Kartı V2 önizleme") {
+                            KararKartiV2View(viewModel: KararKartiViewModel())
+                        }
                     }
                 }
             }

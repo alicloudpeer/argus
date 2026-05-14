@@ -394,7 +394,7 @@ struct ForeignFlowSentinel: View {
     
     func getComment(for trend: ForeignInvestorFlowService.FlowTrend) -> String {
         switch trend {
-        case .strongBuy: return "Smart Money (Akıllı Para) agresif şekilde mal topluyor. Borsa genelinde veya bu hissede ralli sinyali."
+        case .strongBuy: return "Yabancı yatırımcı agresif şekilde mal topluyor. Borsa genelinde veya bu hissede ralli sinyali."
         case .buy: return "Yabancı ilgisi pozitif. Portföye ekleme yapıyorlar. Fiyatı destekler."
         case .neutral: return "Yabancı kararsız. Net bir yön tayini yok, piyasa yerli yatırımcıya bakıyor."
         case .sell: return "Yabancı çıkışı var. Satış baskısı oluşabilir, yükselişler satış fırsatı olabilir."

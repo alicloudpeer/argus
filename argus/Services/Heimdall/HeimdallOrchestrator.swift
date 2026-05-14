@@ -287,55 +287,118 @@ final class HeimdallOrchestrator {
 
         var combined: [String: Quote] = [:]
 
-        await withTaskGroup(of: [String: Quote].self) { group in
+        // Faz II (2026-05-12) — Quote source determinism düzeltmesi.
+        // Eski "first-gelen-kazanır" race: Stooq tipik 70-200ms, Alpaca
+        // 200-400ms. Stooq önce dönüyor, `combined[key] == nil` filtresi
+        // Alpaca'nın daha sonra gelen IEX RT sonucunu BLOKE EDİYORDU.
+        // Sonuç: 15-dk delayed Stooq quote'u sembol başına final değer
+        // oluyor; Alpaca free-tier'ından gereksiz HTTP atılıyordu ama
+        // veri kullanılmıyordu.
+        //
+        // Yeni model: her bucket sonucu provider tag'i ile birleşiyor.
+        // Sembol başına en yüksek önceli provider'ın sonucu saklanıyor
+        // (Alpaca > Finnhub > Yahoo > Stooq > FMP). Aynı öncelikte daha
+        // taze timestamp tercih ediliyor. Geliş sırası önemini kaybetti.
+        var candidates: [String: (quote: Quote, priority: Int)] = [:]
+
+        await withTaskGroup(of: QuoteBucketResult.self) { group in
             if let crypto = buckets[.crypto], !crypto.isEmpty, finnhub.hasKey {
                 group.addTask { [weak self] in
-                    guard let self = self else { return [:] }
-                    return await self.parallelFetch(routes: crypto) { route in
-                        let q = try await self.finnhub.fetchQuote(symbol: route.resolved)
-                        return q.with(symbol: route.original)
+                    guard let self = self else { return QuoteBucketResult(provider: "finnhub", quotes: [:]) }
+                    let quotes = await self.parallelFetch(routes: crypto) { route in
+                        do {
+                            let q = try await self.finnhub.fetchQuote(symbol: route.resolved)
+                            return q.with(symbol: route.original)
+                        } catch {
+                            await HeimdallLogger.shared.warn(
+                                "crypto_finnhub_failed",
+                                provider: "finnhub",
+                                errorClass: self.classifyError(error),
+                                errorMessage: "\(route.original): \(error.localizedDescription)",
+                                endpoint: "fetchQuote"
+                            )
+                            throw error
+                        }
                     }
+                    // İncremental yazım: bucket bittiği anda MarketDataStore'a yaz.
+                    // priority 2 (finnhub) — Alpaca (1) varsa override etmez.
+                    for (sym, q) in quotes {
+                        await MarketDataStore.shared.recordBatchQuote(
+                            symbol: sym, quote: q,
+                            source: "Batch-Finnhub",
+                            priority: Self.providerPriority("finnhub")
+                        )
+                    }
+                    return QuoteBucketResult(provider: "finnhub", quotes: quotes)
                 }
             }
-            // 2026-05-11: .usEquity için Alpaca multi-snapshot birincil
-            // (varsa). Alpaca'nın bulamadığı + index/forex/commodity
-            // bucket'ları Stooq batch'e düşer; her ikisi de paralel
-            // çalışır, sonuçlar `combined` map'ine birleştirilir.
+            // .usEquity için Alpaca multi-snapshot birincil (varsa). Stooq
+            // batch'i de paralel çalışır; merge logic doğru provider'ı seçer.
             if let usEquity = buckets[.usEquity], !usEquity.isEmpty, alpaca.hasKey {
                 group.addTask { [weak self] in
-                    guard let self = self else { return [:] }
-                    return await self.batchAlpacaBucket(usEquity)
+                    guard let self = self else { return QuoteBucketResult(provider: "alpaca", quotes: [:]) }
+                    let quotes = await self.batchAlpacaBucket(usEquity)
+                    // İncremental: Alpaca IEX-RT bucket ~500ms'de tamamlanıyor;
+                    // diğer bucket'lar (Stooq 2s, Yahoo 5s+) tamamlanmasını bekletmeden
+                    // UI'a yazsın. priority 1 → en yüksek, Stooq override edemez.
+                    for (sym, q) in quotes {
+                        await MarketDataStore.shared.recordBatchQuote(
+                            symbol: sym, quote: q,
+                            source: "Batch-Alpaca",
+                            priority: Self.providerPriority("alpaca")
+                        )
+                    }
+                    return QuoteBucketResult(provider: "alpaca", quotes: quotes)
                 }
             }
             for destination: MarketDestination in [.usEquity, .index, .forex, .commodity] {
                 if let bucket = buckets[destination], !bucket.isEmpty {
                     group.addTask { [weak self] in
-                        guard let self = self else { return [:] }
-                        return await self.batchSnapshotBucket(bucket)
+                        guard let self = self else { return QuoteBucketResult(provider: "stooq", quotes: [:]) }
+                        let quotes = await self.batchSnapshotBucket(bucket)
+                        // İncremental: Stooq EOD/intraday batch sonucunu hemen yaz.
+                        // priority 4 — Alpaca (1) veya Finnhub (2) zaten yazmışsa
+                        // sembol için skip.
+                        for (sym, q) in quotes {
+                            await MarketDataStore.shared.recordBatchQuote(
+                                symbol: sym, quote: q,
+                                source: "Batch-Stooq",
+                                priority: Self.providerPriority("stooq")
+                            )
+                        }
+                        return QuoteBucketResult(provider: "stooq", quotes: quotes)
                     }
                 }
             }
-            for await partial in group {
-                // Alpaca ve Stooq bucket'larından gelen sonuçlar ÇAKIŞABİLİR
-                // (aynı sembol her ikisinden de gelebilir). Alpaca IEX RT
-                // birincil olduğu için Alpaca sonucu öncelik kazansın:
-                // sadece henüz `combined`'da yoksa veya partial'da Alpaca
-                // identifier'ı varsa kabul et.
-                for (key, value) in partial {
-                    if combined[key] == nil {
-                        combined[key] = value
+
+            for await result in group {
+                let priority = Self.providerPriority(result.provider)
+                for (key, value) in result.quotes {
+                    if let existing = candidates[key] {
+                        let shouldReplace: Bool
+                        if priority < existing.priority {
+                            // Yeni provider önceli daha iyi (Alpaca > Stooq)
+                            shouldReplace = true
+                        } else if priority > existing.priority {
+                            shouldReplace = false
+                        } else {
+                            // Aynı öncelikte daha taze timestamp tercih
+                            let newTs = value.timestamp ?? .distantPast
+                            let existingTs = existing.quote.timestamp ?? .distantPast
+                            shouldReplace = newTs > existingTs
+                        }
+                        if shouldReplace {
+                            candidates[key] = (quote: value, priority: priority)
+                        }
+                    } else {
+                        candidates[key] = (quote: value, priority: priority)
                     }
-                    // Alpaca'nın geliş sırası önce ise zaten alınır;
-                    // Stooq sonradan geldiğinde combined dolu olduğu
-                    // için overwrite olmaz. TaskGroup ilk biten önce
-                    // gelir, Alpaca tipik 200-400ms, Stooq 70-200ms —
-                    // Stooq önce dönerse Alpaca üzerine yazılmasını
-                    // engellemek istiyoruz, bu nedenle ilk-gelen-kazanır
-                    // mantığı pratikte Alpaca'yı sembol başına teyit
-                    // etmek için yeterli (Alpaca IEX feed mid-spread
-                    // farkı kuruşlar, Stooq snapshot delayed).
                 }
             }
+        }
+
+        for (key, candidate) in candidates {
+            combined[key] = candidate.quote
         }
 
         // Yahoo single-symbol backstop for anything the global buckets
@@ -347,7 +410,34 @@ final class HeimdallOrchestrator {
         }
         if !missing.isEmpty {
             let recovered = await yahooChunkedFallback(missing)
+            // İncremental yazım: Yahoo fallback'i tamamlandıktan sonra hemen MDS'ye.
+            // priority 3 — Alpaca/Finnhub varsa override edilmez.
+            for (sym, q) in recovered {
+                await MarketDataStore.shared.recordBatchQuote(
+                    symbol: sym, quote: q,
+                    source: "Batch-Yahoo",
+                    priority: Self.providerPriority("yahoo")
+                )
+            }
             for (key, value) in recovered { combined[key] = value }
+        }
+
+        // Tüm fallback'ler bittikten sonra hâlâ değer alamayan non-BIST
+        // sembolleri yansıt — yoksa silent return ile UI "—" gösterir,
+        // hiçbir yerde sinyal kalmaz. BIST detached path üzerinden gelir.
+        let nonBistRoutes = routes.filter { $0.destination != .bist }
+        let nonBistMissing = nonBistRoutes.filter { combined[$0.original] == nil }
+        if !nonBistMissing.isEmpty {
+            let sample = nonBistMissing.prefix(10)
+                .map { "\($0.original)[\($0.destination)]" }
+                .joined(separator: ",")
+            await HeimdallLogger.shared.warn(
+                "batch_quote_missing",
+                provider: "heimdall",
+                errorClass: "no_quote_after_chain",
+                errorMessage: "missing \(nonBistMissing.count)/\(nonBistRoutes.count): \(sample)",
+                endpoint: "requestQuotesBatch"
+            )
         }
 
         return combined
@@ -365,13 +455,37 @@ final class HeimdallOrchestrator {
                     do {
                         let bist = try await self.borsaPy.getBistQuote(symbol: bare)
                         let quote = Self.convert(bist: bist, canonical: route.original)
-                        await MarketDataStore.shared.recordBatchQuote(symbol: route.original, quote: quote, source: "Batch-BIST")
+                        await MarketDataStore.shared.recordBatchQuote(
+                            symbol: route.original, quote: quote,
+                            source: "Batch-BIST",
+                            priority: Self.providerPriority("borsapy")
+                        )
                     } catch {
                         // BorsaPy failed (sleeping, circuit open, network).
                         // Fall through to Yahoo `.IS` so the BIST symbol
                         // still lands in the store eventually.
-                        if let quote = try? await self.yahoo.fetchQuote(symbol: route.resolved) {
-                            await MarketDataStore.shared.recordBatchQuote(symbol: route.original, quote: quote, source: "Batch-BIST-Yahoo")
+                        await HeimdallLogger.shared.warn(
+                            "bist_borsapy_failed",
+                            provider: "borsapy",
+                            errorClass: self.classifyError(error),
+                            errorMessage: "\(route.original): \(error.localizedDescription)",
+                            endpoint: "getBistQuote"
+                        )
+                        do {
+                            let quote = try await self.yahoo.fetchQuote(symbol: route.resolved)
+                            await MarketDataStore.shared.recordBatchQuote(
+                                symbol: route.original, quote: quote,
+                                source: "Batch-BIST-Yahoo",
+                                priority: Self.providerPriority("yahoo")
+                            )
+                        } catch {
+                            await HeimdallLogger.shared.warn(
+                                "bist_yahoo_fallback_failed",
+                                provider: "yahoo",
+                                errorClass: self.classifyError(error),
+                                errorMessage: "\(route.original): \(error.localizedDescription)",
+                                endpoint: "fetchQuote(.IS)"
+                            )
                         }
                     }
                 }
@@ -383,6 +497,14 @@ final class HeimdallOrchestrator {
         let original: String
         let resolved: String
         let destination: MarketDestination
+    }
+
+    /// Faz II (2026-05-12): Bucket fetch sonucu provider tag'i ile.
+    /// TaskGroup içinde sembol başına timestamp/priority-aware merge için
+    /// gerekli — eski `[String: Quote]` payload provider bilgisini kaybediyordu.
+    private struct QuoteBucketResult: Sendable {
+        let provider: String
+        let quotes: [String: Quote]
     }
 
     /// Generic parallel per-symbol fetch with timeout-friendly TaskGroup
@@ -481,8 +603,19 @@ final class HeimdallOrchestrator {
             Array(routes[$0..<min($0 + chunkSize, routes.count)])
         }
         for (index, batch) in chunks.enumerated() {
-            let partial = await parallelFetch(routes: batch) { [yahoo] route in
-                try await yahoo.fetchQuote(symbol: route.resolved)
+            let partial = await parallelFetch(routes: batch) { [yahoo, weak self] route in
+                do {
+                    return try await yahoo.fetchQuote(symbol: route.resolved)
+                } catch {
+                    await HeimdallLogger.shared.warn(
+                        "yahoo_fallback_failed",
+                        provider: "yahoo",
+                        errorClass: self?.classifyError(error) ?? "unknown",
+                        errorMessage: "\(route.original): \(error.localizedDescription)",
+                        endpoint: "fetchQuote"
+                    )
+                    throw error
+                }
             }
             for (key, value) in partial { out[key] = value }
             if index < chunks.count - 1 {
@@ -838,6 +971,31 @@ final class HeimdallOrchestrator {
         switch timeframe.lowercased() {
         case "1d", "1day", "1g", "d", "1week", "1wk", "1w", "1month", "1mo", "3month", "1y": return true
         default: return false
+        }
+    }
+
+    /// Faz II (2026-05-12) — Quote source önceliği. Düşük sayı = daha iyi.
+    /// Sembol başına birden fazla provider sonucu geldiğinde hangisinin
+    /// final değer olarak kalacağına `requestQuotesBatch` merge logic'i
+    /// bu öncelik tablosuna göre karar verir. Aynı öncelikteki iki provider
+    /// arasında daha taze timestamp kazanır.
+    ///
+    /// Önceliklendirme gerekçesi:
+    ///   alpaca  (IEX RT, market hours boyunca canlı)
+    ///   finnhub (RT paid / 60s free; çoğu sembol için tazedir)
+    ///   yahoo   (delayed ama analyst/fundamentals zenginliği var; quote için mid)
+    ///   stooq   (15-dk delayed snapshot)
+    ///   fmp     (delayed)
+    private static func providerPriority(_ provider: String) -> Int {
+        switch provider {
+        case "alpaca":    return 1
+        case "borsapy":   return 1  // BIST primary (cold-sleep ama doğrudan veri)
+        case "finnhub":   return 2
+        case "isyatirim": return 2  // BIST CDN-destekli alternatif
+        case "yahoo":     return 3
+        case "stooq":     return 4
+        case "fmp":       return 5
+        default:          return 99
         }
     }
 

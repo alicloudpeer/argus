@@ -272,33 +272,49 @@ struct ArgusDecisionEngine {
         let consensusQuality = healthRatio * avgConfidence
         
         // Helper to determine Tier with Quality Gate
-        func determineTier(score: Double, isBuy: Bool, quality: Double) -> (tier: String, size: Double, approved: Bool) {
-            let s = isBuy ? score : (100.0 - score) 
-            
+        //
+        // Faz I.2 (2026-05-12) — Karar sınırında histerezis.
+        // Eski model: tek eşik 60. Konsensus 59.9 ↔ 60.1 sınırında her döngüde
+        // alım/bekleme arasında zıplıyordu (whiplash). Phoenix R² düzeltmesi
+        // skor titreşimini büyük ölçüde azalttı ama deterministik histerezis
+        // sınır zikzaklarını kökten kapatır.
+        //
+        // Yeni model — `wasSameDirection` parametresine göre asimetrik eşik:
+        //   • Yeni giriş (lastAction farklıydı): 62 üstü gerekli (enter)
+        //   • Aynı yönde devam (lastAction == buy/sell): 58 üstü yeterli (exit)
+        //   • Tier 1 (85) ve Tier 2 (70) histerezissiz — yüksek bölgede çok
+        //     yakın değiller, zaten gürültüye dayanıklı.
+        func determineTier(score: Double, isBuy: Bool, quality: Double, wasSameDirection: Bool = false) -> (tier: String, size: Double, approved: Bool) {
+            let s = isBuy ? score : (100.0 - score)
+
             // QUALITY GATES
             // If Quality < 0.5 (Poor), hard limit to Tier 3 or Reject.
             // If Quality < 0.8 (Decent), hard limit to Tier 2.
-            
+
             if quality < 0.4 { return ("RED (Düşük Veri Kalitesi: \(Int(quality*100))%)", 0.0, false) }
-            
+
             let maxTierAllowed = (quality >= 0.8) ? 1 : (quality >= 0.5 ? 2 : 3)
-            
-            if s >= 85 { 
+
+            if s >= 85 {
                 if maxTierAllowed <= 1 { return ("BANKO (Tier 1)", 1.0, true) }
                 return ("BANKO -> STANDART (Veri Kalitesi Düşük)", 0.5, true) // Downgrade
             }
-            if s >= 70 { 
+            if s >= 70 {
                 if maxTierAllowed <= 2 { return ("STANDART (Tier 2)", 0.5, true) }
                 return ("STANDART -> SPEKÜLATİF (Veri Kalitesi Düşük)", 0.25, true) // Downgrade
             }
-            if s >= 60 { return ("SPEKÜLATİF (Tier 3)", 0.25, true) }
-            
+            // Tier 3 histerezis: aynı yöne devamda 58, yeni girişte 62
+            let tier3Threshold = wasSameDirection ? 58.0 : 62.0
+            if s >= tier3Threshold { return ("SPEKÜLATİF (Tier 3)", 0.25, true) }
+
             return ("YETERSİZ GÜÇ", 0.0, false)
         }
         
         if claimAction == .buy {
-            let tier = determineTier(score: consensusScore, isBuy: true, quality: consensusQuality)
-            
+            // Faz I.2: histerezis için son aksiyon yönü
+            let wasSameDirection = portfolioContext?.lastAction == .buy
+            let tier = determineTier(score: consensusScore, isBuy: true, quality: consensusQuality, wasSameDirection: wasSameDirection)
+
             // TECHNICAL VETO CHECK: The Gatekeeper Rule (v2 - Threshold Based)
             // Only STRONG technical objections (strength > 60) can veto
             // Weak objections reduce position size but don't block
@@ -359,7 +375,9 @@ struct ArgusDecisionEngine {
             
         } else if claimAction == .sell {
             // Sell logic uses 0-100 scale natively in `determineTier` by inverting
-            let tier = determineTier(score: consensusScore, isBuy: false, quality: consensusQuality)
+            // Faz I.2: histerezis için son aksiyon yönü
+            let wasSameDirection = portfolioContext?.lastAction == .sell
+            let tier = determineTier(score: consensusScore, isBuy: false, quality: consensusQuality, wasSameDirection: wasSameDirection)
             
             if tier.approved {
                 finalAction = .sell

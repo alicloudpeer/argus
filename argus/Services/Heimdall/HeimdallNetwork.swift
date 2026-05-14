@@ -186,7 +186,15 @@ enum HeimdallNetwork {
             // fallback"e geçmiyordu — `try?` ile nil dönüp `quote?.c ?? 0` üzerinden
             // 0.0 fiyatla AtlasV2 yanlış skor hesaplıyordu (bozuk karar). 25sn slot
             // beklemesi pahalı ama gerçek veriyle skorlama her zaman daha değerli.
-            try await HeimdallRateLimiter.shared.acquireSlot(for: provider, timeout: 25)
+            // Phase 7 (2026-05-13): Timeout 25 → 45sn. AutoPilot tek turunda 608 Yahoo
+            // çağrısı + OrionStore MTF (6 timeframe/sembol) + Atlas fundamentals burst
+            // ediyor. Inflight cap=4 × ortalama 1.5sn = 2.6 req/sn throughput; drain
+            // time ~234sn. 25sn pencere 608'in sadece ~65'ini geçiriyor, kalanı 1059
+            // sentinel ile düşüyordu (OrionStore loglarında AKSEN.IS_1h, ASTOR.IS_1h,
+            // ASELS.IS_1h timeout'ları → bozuk konsey skoru). 45sn yine drain'in
+            // tamamını kapsamıyor ama ~120 isteği geçirir, kritik watchlist MTF için
+            // yeterli; ekstra UI gecikmesi cache fallback'ten geçecek paths için makul.
+            try await HeimdallRateLimiter.shared.acquireSlot(for: provider, timeout: 45)
             defer {
                 Task.detached {
                     await HeimdallRateLimiter.shared.releaseSlot(for: provider)

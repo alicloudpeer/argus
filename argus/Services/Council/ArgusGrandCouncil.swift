@@ -499,6 +499,15 @@ actor ArgusGrandCouncil {
         let fazCw = fazChironResult.coreWeights.normalized
         let fazOrionTotal = fazCw.orion
         let fazOrionPatternShare = 0.25
+
+        // T2.23: Prometheus dinamik ağırlık — sabit %3 yerine geçmiş skill score'a
+        // göre %3-%10 arası. Chop rejiminde tavan %4 (extrapolator chop'ta gürültüye uyum yapar).
+        let promTrack = await PrometheusTrackRecord.shared.getStats()
+        let isChopRegime = fazChironResult.regime == .chop
+        let promBaseWeight = 0.03
+        let promBonus = isChopRegime ? min(0.01, promTrack.weightBonus) : promTrack.weightBonus
+        let promWeight = promBaseWeight + promBonus
+
         let fazBaselineWeights: [String: Double] = [
             "Orion":          fazOrionTotal * (1 - fazOrionPatternShare),
             "Orion Patterns": fazOrionTotal * fazOrionPatternShare,
@@ -508,13 +517,31 @@ actor ArgusGrandCouncil {
             "Phoenix":        fazCw.phoenix ?? 0.05,
             "Athena":         fazCw.athena ?? 0.05,
             "Demeter":        fazCw.demeter ?? 0.05,
-            "Prometheus":     0.03
+            "Prometheus":     promWeight
         ]
         let fazModuleStats = await ModulePerformanceTracker.shared.getAllStats()
         let fazModuleWeights = ModuleWeightCalculator.calculate(
             baseline: fazBaselineWeights,
             stats: fazModuleStats
         )
+
+        // T2.09 + T2.10: Cross-sectional zenginleştirme — Council kararından önce
+        // hissenin sektör peer'larına göre konumunu çıkar.
+        let stockSector = SectorMap.getSector(for: symbol)?.rawValue
+        let athenaSectorRankAdvisory: String? = await {
+            guard let athenaResult = athena, let sectorKey = stockSector else { return nil }
+            let rank = await AthenaSectorRanker.shared.rank(
+                symbol: symbol, sector: sectorKey, factorScore: athenaResult.factorScore
+            )
+            return rank?.summary
+        }()
+        let demeterAlphaAdvisory: String? = await {
+            guard candles.count >= 21 else { return nil }
+            let rs = await DemeterEngine.shared.relativeStrength(
+                symbol: symbol, stockCandles: candles
+            )
+            return rs?.summary
+        }()
 
         // 3. Calculate grand decision (GLOBAL LEGACY)
         let grandDecision = calculateGrandDecision(
@@ -544,8 +571,15 @@ actor ArgusGrandCouncil {
             existingPositionWeight: existingPositionWeight,
             freshnessMultiplier: freshnessAssessment.overallConfidenceMultiplier,
             freshnessAdvisories: freshnessAssessment.advisoryMessages,
-            moduleWeights: fazModuleWeights
+            moduleWeights: fazModuleWeights,
+            athenaSectorRankAdvisory: athenaSectorRankAdvisory,
+            demeterAlphaAdvisory: demeterAlphaAdvisory
         )
+
+        // T2.09: Sektör ranker'a bu sembolün skorunu kaydet — gelecek peer karşılaştırmaları için
+        if let athenaResult = athena, let sectorKey = stockSector {
+            await AthenaSectorRanker.shared.record(symbol: symbol, sector: sectorKey, result: athenaResult)
+        }
 
         // Task 11 (2026-05-13): modül performans karnesi — her Council üyesinin
         // oyu (`module`, `action` canonical "buy"/"sell"/"hold", `confidence` 0..1)
@@ -580,7 +614,20 @@ actor ArgusGrandCouncil {
 
         // 4. Update Cache
         decisionCache[symbol] = (grandDecision, Date())
-        
+
+        // T2.23: Prometheus Spotlight — Council nötr kalmış ama Prometheus'un
+        // yüksek-güvenli tahmini ve kanıtlı track record'u varsa "dikkat çekici" listesine al.
+        let prom = prometheusForecast
+        if prom.isValid {
+            await PrometheusSpotlight.shared.evaluate(
+                symbol: symbol,
+                prometheusChange: prom.changePercent,
+                prometheusConfidence: prom.confidence,
+                councilAction: grandDecision.action.rawValue,
+                trackRecord: promTrack
+            )
+        }
+
         // 5. Notify Learning Service (silent failure guard)
         // Eski sürüm fire-and-forget Task içinde hata yakalamıyordu; kayıt başarısız
         // olsa bile hiçbir iz bırakmıyordu. Şimdi hatayı yakalayıp logluyoruz.
@@ -675,7 +722,9 @@ actor ArgusGrandCouncil {
         existingPositionWeight: Double = 0,
         freshnessMultiplier: Double = 1.0,
         freshnessAdvisories: [String] = [],
-        moduleWeights: [String: Double]
+        moduleWeights: [String: Double],
+        athenaSectorRankAdvisory: String? = nil,
+        demeterAlphaAdvisory: String? = nil
     ) -> ArgusGrandDecision {
         
         var contributors: [ModuleContribution] = []
@@ -690,7 +739,17 @@ actor ArgusGrandCouncil {
         for msg in freshnessAdvisories {
             advisorNotes.append(AdvisorNote(module: "Heimdall", advice: msg, tone: .warning))
         }
-        
+
+        // T2.09: Athena sektör percentile rank
+        if let rankAdvice = athenaSectorRankAdvisory {
+            advisorNotes.append(AdvisorNote(module: "Athena", advice: rankAdvice, tone: .neutral))
+        }
+
+        // T2.10: Demeter sembol-sektör göreceli güç (alpha)
+        if let alphaAdvice = demeterAlphaAdvisory {
+            advisorNotes.append(AdvisorNote(module: "Demeter", advice: alphaAdvice, tone: .neutral))
+        }
+
         // Calculate temp action for Chiron check (simplified, will refine later if needed)
         // let _ = orion.action 
         // advisorNotes.append(CouncilAdvisorGenerator.generateChironAdvice(result: chiron, action: .neutral))
@@ -1015,11 +1074,18 @@ actor ArgusGrandCouncil {
             }
             let prometheusConfidence = (prom.confidence - 60.0) / 40.0
 
+            // T2.23: Prometheus reasoning'i track record ile zenginleştir —
+            // "5g tahmin %+4.2% (güven 82%, son 30 trade'de %64 yön, naive'den %38 iyi)"
+            let trackSnapshot = PrometheusTrackRecord.currentSnapshot()
+            let trackSuffix: String = trackSnapshot.sampleSize > 0
+                ? " · \(trackSnapshot.summaryLine)"
+                : ""
+
             contributors.append(ModuleContribution(
                 module: "Prometheus",
                 action: prometheusAction,
                 confidence: prometheusConfidence,
-                reasoning: "5D Tahmin: \(prom.formattedChange) (\(Int(prom.confidence))% güven, \(prom.trend.rawValue))"
+                reasoning: "5D Tahmin: \(prom.formattedChange) (\(Int(prom.confidence))% güven, \(prom.trend.rawValue))\(trackSuffix)"
             ))
         }
 

@@ -118,10 +118,21 @@ struct KellyCriterionSizer {
         let halfKelly = max(0, kelly / 2.0)
 
         let confidence: KellyProfile.KellyConfidence
+        let n = Double(filtered.count)
+        let z = 1.96
+        let ciWidth: Double = n > 0
+            ? 2 * z * sqrt(p * (1 - p) / n)
+            : 1.0
+
         switch filtered.count {
-        case ..<10:  confidence = .low(reason: "\(filtered.count) örnek")
-        case 10..<30: confidence = .medium
-        default:     confidence = .high
+        case ..<10:
+            confidence = .low(reason: "\(filtered.count) örnek")
+        case 10..<30:
+            confidence = ciWidth > 0.20
+                ? .low(reason: "CI geniş (\(String(format: "±%.0f%%", ciWidth * 50)))")
+                : .medium
+        default:
+            confidence = ciWidth > 0.10 ? .medium : .high
         }
 
         return KellyProfile(

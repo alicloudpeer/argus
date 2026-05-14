@@ -21,6 +21,9 @@ actor AetherV2Engine {
     private var cacheTimestamp: Date = .distantPast
     private let cacheTTL: TimeInterval = 300  // 5 dakika
 
+    private var vixHistory: [(date: Date, value: Double)] = []
+    private let vixHistoryWindow: TimeInterval = 5 * 24 * 3600  // 5 gün
+
     private init() {}
 
     // MARK: - Ana Analiz
@@ -104,10 +107,18 @@ actor AetherV2Engine {
     }
 
     // MARK: - Section: Likidite (Fed faizi seviyesi + yield curve)
+    //
+    // Faz I.3 (2026-05-12) — Ağırlıklı harman:
+    //   Eski model: scores.reduce/count eşit ağırlıklı ortalama. Fed seviyesi
+    //   ve getiri eğrisi sinyalleri aynı oranda etkili sayılıyordu.
+    //   Yeni model: Fed seviyesi 0.65, yield curve 0.35. Fed faizinin hisse
+    //   senedi performansına doğrudan etkisi yield curve sinyalinden daha
+    //   güçlü (likidite akışı ↔ inversiyon ihbar göstergesi).
 
     private func analyzeLiquidity(macro: MacroSnapshot) -> (Double?, [String]) {
         var details: [String] = []
-        var scores: [Double] = []
+        var fedScore: Double? = nil
+        var yieldScore: Double? = nil
 
         if let fedRate = macro.fedFundsRate {
             // Düşük faiz = bol likidite = risk-on uygun
@@ -117,58 +128,119 @@ actor AetherV2Engine {
             else if fedRate < 4.0 { s = 55 }
             else if fedRate < 5.5 { s = 35 }
             else                   { s = 25 }   // Sıkı para politikası
-            scores.append(s)
-            details.append("Fed faizi: %\(String(format: "%.2f", fedRate)) (skor \(Int(s)))")
+            fedScore = s
+            details.append("Fed faizi: %\(String(format: "%.2f", fedRate)) (skor \(Int(s)), ağırlık 0.65)")
         }
 
         // Yield curve inversion = resesyon işareti = likidite zayıflıyor
         if macro.yieldCurveInverted {
-            scores.append(30)
-            details.append("Getiri eğrisi ters: -25 baz")
+            yieldScore = 30
+            details.append("Getiri eğrisi ters: -20 (skor 30, ağırlık 0.35)")
         } else if macro.tenYearYield != nil && macro.twoYearYield != nil {
-            scores.append(65)
-            details.append("Getiri eğrisi normal: +15 baz")
+            yieldScore = 65
+            details.append("Getiri eğrisi normal: +15 (skor 65, ağırlık 0.35)")
         }
 
-        guard !scores.isEmpty else { return (nil, ["Likidite için Fed/yield verisi yok"]) }
-        let avg = scores.reduce(0, +) / Double(scores.count)
-        return (avg, details)
+        // Ağırlıklı blend (0.65 fed / 0.35 yield)
+        let blended: Double?
+        switch (fedScore, yieldScore) {
+        case (let f?, let y?): blended = 0.65 * f + 0.35 * y
+        case (let f?, nil):    blended = f
+        case (nil, let y?):    blended = y
+        default:               blended = nil
+        }
+
+        guard let s = blended else { return (nil, ["Likidite için Fed/yield verisi yok"]) }
+        return (s, details)
     }
 
-    // MARK: - Section: Risk Modu (VIX + F&G)
+    // MARK: - Section: Risk Modu (VIX seviye + VIX değişim + F&G)
+    //
+    // Contrarian yaklaşım (variance risk premium literatürü):
+    //   Yüksek VIX → tarihsel olarak pozitif forward return (korku fırsat yaratır).
+    //   Düşük VIX → complacency riski (rehavet tuzağı).
+    //   F&G extreme fear → contrarian AL, extreme greed → contrarian dikkat.
+    //
+    // VIX seviye (contrarian): 0.40
+    // VIX 5-günlük değişim (momentum): 0.20
+    // F&G (contrarian): 0.25
+    // Put/Call sentiment'e taşındı → burada sadece VIX+F&G.
+    // Kalan 0.15 → sentiment section'da put/call ile dolu.
 
     private func analyzeRiskMode(macro: MacroSnapshot) -> (Double?, [String]) {
         var details: [String] = []
-        var scores: [Double] = []
+        var vixLevelScore: Double? = nil
+        var vixDeltaScore: Double? = nil
+        var fgScore: Double? = nil
 
         if let vix = macro.vix {
-            // VIX < 15 sakin (yüksek skor), > 30 panik (düşük skor)
-            let s: Double
-            if vix < 13       { s = 85 }   // Aşırı sakin (rehavet riski ama risk-on)
-            else if vix < 18  { s = 75 }   // Normal sakin
-            else if vix < 22  { s = 55 }   // Hafif tedirgin
-            else if vix < 30  { s = 35 }   // Yüksek korku
-            else              { s = 15 }   // Panik
-            scores.append(s)
-            details.append("VIX=\(String(format: "%.1f", vix)) (skor \(Int(s)))")
+            // VIX geçmişini güncelle (delta hesabı için)
+            let now = Date()
+            vixHistory.append((date: now, value: vix))
+            vixHistory.removeAll { now.timeIntervalSince($0.date) > vixHistoryWindow }
+
+            // --- VIX SEVİYE (contrarian) ---
+            // Yüksek VIX = piyasa panikte → tarihsel forward return pozitif
+            // Düşük VIX = rehavet → complacency riski
+            let level: Double
+            if vix < 13       { level = 35 }   // Aşırı rehavet — complacency riski
+            else if vix < 18  { level = 55 }   // Normal sakinlik
+            else if vix < 22  { level = 65 }   // Hafif korku — forward return tarihsel olarak pozitif
+            else if vix < 30  { level = 75 }   // Ciddi korku — contrarian fırsat
+            else              { level = 80 }   // Panik — güçlü rebound beklentisi
+            vixLevelScore = level
+            details.append("VIX seviye=\(String(format: "%.1f", vix)) → \(Int(level)) (contrarian)")
+
+            // --- VIX DEĞİŞİM (momentum) ---
+            // ~5 gün önceki VIX ile karşılaştır (history'den en yakın kayıt)
+            let fiveDaysAgo = now.addingTimeInterval(-5 * 24 * 3600)
+            let vixPrev = vixHistory
+                .filter { $0.date <= fiveDaysAgo }
+                .last?.value
+            if let vixPrev = vixPrev {
+                let delta = vix - vixPrev
+                let d: Double
+                if delta > 10      { d = 25 }   // Panik hızla tırmanıyor — henüz erken
+                else if delta > 5  { d = 40 }   // Belirgin artış — temkinli
+                else if delta > -3 { d = 55 }   // Stabil
+                else if delta > -8 { d = 70 }   // Düşüş başladı — toparlanma sinyali
+                else               { d = 80 }   // Hızlı çözülme — güçlü toparlanma
+                vixDeltaScore = d
+                details.append("VIX Δ5g=\(String(format: "%+.1f", delta)) → \(Int(d))")
+            }
         }
 
         if let fg = macro.fearGreedIndex {
-            // F&G 0-100, 0=panik, 100=aşırı açgözlülük
-            // Risk-on için 50-75 arası ideal; aşırı uçlar (extreme greed/fear) risk
+            // --- F&G (contrarian) ---
+            // Extreme fear → tarihsel forward return pozitif (contrarian AL)
+            // Extreme greed → düzeltme riski (contrarian dikkat)
             let s: Double
-            if fg > 80       { s = 35 }   // Aşırı açgözlülük — düzeltme yakın
-            else if fg > 60  { s = 75 }   // Açgözlülük
-            else if fg > 40  { s = 65 }   // Nötr-olumlu
-            else if fg > 25  { s = 45 }   // Korku
-            else              { s = 30 }   // Aşırı korku
-            scores.append(s)
-            details.append("F&G=\(Int(fg)) (skor \(Int(s)))")
+            if fg > 85       { s = 20 }   // Aşırı açgözlülük — düzeltme çok yakın
+            else if fg > 75  { s = 35 }   // Açgözlülük — temkinli ol
+            else if fg > 55  { s = 50 }   // Hafif olumlu
+            else if fg > 40  { s = 60 }   // Nötr
+            else if fg > 25  { s = 70 }   // Korku — contrarian fırsat
+            else if fg > 10  { s = 80 }   // Aşırı korku — güçlü contrarian AL
+            else              { s = 85 }   // Panik — tarihsel olarak dip bölgesi
+            fgScore = s
+            details.append("F&G=\(Int(fg)) → \(Int(s)) (contrarian)")
         }
 
-        guard !scores.isEmpty else { return (nil, ["Risk modu için VIX/F&G verisi yok"]) }
-        let avg = scores.reduce(0, +) / Double(scores.count)
-        return (avg, details)
+        // Ağırlıklı harman: seviye 0.40, delta 0.20, F&G 0.25
+        // Delta yoksa seviye+F&G normalize edilir
+        let components: [(Double, Double)] = [
+            vixLevelScore.map { ($0, 0.40) },
+            vixDeltaScore.map { ($0, 0.20) },
+            fgScore.map { ($0, 0.25) }
+        ].compactMap { $0 }
+
+        guard !components.isEmpty else { return (nil, ["Risk modu için VIX/F&G verisi yok"]) }
+
+        let totalWeight = components.reduce(0.0) { $0 + $1.1 }
+        let blended = components.reduce(0.0) { $0 + $1.0 * $1.1 } / totalWeight
+
+        // Kalan ağırlık (0.15) sentiment section'da put/call'a ayrılmış
+        return (blended, details)
     }
 
     // MARK: - Section: Sektör Rotasyonu

@@ -47,10 +47,10 @@ actor OrionV2Engine {
 
         // Round 5 nil-aware aggregator
         let candidateSections: [(label: String, score: Double?, weight: Double)] = [
-            ("Trend",         trendScore,  0.25),
-            ("Momentum",      momScore,    0.20),
+            ("Trend",         trendScore,  0.30),
+            ("Momentum",      momScore,    0.25),
             ("Hacim",         volScore,    0.15),
-            ("Formasyon",     patScore,    0.15),
+            ("Formasyon",     patScore,    0.05),
             ("Destek/Direnç", srScore,     0.15),
             ("Volatilite",    volatScore,  0.10)
         ]
@@ -167,14 +167,21 @@ actor OrionV2Engine {
         var scores: [Double] = []
 
         if let rsi = IndicatorService.lastRSI(candles: candles, period: 14) {
-            // RSI: 30-70 normal, <30 oversold (geri tepme bekliyor → orta), >70 overbought (yorgun)
+            let regime = ChironRegimeEngine.shared.globalResult.regime
             let s: Double
-            if rsi > 70      { s = 30 }    // Aşırı alım
-            else if rsi > 60 { s = 75 }    // Güçlü ama yorgun değil
-            else if rsi > 50 { s = 65 }    // Olumlu momentum
-            else if rsi > 40 { s = 50 }    // Nötr
-            else if rsi > 30 { s = 40 }    // Zayıf
-            else              { s = 60 }    // Aşırı satım — bounce ihtimali
+            if rsi > 70 {
+                switch regime {
+                case .trend:
+                    s = rsi > 85 ? 45 : 65
+                default:
+                    s = 30
+                }
+            }
+            else if rsi > 60 { s = 75 }
+            else if rsi > 50 { s = 65 }
+            else if rsi > 40 { s = 50 }
+            else if rsi > 30 { s = 40 }
+            else              { s = 60 }
             scores.append(s)
             details.append("RSI(14)=\(String(format: "%.1f", rsi)) (skor \(Int(s)))")
         }

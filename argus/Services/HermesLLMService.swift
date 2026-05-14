@@ -157,8 +157,8 @@ final class HermesLLMService: Sendable {
         var results: [HermesSummary] = []
         var articlesToProcess: [NewsArticle] = []
         
-        // 1. Check Cache (6 saat TTL — HermesCacheStore ile aynı)
-        let cacheTTL: TimeInterval = 6 * 60 * 60 // 21600 saniye
+        // T3.6: Sentiment alpha yarı-ömrü 1-3 saat — 6 saat → 30 dk
+        let cacheTTL: TimeInterval = 30 * 60 // 30 dk
         for article in articles {
             if let cached = cache[article.id],
                Date().timeIntervalSince(cached.createdAt) < cacheTTL {
@@ -368,26 +368,55 @@ final class HermesLLMService: Sendable {
             Symbol: \(article.symbol)
             Headline: \(article.headline)
             Summary: \(article.summary ?? "")
-            
+
             """
         }
-        
+
+        // T3.8: Türkçe finansal jargon kalibrasyonu — BIST haberlerinde sık geçen
+        // Türkiye'ye özgü terimleri few-shot örneklerle LLM'e tanıt.
+        let hasBistArticle = articles.contains { $0.symbol.uppercased().hasSuffix(".IS") }
+        let trGlossary = hasBistArticle ? """
+
+        TÜRKÇE FİNANSAL JARGON SÖZLÜĞÜ (BIST hisseleri için):
+        - KAP açıklaması: Resmî zorunlu bildirim; içerikten olumlu/olumsuzluk çıkarılır.
+        - BES (Bireysel Emeklilik): Uzun vadeli birikim; doğrudan hisse sentiment'ine etki etmez (NEUTRAL).
+        - Repo / TLREF: Para piyasası faiz oranı; yükselişi banka marjlarına negatif.
+        - Açığa satış izni: Hisse üzerinde short pozisyon serbestliği; çoğunlukla NEGATIVE.
+        - Açığa satış yasağı: Short engellendi; kısa vadeli POSITIVE.
+        - Bedelli / bedelsiz sermaye artırımı: Bedelli sulandırıcı (NEGATIVE), bedelsiz nötr-olumlu.
+        - KKM (Kur Korumalı Mevduat): Bankalar için maliyet kalemi; aşırı artışı banka NPV'sine baskı.
+        - VİOP (Vadeli İşlem ve Opsiyon): Türev piyasası; haberi doğrudan hisseyi etkilemeyebilir.
+        - Temettü: Nakit kar payı; tarih yaklaşırken pozitif, sonrasında düşüş normal.
+        - Genel Kurul: Stratejik karar toplantısı; içerik bağımlı (yönetim değişikliği → impact yüksek).
+
+        ÖRNEK 1 (Türkçe):
+          Haber: "GARAN üçüncü çeyrekte 12 milyar TL net kar açıkladı, beklenti 9.5 milyardı."
+          → sentiment: POSITIVE, impact_score: 78
+          → summary_tr: "Garanti BBVA 3Ç karı 12 milyar TL ile beklentinin %26 üzerinde geldi."
+
+        ÖRNEK 2 (Türkçe):
+          Haber: "SISE bedelli sermaye artırımı kararı aldı, hissedarlara %20 oranında."
+          → sentiment: NEGATIVE, impact_score: 30
+          → summary_tr: "Şişecam %20'lik bedelli sermaye artırımıyla sulandırma riski getiriyor."
+
+        """ : ""
+
         // Global feed için ek talimat
         let symbolInstruction = isGeneral ? """
-        
+
         ÖNEMLİ - SEMBOL TESPİTİ:
         Bu haberler genel piyasa haberleri. Her haber için:
         1. Haberde bahsedilen ANA şirketi/ticker'ı tespit et (örn: "Apple" → "AAPL", "Tesla" → "TSLA")
         2. Eğer haber birden fazla şirketi ilgilendiriyorsa, en çok etkilenen şirketi seç
         3. Eğer belirli bir şirket yoksa, sektörü belirle (örn: "Tech", "Energy", "Crypto")
         4. JSON'da "detected_symbol" alanına tespit ettiğin ticker'ı yaz
-        
+
         """ : ""
         
         return """
         Sen Argus Terminal içindeki Hermes v2.3 modülüsün.
         Görevin aşağıdaki haberleri finansal ve BAĞLAMSAL açıdan analiz etmek.
-        \(symbolInstruction)
+        \(trGlossary)\(symbolInstruction)
         GİRDİ:
         \(articlesText)
         
@@ -444,18 +473,36 @@ final class HermesLLMService: Sendable {
         
         let eventList = (scope == .bist) ? HermesPromptLexicon.bistEventTypes : HermesPromptLexicon.globalEventTypes
         let eventListText = eventList.joined(separator: ", ")
-        
+
+        // T3.8: BIST event'leri için Türkçe finansal jargon sözlüğü — KAP/BES/KKM/bedelli
+        // terimlerini event_type ve sentiment kararına eşitlemek için.
+        let hasBistArticle = articles.contains { $0.symbol.uppercased().hasSuffix(".IS") }
+        let trGlossary = (hasBistArticle || scope == .bist) ? """
+
+        TÜRKÇE FİNANSAL JARGON SÖZLÜĞÜ (BIST haberlerinde sık geçer):
+        - KAP açıklaması: Resmî zorunlu bildirim — içeriği analiz et, başlık tek başına nötr değil.
+        - Bedelli sermaye artırımı: Sulandırıcı (NEGATIVE/mixed); rated_capital_raise event_type'ı uygun.
+        - Bedelsiz sermaye artırımı: Genelde nötr-pozitif; sembolik etkili.
+        - KKM (Kur Korumalı Mevduat): Banka maliyet baskısı; bankalar için NEGATIVE.
+        - Açığa satış izni: Hisseye short serbestliği → NEGATIVE; yasak kalkması POSITIVE.
+        - Temettü: Nakit kar payı dağıtımı; tarih öncesi POSITIVE, sonrası fiyat düşüşü teknik beklenir.
+        - Genel Kurul: Yönetim değişikliği varsa severity yüksek; rutin onaylar nötr.
+        - VİOP: Türev piyasa; doğrudan spot fiyatı etkilemez (nötr).
+        - Repo / TLREF: Faiz oranı; bankalar için marja baskı.
+
+        """ : ""
+
         let symbolInstruction = isGeneral ? """
-        
+
         HABER SEMBOL TESPITI:
         - Haberde en cok etkilenen ana sirketi/ticker'i tespit et.
         - Eger belirgin sirket yoksa "MARKET" yaz.
-        
+
         """ : ""
-        
+
         return """
         Hermes V3 icin haber etiketleme gorevi.
-        \(symbolInstruction)
+        \(trGlossary)\(symbolInstruction)
         Kullanilacak event_type listesi:
         \(eventListText)
         

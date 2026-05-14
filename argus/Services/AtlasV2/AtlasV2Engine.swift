@@ -381,12 +381,16 @@ actor AtlasV2Engine {
             value: financials.forwardGrowthEstimate,
             formula: "Analist tahminleri ortalaması"
         )
-        
+
+        // T2.06: Büyüme tutarlılığı — CAGR tek başına yeterli değil,
+        // yıldan yıla dalgalanma düşükse kaliteli büyüme demek.
+        let consistencyMetric = growthConsistency(revenueHistory: financials.revenueHistory)
+
         return AtlasGrowthData(
             revenueCAGR: revCAGRMetric,
             netIncomeCAGR: niCAGRMetric,
             forwardGrowth: forwardGrowthMetric,
-            revenueGrowthYoY: nil
+            revenueGrowthYoY: consistencyMetric
         )
     }
     
@@ -511,6 +515,47 @@ actor AtlasV2Engine {
         return validScores.reduce(0, +) / Double(validScores.count)
     }
     
+    // T2.06: Büyüme tutarlılık skoru — YoY büyüme oranlarının varyasyon katsayısı.
+    // Düşük CV = istikrarlı büyüme (yüksek skor), yüksek CV = dalgalı (düşük skor).
+    private func growthConsistency(revenueHistory: [Double]?) -> AtlasMetric? {
+        guard let h = revenueHistory, h.count >= 3 else { return nil }
+        var yoyGrowths: [Double] = []
+        for i in 0..<(h.count - 1) {
+            guard h[i + 1] > 0 else { continue }
+            let growth = (h[i] - h[i + 1]) / abs(h[i + 1]) * 100
+            yoyGrowths.append(growth)
+        }
+        guard yoyGrowths.count >= 2 else { return nil }
+
+        let mean = yoyGrowths.reduce(0, +) / Double(yoyGrowths.count)
+        let variance = yoyGrowths.reduce(0.0) { $0 + pow($1 - mean, 2) } / Double(yoyGrowths.count)
+        let stdDev = sqrt(variance)
+        let cv = abs(mean) > 1 ? stdDev / abs(mean) : stdDev / 10
+
+        // CV < 0.3 = çok tutarlı (90), CV > 1.5 = çok dalgalı (20)
+        let score: Double
+        if cv < 0.3 { score = 90 }
+        else if cv < 0.6 { score = 70 }
+        else if cv < 1.0 { score = 50 }
+        else if cv < 1.5 { score = 35 }
+        else { score = 20 }
+
+        let status: AtlasMetricStatus = score >= 70 ? .good : (score >= 50 ? .neutral : .bad)
+        return AtlasMetric(
+            id: "growthconsistency",
+            name: "Büyüme Tutarlılığı",
+            value: cv * 100,
+            status: status,
+            score: score,
+            explanation: String(format: "CV: %.0f%% — %@", cv * 100,
+                score >= 70 ? "İstikrarlı büyüme trendi" :
+                score >= 50 ? "Orta derecede dalgalı büyüme" :
+                "Yüksek dalgalanmalı büyüme (güvenilirlik düşük)"),
+            educationalNote: "Varyasyon katsayısı düşükse büyüme istikrarlı demek — gelecek tahminlerine daha çok güvenebilirsiniz.",
+            formula: "σ(YoY Büyüme) / |μ(YoY Büyüme)|"
+        )
+    }
+
     private func calculateCAGR(history: [Double]?) -> Double? {
         guard let h = history, h.count >= 2 else { return nil }
         let start = h.last ?? 0

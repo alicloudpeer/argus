@@ -142,7 +142,7 @@ final class KararKartiViewModel: ObservableObject {
         case "athena":          return "Athena faktör"
         case "demeter":         return "Demeter sektör"
         case "prometheus":      return "Prometheus tahmin"
-        case "poseidon":        return "Poseidon akıllı para"
+        case "poseidon":        return "Poseidon hacim analizi"
         default:                return module   // Bilinmeyen modül adıyla göster
         }
     }
@@ -186,7 +186,7 @@ final class KararKartiViewModel: ObservableObject {
         case "Athena faktör":        return "Athena"
         case "Demeter sektör":       return "Demeter"
         case "Prometheus tahmin":    return "Prometheus"
-        case "Poseidon akıllı para": return "Poseidon"
+        case "Poseidon hacim analizi": return "Poseidon"
         default:                     return displayName
         }
     }

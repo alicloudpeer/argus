@@ -1,15 +1,9 @@
 import Foundation
 
-/// Extension to AthenaFactorService for "Smart Money" Scoring
+/// Extension to AthenaFactorService for Intelligence Scoring (Analyst + Insider)
 extension AthenaFactorService {
-    
-    /// Calculate the "Smart Money" score based on Analyst and Insider data.
-    /// - Parameters:
-    ///   - snapshot: The intelligence data.
-    ///   - currentPrice: Current market price of the asset.
-    ///   - isETF: Guard to ensure we don't score ETFs.
-    /// - Returns: A partial score (e.g. +10, -10, +15) to be added to the total Athena score.
-    func calculateSmartMoneyScore(snapshot: MarketIntelligenceSnapshot?, currentPrice: Double, isETF: Bool) -> Double {
+
+    func calculateIntelligenceScore(snapshot: MarketIntelligenceSnapshot?, currentPrice: Double, isETF: Bool) -> Double {
         // 1. ETF/Fund Guard
         // Insiders don't trade ETFs like corporate stocks. Analysts don't set price targets for ETFs usually.
         if isETF { return 0.0 }

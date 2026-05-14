@@ -61,6 +61,10 @@ final class PositionPlanStore: ObservableObject {
     func updatePlanStatus(tradeId: UUID, status: PlanStatus) { repository.updatePlanStatus(tradeId: tradeId, status: status) }
     func completePlan(tradeId: UUID) { repository.completePlan(tradeId: tradeId) }
     func markStepCompleted(tradeId: UUID, stepId: UUID) { repository.markStepCompleted(tradeId: tradeId, stepId: stepId) }
+    /// Faz III: plan revize bayrağı (auto-sellAll yerine "tezi gözden geçir" pattern'i)
+    func markPlanForReview(tradeId: UUID, reason: String, triggeredBy: String = "Plan Lifecycle") {
+        repository.markPlanForReview(tradeId: tradeId, reason: reason, triggeredBy: triggeredBy)
+    }
     func syncWithPortfolio(trades: [Trade], grandDecisions: [String: ArgusGrandDecision]) {
         repository.syncWithPortfolio(trades: trades, grandDecisions: grandDecisions)
     }

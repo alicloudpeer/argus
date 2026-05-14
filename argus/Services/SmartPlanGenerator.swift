@@ -209,18 +209,24 @@ class SmartPlanGenerator {
             ), at: 0)
         }
         
-        // Council değişikliği kontrolü
+        // Faz III (2026-05-12): Konsey kararı değiştiğinde plan **otomatik
+        // pozisyonu kapatmaz** — kullanıcıya plan tezini gözden geçirme uyarısı
+        // gönderir. Eski model trim → %30 azalt, liquidate → %100 sat ardışık
+        // tetikleniyordu (`to` parametresi trigger'da görmezden geliniyordu, bkz.
+        // PlanTriggerEngine fix). Konsey momentary opinion ≠ plan invalidation:
+        // plan giriş tezi ile yola çıkar, fiyat/stop/zaman bazlı tetikleyiciler
+        // bağımsız çalışır. Konsey değişimi yalnızca "tezi gözden geçir" sinyali.
         steps.append(PlannedAction(
             trigger: .councilActionChanged(from: decision.action, to: .trim),
-            action: .reduceAndHold(30),
-            description: "Council AZALT derse: %30 sat, geri kalanı tut",
+            action: .alert("Konsey AZALT dedi — plan tezini gözden geçir"),
+            description: "Konsey AZALT: Plan revize uyarısı",
             priority: 10
         ))
-        
+
         steps.append(PlannedAction(
             trigger: .councilActionChanged(from: decision.action, to: .liquidate),
-            action: .sellAll,
-            description: "Council ÇIK derse: Tamamını sat",
+            action: .alert("Konsey ÇIK dedi — plan tezini gözden geçir"),
+            description: "Konsey ÇIK: Plan revize uyarısı",
             priority: 11
         ))
         
@@ -255,16 +261,19 @@ class SmartPlanGenerator {
                     description: "Stop: ATR × 2 (\(formatPrice(stopPrice)))",
                     priority: 0
                 ),
+                // Faz III (2026-05-12): Konsey ÇIK alarmı bearish senaryoda da
+                // alert. Fiyat stop'u (priceBelow) bağımsız risk eşiği olarak
+                // çalışmaya devam ediyor — Council momentary opinion ≠ stop.
                 PlannedAction(
                     trigger: .councilActionChanged(from: decision.action, to: .liquidate),
-                    action: .sellAll,
-                    description: "Council ÇIK: Tamamını sat",
+                    action: .alert("Konsey ÇIK dedi — plan tezini gözden geçir"),
+                    description: "Konsey ÇIK: Plan revize uyarısı",
                     priority: 1
                 )
             ], isActive: true)
         ]
     }
-    
+
     // MARK: - Aggressive Plan
     
     private func aggressivePlan(entry: Double, atr: Double, snapshot: EntrySnapshot) -> [Scenario] {

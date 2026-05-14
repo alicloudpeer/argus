@@ -53,8 +53,9 @@ extension AutoPilotStore {
         async let demeterWarm: Void = DemeterEngine.shared.analyze()
         async let macroWarm: MacroEnvironmentRating = MacroRegimeService.shared.computeMacroEnvironment()
         async let hermesWarm: Void = HermesCoordinator.shared.warmupForScouting(symbols: watchlistForHermes)
-        _ = await (demeterWarm, macroWarm, hermesWarm)
-        ArgusLogger.info("🔥 Pre-warm: Demeter + Makro + Hermes hazır", category: "OTOPİLOT")
+        async let promTrackWarm: PrometheusTrackRecord.Stats = PrometheusTrackRecord.shared.getStats()
+        _ = await (demeterWarm, macroWarm, hermesWarm, promTrackWarm)
+        ArgusLogger.info("🔥 Pre-warm: Demeter + Makro + Hermes + Prometheus TR hazır", category: "OTOPİLOT")
 
         // FİX G (observability): Piyasa durumu her turda loglansın.
         // Önceki davranışta BIST/Global piyasa kapalı olunca sessizce atlanıyordu.
@@ -194,6 +195,16 @@ extension AutoPilotStore {
             "Açık pozisyon: \(portfolioMap.count)",
             category: "OTOPİLOT"
         )
+
+        // T2.23: Prometheus Spotlight — yüksek-güvenli + Council nötr birleşimleri
+        let spotlightEntries = await PrometheusSpotlight.shared.currentEntries()
+        if !spotlightEntries.isEmpty {
+            let top = spotlightEntries.prefix(5).map { $0.summary }.joined(separator: " · ")
+            ArgusLogger.info(
+                "🔭 PROMETHEUS-SPOTLIGHT (\(spotlightEntries.count)): \(top)",
+                category: "OTOPİLOT"
+            )
+        }
 
         print("🚨🚨🚨 SCAN RETURNED — signals=\(signals.count), logs=\(logs.count)")
         ArgusLogger.warn("🚨 SCAN RETURNED — signals=\(signals.count), logs=\(logs.count)", category: "OTOPİLOT")

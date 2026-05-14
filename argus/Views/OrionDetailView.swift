@@ -548,7 +548,7 @@ struct OrionDetailView: View {
         if orion.score > 70 && orion.components.momentum < 50 {
             narrative += "ANCAK DİKKAT: Fiyat yükselmesine rağmen momentum zayıflıyor (Negatif Uyumsuzluk). Bu, yükselişin 'yakıtsız' kaldığını ve bir düzeltme gelebileceğini işaret eder."
         } else if orion.score < 30 && orion.components.momentum > 50 {
-            narrative += "ÖNEMLİ: Fiyat diplerde olsa da momentum toparlanıyor (Pozitif Uyumsuzluk). Akıllı para (Smart Money) buralardan topluyor olabilir."
+            narrative += "ÖNEMLİ: Fiyat diplerde olsa da momentum toparlanıyor (Pozitif Uyumsuzluk). Hacim akışı birikim sinyali veriyor olabilir."
         } else if orion.components.momentum > 80 {
             narrative += "Momentum 'Aşırı Alım' bölgesinde. Fiyat çok hızlı yükseldi, kar realizasyonu (satış) gelmesi doğaldır."
         } else {

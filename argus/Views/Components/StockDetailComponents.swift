@@ -268,11 +268,10 @@ struct AthenaFactorCard: View {
                 .animation(.easeOut(duration: 0.5).delay(0.2), value: animate)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                factorRow(name: "Değer", score: result.valueFactorScore, delay: 0.1)
-                factorRow(name: "Kalite", score: result.qualityFactorScore, delay: 0.2)
-                factorRow(name: "Momentum", score: result.momentumFactorScore, delay: 0.3)
-                factorRow(name: "Büyüklük", score: result.sizeFactorScore ?? 50, delay: 0.35)
-                factorRow(name: "Risk", score: result.riskFactorScore, delay: 0.4, invertColor: true)
+                factorRow(name: "Kalite", score: result.qualityFactorScore, delay: 0.1)
+                factorRow(name: "Momentum", score: result.momentumFactorScore, delay: 0.2)
+                factorRow(name: "Büyüklük", score: result.sizeFactorScore ?? 50, delay: 0.25)
+                factorRow(name: "Risk", score: result.riskFactorScore, delay: 0.3, invertColor: true)
             }
         }
         .padding()

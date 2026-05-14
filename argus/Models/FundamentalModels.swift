@@ -355,7 +355,6 @@ struct AthenaFactorResult: Codable, Identifiable, Sendable {
     let date: Date
     
     // Factor Scores (0-100)
-    let valueFactorScore: Double
     let qualityFactorScore: Double
     let momentumFactorScore: Double
     let sizeFactorScore: Double?  // NEW: Size Factor (SMB - Small Minus Big)

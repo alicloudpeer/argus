@@ -55,7 +55,6 @@ struct ArgusAthenaSheet: View {
     /// 4 faktör skorunun en büyüğünü bul — "EN GÜÇLÜ" rozeti ve yargı için.
     private func strongestFactor(_ r: AthenaFactorResult) -> AthenaSheetFactor {
         let pairs: [(AthenaSheetFactor, Double)] = [
-            (.value,    r.valueFactorScore),
             (.quality,  r.qualityFactorScore),
             (.momentum, r.momentumFactorScore),
             (.risk,     r.riskFactorScore),
@@ -71,7 +70,6 @@ struct ArgusAthenaSheet: View {
                 heroCard(r)
                 educationalIntroCard
                 factorCaption
-                factorCard(.value,    score: r.valueFactorScore,    strongest: strongestFactor(r))
                 factorCard(.quality,  score: r.qualityFactorScore,  strongest: strongestFactor(r))
                 factorCard(.momentum, score: r.momentumFactorScore, strongest: strongestFactor(r))
                 factorCard(.risk,     score: r.riskFactorScore,     strongest: strongestFactor(r))
@@ -226,25 +224,10 @@ struct ArgusAthenaSheet: View {
 
     private func factorDataLine(_ factor: AthenaSheetFactor) -> String? {
         switch factor {
-        case .value:    return valueLine()
         case .quality:  return qualityLine()
         case .momentum: return momentumLine()
         case .risk:     return riskLine()
         }
-    }
-
-    private func valueLine() -> String? {
-        var parts: [String] = []
-        if let pe = financials?.peRatio {
-            parts.append("F/K \(AtlasMetric.format(pe))")
-        }
-        if let pb = financials?.priceToBook {
-            parts.append("PD/DD \(AtlasMetric.format(pb))")
-        }
-        if let ev = financials?.evToEbitda {
-            parts.append("EV/EBITDA \(AtlasMetric.format(ev))")
-        }
-        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
     private func qualityLine() -> String? {
@@ -310,7 +293,6 @@ struct ArgusAthenaSheet: View {
 
     private func topTwoFactors(_ r: AthenaFactorResult) -> (AthenaSheetFactor, AthenaSheetFactor) {
         let pairs: [(AthenaSheetFactor, Double)] = [
-            (.value,    r.valueFactorScore),
             (.quality,  r.qualityFactorScore),
             (.momentum, r.momentumFactorScore),
             (.risk,     r.riskFactorScore),
@@ -336,7 +318,6 @@ struct ArgusAthenaSheet: View {
                 .foregroundColor(DesignTokens.Colors.textSecondary)
 
             VStack(alignment: .leading, spacing: 8) {
-                pedagogyRow(.value)
                 pedagogyRow(.quality)
                 pedagogyRow(.momentum)
                 pedagogyRow(.risk)
@@ -373,11 +354,10 @@ struct ArgusAthenaSheet: View {
 // MARK: - Factor Enum
 
 private enum AthenaSheetFactor: Hashable {
-    case value, quality, momentum, risk
+    case quality, momentum, risk
 
     var title: String {
         switch self {
-        case .value:    return "Değer"
         case .quality:  return "Kalite"
         case .momentum: return "Momentum"
         case .risk:     return "Risk"
@@ -386,7 +366,6 @@ private enum AthenaSheetFactor: Hashable {
 
     var microCaption: String {
         switch self {
-        case .value:    return "ucuz mu pahalı mı?"
         case .quality:  return "sağlıklı mı?"
         case .momentum: return "son dönemde yükseliyor mu?"
         case .risk:     return "ne kadar sakin?"
@@ -395,8 +374,6 @@ private enum AthenaSheetFactor: Hashable {
 
     var pedagogy: String {
         switch self {
-        case .value:
-            return "Ucuz fiyatlı hisseler uzun vadede fark yaratır (F/K, PD/DD düşükse değerli)."
         case .quality:
             return "İyi işleyen şirketler krizleri rahat atlatır (yüksek ROE, düşük borç)."
         case .momentum:

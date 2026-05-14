@@ -326,4 +326,6 @@ struct AtlasSectorBenchmark: Codable {
     let avgNetMargin: Double
     let avgDebtToEquity: Double
     let avgDividendYield: Double
+    // T2.05: Sektör büyüme benchmark'ı — stock CAGR ile karşılaştırma için
+    var avgRevenueGrowth: Double?
 }

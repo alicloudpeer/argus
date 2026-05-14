@@ -95,15 +95,56 @@ class ArgusValidator {
         let rValues = outcomes.compactMap { $0.rMultiple }
         let avgRMultiple = rValues.isEmpty ? 0 : rValues.reduce(0, +) / Double(rValues.count)
 
+        // T2.12: Prometheus yön doğruluğu + büyüklük RMSE
+        // T2.23 (Prometheus Polish): Naive-baseline skill score agregasyonu — bir
+        // sayı altına indirgenmiş "Prometheus naive'den ne kadar iyi?" göstergesi.
+        let promResults = results.filter { $0.testType == .prometheusforecast }
+        let promDirAcc: Double
+        let promRMSE: Double
+        let promSkill: Double
+        let promSample: Int
+        if promResults.isEmpty {
+            promDirAcc = 0
+            promRMSE = 0
+            promSkill = 0
+            promSample = 0
+        } else {
+            let promCorrect = promResults.filter { $0.wasCorrect }.count
+            promDirAcc = Double(promCorrect) / Double(promResults.count)
+            let sumSqErr = promResults.reduce(0.0) { acc, r in
+                let predicted = ((r.predictedPrice ?? r.originalPrice) - r.originalPrice) / r.originalPrice * 100
+                let actual = r.actualChange
+                return acc + pow(predicted - actual, 2)
+            }
+            promRMSE = sqrt(sumSqErr / Double(promResults.count))
+
+            // Skill score = 1 - (prom_error / naive_error); naive_error = |actualChange|.
+            // Anlamlı olduğu kayıtların (|actualChange| > 0.5%) ortalaması.
+            var validSkills: [Double] = []
+            for r in promResults {
+                let actual = abs(r.actualChange)
+                guard actual > 0.5 else { continue }
+                let predicted = ((r.predictedPrice ?? r.originalPrice) - r.originalPrice) / r.originalPrice * 100
+                let promErr = abs(predicted - r.actualChange)
+                validSkills.append(1.0 - (promErr / actual))
+            }
+            promSkill = validSkills.isEmpty ? 0 : validSkills.reduce(0, +) / Double(validSkills.count)
+            promSample = promResults.count
+        }
+
         return ScientificStats(
             totalHypotheses: Int(total),
-            validatedHypotheses: Int(total), // Şimdilik hepsi
+            validatedHypotheses: Int(total),
             winRate: winRate,
             averageReturn: averageReturn,
             sharpeRatio: sharpeRatio,
             maxDrawdown: maxDrawdown,
             profitFactor: profitFactor,
             avgRMultiple: avgRMultiple,
+            prometheusDirectionAccuracy: promDirAcc,
+            prometheusMagnitudeRMSE: promRMSE,
+            prometheusSkillScore: promSkill,
+            prometheusSampleSize: promSample,
             lastUpdated: Date()
         )
     }
@@ -128,14 +169,27 @@ class ArgusValidator {
             
             let actualChange: Double = ((actualPrice - forecast.currentPrice) / forecast.currentPrice) * 100.0
             let predictedChange: Double = ((forecast.predictedPrice - forecast.currentPrice) / forecast.currentPrice) * 100.0
-            
+
             // Doğruluk: Yön (Sign) eşleşmesi
             let wasCorrect = (predictedChange * actualChange) > 0
-            
+
             // Accuracy: Hata payı (0-100)
-            let errorPercent = abs(actualChange - predictedChange)
-            let accuracy = max(0.0, 100.0 - errorPercent * 10.0)
-            
+            let prometheusError = abs(actualChange - predictedChange)
+            let accuracy = max(0.0, 100.0 - prometheusError * 10.0)
+
+            // Naive baseline: "fiyat değişmez" tahmini (predictedChange = 0)
+            let naiveError = abs(actualChange)
+            let skillScore: Double? = naiveError > 0.5
+                ? 1.0 - (prometheusError / naiveError)
+                : nil // Fiyat neredeyse sabit kaldıysa skill score anlamsız
+
+            let skillNote: String
+            if let ss = skillScore {
+                skillNote = String(format: " Skill: %.2f", ss)
+            } else {
+                skillNote = ""
+            }
+
             let result = ForwardTestResult(
                 id: UUID(),
                 symbol: forecast.symbol,
@@ -150,7 +204,7 @@ class ArgusValidator {
                 wasCorrect: wasCorrect,
                 accuracy: accuracy,
                 moduleScores: nil,
-                notes: "Horizon: \(prometheusDaysToMature) Gün. Tahmin: \(String(format: "%.1f", predictedChange))%, Gerçek: \(String(format: "%.1f", actualChange))%"
+                notes: "Horizon: \(prometheusDaysToMature) Gün. Tahmin: \(String(format: "%.1f", predictedChange))%, Gerçek: \(String(format: "%.1f", actualChange))%\(skillNote)"
             )
             
             results.append(result)
@@ -353,10 +407,11 @@ struct ScientificStats: Sendable {
     let sharpeRatio: Double
     let maxDrawdown: Double
     let profitFactor: Double
-    /// Task 12 (2026-05-12): Ortalama R-multiple — Van Tharp (1998) edge ölçüsü.
-    /// `0` değeri "henüz veri yok" (boş outcomes ya da stop'suz trade'ler) anlamına gelir;
-    /// UI ayrımı için outcome count'u ayrıca göstermek gerekir.
     let avgRMultiple: Double
+    let prometheusDirectionAccuracy: Double
+    let prometheusMagnitudeRMSE: Double
+    let prometheusSkillScore: Double      // T2.23: 1 - prom_err/naive_err (>0 ise faydalı)
+    let prometheusSampleSize: Int          // T2.23: kaç forward test üzerinden hesaplandı
     let lastUpdated: Date
 
     static let empty = ScientificStats(
@@ -368,6 +423,10 @@ struct ScientificStats: Sendable {
         maxDrawdown: 0,
         profitFactor: 0,
         avgRMultiple: 0,
+        prometheusDirectionAccuracy: 0,
+        prometheusMagnitudeRMSE: 0,
+        prometheusSkillScore: 0,
+        prometheusSampleSize: 0,
         lastUpdated: Date()
     )
 }

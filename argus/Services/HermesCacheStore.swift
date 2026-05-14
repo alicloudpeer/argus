@@ -11,11 +11,15 @@ final class HermesCacheStore {
         loadCache()
     }
     
+    // T3.6: Sentiment alpha yarı-ömrü 1-3 saat — 6 saatlik cache stale veri sorunu yarattığından
+    // 30 dakikaya düşürüldü. Per-article LLM özet cache'i (haberin metni değişmediği için
+    // article yenilense bile aynı kalır, ama sentiment kararı taze olmalı).
+    private let summaryCacheTTL: TimeInterval = 30 * 60 // 30 dk
+
     func getSummary(for articleId: String) -> HermesSummary? {
         queue.sync {
             guard let summary = cache[articleId] else { return nil }
-            // 6-Hour Cache Validity
-            if Date().timeIntervalSince(summary.createdAt) > 21600 { // 6 * 60 * 60
+            if Date().timeIntervalSince(summary.createdAt) > summaryCacheTTL {
                 return nil
             }
             return summary
