@@ -23,12 +23,6 @@ struct ArgusAnalysisSheet: View {
     @State private var narrativeError: String?
     @State private var isLoadingNarrative: Bool = false
 
-    /// 2026-05-14: KararKartiViewModel'in `prepare()` ve PremortemEngine zincirini
-    /// üretim akışına bağlar. V2 kart Sanctum'dan kaldırıldı ama Argus Analizi
-    /// sheet'inde "Risk senaryoları" bölümü olarak görünür — risk uyarıları
-    /// kararın analiziyle birlikte tek ekranda kalmış olur.
-    @StateObject private var kararKartiVM = KararKartiViewModel()
-
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -38,15 +32,11 @@ struct ArgusAnalysisSheet: View {
                     narrativeBlock     // 2026-05-11: LLM destekli Türkçe yorum
                     motorReasoningList
                     conflictBlock
-                    riskScenariosBlock // 2026-05-14: PremortemEngine senaryoları
                     footerNote
                 }
                 .padding(16)
             }
-            .task(id: symbol) {
-                await loadNarrative()
-                await loadRiskScenarios()
-            }
+            .task(id: symbol) { await loadNarrative() }
             .background(DesignTokens.Colors.background.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -273,91 +263,6 @@ struct ArgusAnalysisSheet: View {
             .font(DesignTokens.Fonts.custom(size: 11))
             .foregroundColor(DesignTokens.Colors.textTertiary)
             .padding(.top, 8)
-    }
-
-    // MARK: - Risk senaryoları (Faz 1.A.1 PremortemEngine bağlantısı)
-    //
-    // 2026-05-14: KararKartiViewModel.prepare() bu sheet'ten çağrılır; viewModel'in
-    // hazırladığı 4 bölümden sadece `riskler` array'i kullanılır. Diğer bölümler
-    // (aksiyon/güven/modüller) Sanctum Council Body'sinde zaten gösteriliyor —
-    // tekrar olmasın diye burada sadece risk senaryoları görünür.
-    @ViewBuilder
-    private var riskScenariosBlock: some View {
-        if !kararKartiVM.riskler.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Risk senaryoları")
-                    .font(DesignTokens.Fonts.custom(size: 13, weight: .semibold))
-                    .foregroundColor(DesignTokens.Colors.textSecondary)
-                Text("Bu kararın yanlış olabileceği senaryolar:")
-                    .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(DesignTokens.Colors.textTertiary)
-                ForEach(kararKartiVM.riskler) { scenario in
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: severityIcon(scenario.severity))
-                            .foregroundColor(severityColor(scenario.severity))
-                            .font(.system(size: 14))
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(scenario.trigger)
-                                .font(DesignTokens.Fonts.custom(size: 11, weight: .semibold))
-                                .foregroundColor(severityColor(scenario.severity))
-                                .textCase(.uppercase)
-                            Text(scenario.scenario)
-                                .font(DesignTokens.Fonts.custom(size: 13))
-                                .foregroundColor(DesignTokens.Colors.textPrimary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                }
-            }
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(DesignTokens.Colors.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(DesignTokens.Colors.border, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        }
-    }
-
-    private func severityIcon(_ severity: PremortemEngine.RiskScenario.Severity) -> String {
-        switch severity {
-        case .low:    return "info.circle"
-        case .medium: return "exclamationmark.triangle"
-        case .high:   return "exclamationmark.octagon.fill"
-        }
-    }
-
-    private func severityColor(_ severity: PremortemEngine.RiskScenario.Severity) -> Color {
-        switch severity {
-        case .low:    return DesignTokens.Colors.textTertiary
-        case .medium: return InstitutionalTheme.Colors.holo
-        case .high:   return DesignTokens.Colors.error
-        }
-    }
-
-    /// ViewModel.prepare çağrılır → PremortemEngine sonucu `riskler` array'ine yazılır.
-    /// Sheet açıldığında ve sembol değiştiğinde otomatik tetiklenir.
-    @MainActor
-    private func loadRiskScenarios() async {
-        guard let d = decision else { return }
-        let aetherScore: Double = {
-            switch d.aetherDecision.stance {
-            case .riskOn:    return 80
-            case .cautious:  return 60
-            case .defensive: return 35
-            case .riskOff:   return 15
-            }
-        }()
-        await kararKartiVM.prepare(
-            from: d,
-            atlasMargin: d.atlasDecision?.marginOfSafety,
-            demeterScore: nil,
-            aetherScore: aetherScore,
-            clusterCount: 0,
-            hasAISignalSupport: false,
-            estimatedPositionTRY: 0
-        )
     }
 
     // MARK: - LLM call
