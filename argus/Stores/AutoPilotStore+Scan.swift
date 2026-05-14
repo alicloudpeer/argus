@@ -17,22 +17,34 @@ extension AutoPilotStore {
         ArgusLogger.info("AutoPilotStore: runAutoPilot başlatılıyor...", category: "OTOPİLOT")
         ArgusLogger.warn("🚨 runAutoPilot TRIGGERED @ \(Date())", category: "OTOPİLOT")
 
-        // 2026-05-05 FIX A: Yeni scan turunda eski execution RED'lerini temizle.
-        // Aksi takdirde önceki scan'in skip kayıtları bu turun summary'sine sızar.
-        await TradeBrainExecutionTracker.shared.clearForNewScan()
-
-        // Onarım 4: Günlük öğrenme döngüsü hook'u. 24h+ geçtiyse veya hiç
-        // çalışmadıysa background'da tetikle. Mevcut scan loop'u beklemiyor.
+        // Günlük öğrenme döngüsü — market kapalıyken de çalışır (geçmiş veri işleme).
         let needsLearning: Bool = {
             guard let last = lastDailyLearningRunAt else { return true }
             return Date().timeIntervalSince(last) >= (24 * 3600)
         }()
         if needsLearning {
-            lastDailyLearningRunAt = Date()
             Task.detached(priority: .background) { [weak self] in
                 await self?.runDailyLearningCycle()
+                await MainActor.run { self?.lastDailyLearningRunAt = Date() }
             }
         }
+
+        // T3.3: Market kapalıysa tarama yapma — API çağrıları ve pil tasarrufu.
+        if !MarketSessionManager.shared.isMarketOpen() {
+            ArgusLogger.info("AutoPilotStore: Market kapalı — scan atlanıyor", category: "OTOPİLOT")
+            return
+        }
+
+        // 2026-05-05 FIX A: Yeni scan turunda eski execution RED'lerini temizle.
+        await TradeBrainExecutionTracker.shared.clearForNewScan()
+
+        // T3.5: Sektör batch optimizasyonu — scan başında Demeter (sektör bazlı)
+        // ve makro snapshot'ı bir kez ısıt. Sembol döngüsündeki her Council
+        // çağrısı internal cache'lere düşer; redundant API yükü azaltılır.
+        async let demeterWarm: Void = DemeterEngine.shared.analyze()
+        async let macroWarm: MacroEnvironmentRating = MacroRegimeService.shared.computeMacroEnvironment()
+        _ = await (demeterWarm, macroWarm)
+        ArgusLogger.info("🔥 Pre-warm: Demeter + Makro hazır", category: "OTOPİLOT")
 
         // FİX G (observability): Piyasa durumu her turda loglansın.
         // Önceki davranışta BIST/Global piyasa kapalı olunca sessizce atlanıyordu.
@@ -151,6 +163,29 @@ extension AutoPilotStore {
                 category: "OTOPİLOT"
             )
         }
+
+        // T3.9: Operasyonel sağlık raporu — scan başına özet metrikler
+        let buySignals = signals.filter {
+            $0.action == .buy
+        }.count
+        let sellSignals = signals.filter {
+            $0.action == .sell
+        }.count
+        let neutralCount = max(0, symbols.count - buySignals - sellSignals - skipLogs.count)
+        let scanRatio: (_ count: Int, _ pct: Double) -> String = { c, total in
+            let pct = total > 0 ? Double(c) / total * 100 : 0
+            return "\(c) (%\(String(format: "%.1f", pct)))"
+        }
+        let total = Double(symbols.count)
+        ArgusLogger.info(
+            "📊 SCAN-METRIC | \(symbols.count) sembol | " +
+            "AL \(scanRatio(buySignals, total)) · " +
+            "SAT \(scanRatio(sellSignals, total)) · " +
+            "TUT \(scanRatio(neutralCount, total)) · " +
+            "ATLA \(scanRatio(skipLogs.count, total)) · " +
+            "Açık pozisyon: \(portfolioMap.count)",
+            category: "OTOPİLOT"
+        )
 
         print("🚨🚨🚨 SCAN RETURNED — signals=\(signals.count), logs=\(logs.count)")
         ArgusLogger.warn("🚨 SCAN RETURNED — signals=\(signals.count), logs=\(logs.count)", category: "OTOPİLOT")

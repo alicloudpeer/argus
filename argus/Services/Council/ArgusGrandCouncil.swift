@@ -152,7 +152,26 @@ actor ArgusGrandCouncil {
         print("=".padding(toLength: 50, withPad: "=", startingAt: 0))
         
         let isBist = symbol.uppercased().hasSuffix(".IS")
-        
+
+        // T2.19: Mevcut pozisyon ağırlığı — Council kararlarına pozisyon farkındalığı.
+        let existingPositionWeight: Double = await MainActor.run {
+            let ps = PortfolioStore.shared
+            guard ps.hasPosition(for: symbol) else { return 0.0 }
+            let quotes = MarketDataStore.shared.quotes.compactMapValues { $0.value }
+            let equity = isBist
+                ? ps.getBistEquity(quotes: quotes)
+                : ps.getGlobalEquity(quotes: quotes)
+            guard equity > 0 else { return 0.0 }
+            let posValue = ps.getTotalQuantity(for: symbol) * (candles.last?.close ?? 0)
+            return posValue / equity
+        }
+
+        // T2.01/T2.02: Veri tazelik değerlendirmesi
+        let freshnessAssessment = DataFreshnessPolicy.evaluateForCouncil(
+            lastCandleDate: candles.last?.date,
+            financialsLastUpdated: snapshot?.lastUpdated
+        )
+
         // 1.5 Orion Pattern Detection (Synchronous calculation for decision input)
         // 2026-05-05 (Round 10): Log "Orion V3" yerine "Orion Patterns" — V2/V3
         // adlandırma karmaşası önlenir (asıl motor OrionV2Engine, bu pattern subsystem'i).
@@ -274,8 +293,8 @@ actor ArgusGrandCouncil {
         let kellyProfile = await KellyCache.shared.getSystemProfile()
         let kellyMult = kellyProfile.positionMultiplier
 
-        // 2.8 Poseidon — Hacim bazlı akıllı para analizi (mevcut candle'lardan)
-        let whaleScore = await PoseidonService.shared.analyzeSmartMoney(symbol: symbol, candles: candles)
+        // 2.8 Poseidon — Hacim akışı analizi (mevcut candle'lardan)
+        let whaleScore = await PoseidonService.shared.analyzeVolumeFlow(symbol: symbol, candles: candles)
 
         // 2.9 Multi-timeframe alignment — günlük + haftalık trend uyumu
         let dailyMF = await MainActor.run {
@@ -350,13 +369,36 @@ actor ArgusGrandCouncil {
                 bistPhoenix = PhoenixLogic.analyze(candles: candles, symbol: symbol, timeframe: .d1, config: PhoenixConfig())
             }
 
+            // T2.01/T2.02: Veri tazelik advisory
+            for msg in freshnessAssessment.advisoryMessages {
+                bistAdvisors.append(AdvisorNote(module: "Heimdall", advice: msg, tone: .warning))
+            }
+
+            // T2.19: BIST pozisyon farkındalığı
+            var bistAction = bistRes.action
+            var bistReasoning = bistRes.reasoning
+            if existingPositionWeight > 0 {
+                let bistBuying = bistAction == .aggressiveBuy || bistAction == .accumulate
+                if bistBuying && existingPositionWeight >= 0.10 && bistAction == .aggressiveBuy {
+                    bistAction = .accumulate
+                    bistReasoning += " (Mevcut pozisyon %\(Int(existingPositionWeight * 100)) — kademeli alım)"
+                }
+                if bistBuying {
+                    bistAdvisors.append(AdvisorNote(
+                        module: "Portföy",
+                        advice: "Bu sembolde açık pozisyon var (%\(Int(existingPositionWeight * 100)) ağırlık).",
+                        tone: existingPositionWeight >= 0.12 ? .warning : .caution
+                    ))
+                }
+            }
+
             let finalDecision = ArgusGrandDecision(
                 id: bistRes.id,
                 symbol: symbol,
-                action: bistRes.action,
+                action: bistAction,
                 strength: .normal,
-                confidence: bistRes.confidence / 100.0,
-                reasoning: bistRes.reasoning,
+                confidence: (bistRes.confidence / 100.0) * freshnessAssessment.overallConfidenceMultiplier,
+                reasoning: bistReasoning,
                 contributors: [],
                 vetoes: [],
                 advisors: bistAdvisors,
@@ -452,6 +494,28 @@ actor ArgusGrandCouncil {
             historicalPrices: candles.map { $0.close }
         )
 
+        // Faz 2.2: moduleWeights hesaplama — await burada (convene async), calculateGrandDecision senkron kalır.
+        let fazChironResult = ChironRegimeEngine.shared.globalResult
+        let fazCw = fazChironResult.coreWeights.normalized
+        let fazOrionTotal = fazCw.orion
+        let fazOrionPatternShare = 0.25
+        let fazBaselineWeights: [String: Double] = [
+            "Orion":          fazOrionTotal * (1 - fazOrionPatternShare),
+            "Orion Patterns": fazOrionTotal * fazOrionPatternShare,
+            "Atlas":          fazCw.atlas,
+            "Aether":         fazCw.aether,
+            "Hermes":         fazCw.hermes ?? 0.10,
+            "Phoenix":        fazCw.phoenix ?? 0.05,
+            "Athena":         fazCw.athena ?? 0.05,
+            "Demeter":        fazCw.demeter ?? 0.05,
+            "Prometheus":     0.03
+        ]
+        let fazModuleStats = await ModulePerformanceTracker.shared.getAllStats()
+        let fazModuleWeights = ModuleWeightCalculator.calculate(
+            baseline: fazBaselineWeights,
+            stats: fazModuleStats
+        )
+
         // 3. Calculate grand decision (GLOBAL LEGACY)
         let grandDecision = calculateGrandDecision(
             symbol: symbol,
@@ -476,7 +540,11 @@ actor ArgusGrandCouncil {
             poseidon: whaleScore,
             dailyMF: dailyMF,
             weeklyMF: weeklyMF,
-            kellyMultiplier: kellyMult
+            kellyMultiplier: kellyMult,
+            existingPositionWeight: existingPositionWeight,
+            freshnessMultiplier: freshnessAssessment.overallConfidenceMultiplier,
+            freshnessAdvisories: freshnessAssessment.advisoryMessages,
+            moduleWeights: fazModuleWeights
         )
 
         // Task 11 (2026-05-13): modül performans karnesi — her Council üyesinin
@@ -603,7 +671,11 @@ actor ArgusGrandCouncil {
         poseidon: WhaleScore? = nil,
         dailyMF: OrionMultiFrameEngine.TimeframeAnalysis? = nil,
         weeklyMF: OrionMultiFrameEngine.TimeframeAnalysis? = nil,
-        kellyMultiplier: Double = 1.0
+        kellyMultiplier: Double = 1.0,
+        existingPositionWeight: Double = 0,
+        freshnessMultiplier: Double = 1.0,
+        freshnessAdvisories: [String] = [],
+        moduleWeights: [String: Double]
     ) -> ArgusGrandDecision {
         
         var contributors: [ModuleContribution] = []
@@ -614,6 +686,10 @@ actor ArgusGrandCouncil {
         // --- ADVISORS ---
         advisorNotes.append(CouncilAdvisorGenerator.generateAthenaAdvice(result: athena))
         advisorNotes.append(CouncilAdvisorGenerator.generateDemeterAdvice(score: demeter))
+
+        for msg in freshnessAdvisories {
+            advisorNotes.append(AdvisorNote(module: "Heimdall", advice: msg, tone: .warning))
+        }
         
         // Calculate temp action for Chiron check (simplified, will refine later if needed)
         // let _ = orion.action 
@@ -621,7 +697,7 @@ actor ArgusGrandCouncil {
 
         
         // --- 1. ORION (Technical) ---
-        let isStrongOrion = orion.action == .buy && orion.netSupport > 0.7
+        let isStrongOrion = orion.action == .buy && orion.netSupport > 0.8
         let isOrionSell = orion.action == .sell
         
         contributors.append(ModuleContribution(
@@ -968,51 +1044,13 @@ actor ArgusGrandCouncil {
         } else {
             // No Vetoes - Ağırlıklı Oylama Sistemi
 
-            // Modül ağırlıkları — Chiron 5-rejim sistemi
-            let chironRegime = ChironRegimeEngine.shared.globalResult.regime
-            let moduleWeights: [String: Double]
-            switch chironRegime {
-            case .trend:
-                // Trend: teknik dominant, mean-reversion ve tahmin güçlü
-                moduleWeights = [
-                    "Orion": 0.28, "Orion Patterns": 0.10,
-                    "Atlas": 0.15, "Aether": 0.12, "Hermes": 0.08,
-                    "Phoenix": 0.12, "Athena": 0.05, "Demeter": 0.07,
-                    "Prometheus": 0.03
-                ]
-            case .chop:
-                // Yatay: temel analiz + makro ağırlıklı (teknik sinyaller yanıltıcı)
-                moduleWeights = [
-                    "Orion": 0.12, "Orion Patterns": 0.05,
-                    "Atlas": 0.25, "Aether": 0.25, "Hermes": 0.08,
-                    "Phoenix": 0.05, "Athena": 0.08, "Demeter": 0.08,
-                    "Prometheus": 0.04
-                ]
-            case .riskOff:
-                // Riskten kaçış: makro dominant, teknik minimal
-                moduleWeights = [
-                    "Orion": 0.08, "Orion Patterns": 0.04,
-                    "Atlas": 0.15, "Aether": 0.45, "Hermes": 0.10,
-                    "Phoenix": 0.03, "Athena": 0.06, "Demeter": 0.06,
-                    "Prometheus": 0.03
-                ]
-            case .newsShock:
-                // Haber şoku: Hermes dominant, tahmin yararlı (kısa vadeli yön)
-                moduleWeights = [
-                    "Orion": 0.10, "Orion Patterns": 0.05,
-                    "Atlas": 0.12, "Aether": 0.15, "Hermes": 0.35,
-                    "Phoenix": 0.03, "Athena": 0.05, "Demeter": 0.05,
-                    "Prometheus": 0.10
-                ]
-            case .neutral:
-                // Dengeli: tüm motorlar dengeli katkı
-                moduleWeights = [
-                    "Orion": 0.20, "Orion Patterns": 0.07,
-                    "Atlas": 0.17, "Aether": 0.22, "Hermes": 0.10,
-                    "Phoenix": 0.07, "Athena": 0.06, "Demeter": 0.06,
-                    "Prometheus": 0.05
-                ]
-            }
+            // Modül ağırlıkları iki katmanda:
+            //   1. **Baseline (ChironRegimeEngine):** rejim-bazlı 9 modül ağırlığı.
+            //      "Orion Patterns" Orion'un %25'i olarak türetilir, "Prometheus" sabit %3.
+            //   2. **Modülasyon (Faz 2.2 ModuleWeightCalculator):** ModulePerformanceTracker
+            //      hit rate verisini bindirir — decisive ≥ 30 ve hit rate ≥ 0.55 → ×1.2;
+            //      < 0.45 → ×0.6. Sonra sum=1.0 normalize. Veri yetersizken (yeni kurulum,
+            //      decisive < 30) modül baseline'da kalır → eski davranış aynen sürer.
 
             // 2026-05-05 (Round 6 A.1) Zayıf sinyal penalty: Eski sürüm her council'ın
             // confidence'ını olduğu gibi alıp ağırlıkla çarpıyordu. Sonuç: Aether %38
@@ -1054,6 +1092,20 @@ actor ArgusGrandCouncil {
                 case .hold:
                     totalHoldWeight += vote
                 }
+            }
+
+            // Abstain renormalization: Contributors listesindeki modüllerin
+            // toplam ağırlığı < 1.0 olabilir (Phoenix R²<0.20, Demeter veri yok vb.).
+            // Oy ağırlıklarını aktif modüllerin toplam ağırlığına göre normalize et
+            // ki abstain eden modüller yapısal HOLD bias'ı yaratmasın.
+            let activeModuleWeight = contributors.reduce(0.0) { sum, c in
+                sum + (moduleWeights[c.module] ?? 0.1)
+            }
+            if activeModuleWeight > 0 && activeModuleWeight < 0.95 {
+                let scale = 1.0 / activeModuleWeight
+                totalBuyWeight *= scale
+                totalSellWeight *= scale
+                totalHoldWeight *= scale
             }
 
             // Hermes çarpanını uygula
@@ -1147,6 +1199,22 @@ actor ArgusGrandCouncil {
         if (finalAction == .aggressiveBuy || finalAction == .accumulate) && (aether.marketMode == .fear) {
             finalAction = .accumulate // Don't go aggressive in fear
             reasoning += " (Makro korku nedeniyle baskılandı)"
+        }
+
+        // T2.19: Pozisyon farkındalığı — yoğunlaşma riskini Council seviyesinde yakala
+        if existingPositionWeight > 0 {
+            let isBuying = finalAction == .aggressiveBuy || finalAction == .accumulate
+            if isBuying && existingPositionWeight >= 0.10 && finalAction == .aggressiveBuy {
+                finalAction = .accumulate
+                reasoning += " (Mevcut pozisyon %\(Int(existingPositionWeight * 100)) — kademeli alım)"
+            }
+            if isBuying {
+                advisorNotes.append(AdvisorNote(
+                    module: "Portföy",
+                    advice: "Bu sembolde açık pozisyon var (%\(Int(existingPositionWeight * 100)) ağırlık).",
+                    tone: existingPositionWeight >= 0.12 ? .warning : .caution
+                ))
+            }
         }
 
         // PROMETHEUS ADVISORY — 5-günlük tahmin uyumlu mu?
@@ -1282,7 +1350,7 @@ actor ArgusGrandCouncil {
         // 2026-05-13 Task 10 hijyen (Yol B): paper trading UX floor'u 0.20 → 0.0.
         // Sistem "bilmiyorum" diyebilmeli. UI etiketleri (AL/SAT/TUT) kalır;
         // ArgusDecisionCardView confidence < 0.30 için "Düşük güven" rozeti gösterir.
-        let finalConfidence = max(min(avgConfidence * hermesMultiplier, 1.0), 0.0)
+        let finalConfidence = max(min(avgConfidence * hermesMultiplier * freshnessMultiplier, 1.0), 0.0)
         
         return ArgusGrandDecision(
             id: UUID(),
