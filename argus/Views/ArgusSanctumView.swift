@@ -50,6 +50,12 @@ struct ArgusSanctumView: View {
     @State private var hasAppliedLaunchOverride = false
     @State private var showArgusAnalysis = false
 
+    // Faz 1.A.4 entegrasyon: toggle açıksa SanctumCouncilBody'nin altına Karar
+    // Kartı V2 eklenir. Settings → Deneysel → "Karar Kartı V2" kontrol eder.
+    // Default OFF → mevcut UI'a sıfır etki; opt-in kullanıcı görür.
+    @AppStorage("karar_karti_v2_enabled") private var kararKartiV2Enabled = false
+    @StateObject private var kararKartiVM = KararKartiViewModel()
+
     enum TradeAction { case buy, sell }
 
     /// MotorEngine → SanctumModuleType ters eşleşme (HoloPanel için).
@@ -68,6 +74,32 @@ struct ArgusSanctumView: View {
         case .phoenix:    return .prometheus  // Phoenix = Tahmin altında Prometheus ile birleşik
         default:          return nil
         }
+    }
+
+    /// Faz 1.A entegrasyon: Aktif decision'ı KararKartiViewModel'e hazırlatır.
+    /// `.task(id: decision.id)` sembol veya karar değiştiğinde tekrar tetikler.
+    /// Eksik veriler (Demeter score, cluster count, AISignal) sonraki turn'de
+    /// bağlanır; şimdilik primitive defaults — PremortemEngine nil-safe.
+    private func prepareKararKartiV2(for decision: ArgusGrandDecision) async {
+        let atlasMargin = decision.atlasDecision?.marginOfSafety
+        // Aether stance → 0-100 makro skor eşlemesi (PremortemEngine kural 1).
+        let aetherScore: Double = {
+            switch decision.aetherDecision.stance {
+            case .riskOn:    return 80
+            case .cautious:  return 60
+            case .defensive: return 35
+            case .riskOff:   return 15
+            }
+        }()
+        await kararKartiVM.prepare(
+            from: decision,
+            atlasMargin: atlasMargin,
+            demeterScore: nil,           // Demeter wiring sonraki turn
+            aetherScore: aetherScore,
+            clusterCount: 0,              // PortfolioStore cluster lookup sonraki turn
+            hasAISignalSupport: false,   // AISignal entegrasyon sonraki turn
+            estimatedPositionTRY: 0      // TradeBrain tahmini sonraki turn
+        )
     }
 
     var body: some View {
@@ -112,6 +144,17 @@ struct ArgusSanctumView: View {
                                         }
                                     }
                                 )
+
+                                // Faz 1.A: Karar Kartı V2 (deneysel, default OFF).
+                                // Settings'teki toggle açıksa ve aktif decision varsa,
+                                // V2 görünür. ViewModel `.task(id:)` ile decision UUID
+                                // değiştikçe (sembol/karar değişimi) yeniden hazırlanır.
+                                if kararKartiV2Enabled, let decision = activeDecision {
+                                    KararKartiV2View(viewModel: kararKartiVM)
+                                        .task(id: decision.id) {
+                                            await prepareKararKartiV2(for: decision)
+                                        }
+                                }
                             }
                         }
                     }
