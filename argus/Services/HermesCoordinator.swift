@@ -57,6 +57,50 @@ final class HermesCoordinator: Sendable {
         }
     }
 
+    // MARK: - Scouting Pre-warm (Faz 2.3 — 2026-05-14)
+    //
+    // Bug: Council.convene global sembollerde HermesNewsSnapshot'ı sadece cache'ten
+    // okuyor; cache boşsa nil dönüyor ve karar "Hermessiz" alınıyor (9 modülün
+    // 1'i sessiz). UI tarafında HermesNewsViewModel manuel tetikle dolduğu için
+    // kullanıcı detaya girene kadar cache boş kalıyor.
+    //
+    // Çözüm: AutoPilotStore.runAutoPilot() scouting başlangıcında bu metod
+    // çağrılır. Watchlist'teki global semboller için paralel `analyzeOnDemand`
+    // çalıştırılır — cache hit olanlar hızlı geçer, miss olanlar LLM ile dolar.
+    // Sonra Council.convene cache'ten dolu snapshot okur.
+    //
+    // BIST sembolleri (.IS suffix) atlanır — `BISTSentimentEngine` zaten
+    // Council.convene içinde ayrı bir yolla çalışır.
+    //
+    // **Rate limit:** analyzeOnDemand sembol başına 60sn rate-limited (kendi
+    // içinde). Parallel TaskGroup her sembol bağımsız çalışır; aynı sembol
+    // tekrar çağrılırsa cached fallback'e düşer (ücretsiz).
+
+    /// Scouting öncesi global watchlist sembolleri için Hermes haberlerini
+    /// paralel pre-fetch eder. Council.convene çağrılmadan ÖNCE cache hazır olur.
+    ///
+    /// - Parameter symbols: Watchlist tam liste. BIST sembolleri (.IS suffix)
+    ///   filtrelenir; global semboller analyzeOnDemand'a gönderilir.
+    func warmupForScouting(symbols: [String]) async {
+        // BIST'i atla — Council.convene içinde BISTSentimentEngine kendi yolundan.
+        let globalSymbols = symbols.filter { !$0.uppercased().hasSuffix(".IS") }
+        guard !globalSymbols.isEmpty else { return }
+
+        // İlk N=20 sınırı: LLM quota + bekleme süresi tasarrufu. Watchlist genişse
+        // sonraki turlarda kalanlar (priority order korunur) cache'lenir.
+        let batch = Array(globalSymbols.prefix(20))
+
+        await withTaskGroup(of: Void.self) { group in
+            for symbol in batch {
+                group.addTask { [weak self] in
+                    // analyzeOnDemand zaten rate-limited (60sn aynı sembol).
+                    // Sonuç event store'a yazılır; Council.convene buradan okur.
+                    _ = await self?.analyzeOnDemand(symbol: symbol)
+                }
+            }
+        }
+    }
+
     /// LLM hata fallback'i: son cached event skorunu (varsa) döndür.
     /// 12 saatten eski ise de döner — sinyal olmamaktansa eski sinyal daha iyi
     /// (staleness zaten Hermes decay formülleriyle Council tarafında ağırlık kaybediyor).

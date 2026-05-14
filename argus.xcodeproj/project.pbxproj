@@ -13,6 +13,7 @@
 		43C6C15BCFE44B35937088E2 /* DataTieringEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 767A282833374E84A24ECA29 /* DataTieringEngineTests.swift */; };
 		477929EC5673401646E6E7DA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 10BBE2B6F9DCE47D31CFCEA1 /* Foundation.framework */; };
 		58C31637AED5401A9F7FEB99 /* TradeLifecycleLedgerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA369556473747FBAF91AAF9 /* TradeLifecycleLedgerTests.swift */; };
+		B18E02D1790342A2B8651D75 /* HermesCoordinatorWarmupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 269DF86044194C47826E71C6 /* HermesCoordinatorWarmupTests.swift */; };
 		5F88971614454F0E8F40156B /* ArgusValidatorSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 502E9EAD831847AA974B9B1F /* ArgusValidatorSchedulerTests.swift */; };
 		621C39A2DFD04C5184E8A83C /* PortfolioStoreSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A469DAB77D84EB694349A1E /* PortfolioStoreSmokeTests.swift */; };
 		624BD4F99553449EAC80303C /* BlobCacheServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EECD45BC00C24FC4B60D3B0C /* BlobCacheServiceTests.swift */; };
@@ -50,6 +51,7 @@
 		3461650B71914ECB87CDA0EB /* PlanRepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlanRepositoryTests.swift; sourceTree = "<group>"; };
 		35ED3317CB184C016BF90764 /* TradeValidatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TradeValidatorTests.swift; sourceTree = "<group>"; };
 		4ECADC30C0BF438292CA6E1C /* OutcomesTableTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OutcomesTableTests.swift; sourceTree = "<group>"; };
+		269DF86044194C47826E71C6 /* HermesCoordinatorWarmupTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HermesCoordinatorWarmupTests.swift; sourceTree = "<group>"; };
 		502E9EAD831847AA974B9B1F /* ArgusValidatorSchedulerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArgusValidatorSchedulerTests.swift; sourceTree = "<group>"; };
 		56A98C5FEAAC4C79BCD20524 /* SellLifecycleOrderingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SellLifecycleOrderingTests.swift; sourceTree = "<group>"; };
 		578DC6BD61064A0B294EF85D /* argusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = argusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -158,6 +160,7 @@
 				B55DA450A3FA73951B71CD5C /* V2AdapterTests.swift */,
 				D5A2DDE3411C7F448448EE9A /* ExecutionGovernorDidExecuteTests.swift */,
 				502E9EAD831847AA974B9B1F /* ArgusValidatorSchedulerTests.swift */,
+				269DF86044194C47826E71C6 /* HermesCoordinatorWarmupTests.swift */,
 				87961FE910874CF9A994B73C /* KellyNegativeBlockTests.swift */,
 				AA369556473747FBAF91AAF9 /* TradeLifecycleLedgerTests.swift */,
 				F1A2B3C4D5E6F7A8B9C0D1E2 /* PremortemEngineTests.swift */,
@@ -308,6 +311,7 @@
 				8AFF37EAA21CE2182ACD8D6F /* V2AdapterTests.swift in Sources */,
 				92CECFE54025424D083C98AA /* ExecutionGovernorDidExecuteTests.swift in Sources */,
 				5F88971614454F0E8F40156B /* ArgusValidatorSchedulerTests.swift in Sources */,
+				B18E02D1790342A2B8651D75 /* HermesCoordinatorWarmupTests.swift in Sources */,
 				7E5FA7F34F5748A884128E49 /* KellyNegativeBlockTests.swift in Sources */,
 				58C31637AED5401A9F7FEB99 /* TradeLifecycleLedgerTests.swift in Sources */,
 				0EE62F21F17349A8B09346A4 /* LedgerTierColumnTests.swift in Sources */,

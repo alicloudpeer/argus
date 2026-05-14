@@ -41,10 +41,20 @@ extension AutoPilotStore {
         // T3.5: Sektör batch optimizasyonu — scan başında Demeter (sektör bazlı)
         // ve makro snapshot'ı bir kez ısıt. Sembol döngüsündeki her Council
         // çağrısı internal cache'lere düşer; redundant API yükü azaltılır.
+        //
+        // 2026-05-14: Hermes pre-warm eklendi. Eski davranışta Council.convene
+        // global semboller için HermesNewsSnapshot cache'ten okuyordu; cache
+        // sadece UI manuel tetikten doluyordu → kullanıcı detaya girene kadar
+        // boş → "Hermessiz alım" (9 modülün 1'i sessiz). Şimdi scouting
+        // başında watchlist global sembolleri paralel pre-fetch ediliyor.
+        // BIST sembolleri Council.convene içinde BISTSentimentEngine kendi
+        // yolundan ısıtır — bu helper sadece global'i kapsar.
+        let watchlistForHermes = WatchlistStore.shared.items
         async let demeterWarm: Void = DemeterEngine.shared.analyze()
         async let macroWarm: MacroEnvironmentRating = MacroRegimeService.shared.computeMacroEnvironment()
-        _ = await (demeterWarm, macroWarm)
-        ArgusLogger.info("🔥 Pre-warm: Demeter + Makro hazır", category: "OTOPİLOT")
+        async let hermesWarm: Void = HermesCoordinator.shared.warmupForScouting(symbols: watchlistForHermes)
+        _ = await (demeterWarm, macroWarm, hermesWarm)
+        ArgusLogger.info("🔥 Pre-warm: Demeter + Makro + Hermes hazır", category: "OTOPİLOT")
 
         // FİX G (observability): Piyasa durumu her turda loglansın.
         // Önceki davranışta BIST/Global piyasa kapalı olunca sessizce atlanıyordu.
@@ -164,13 +174,11 @@ extension AutoPilotStore {
             )
         }
 
-        // T3.9: Operasyonel sağlık raporu — scan başına özet metrikler
-        let buySignals = signals.filter {
-            $0.action == .buy
-        }.count
-        let sellSignals = signals.filter {
-            $0.action == .sell
-        }.count
+        // T3.9: Operasyonel sağlık raporu — scan başına özet metrikler.
+        // signals.action SignalAction enum'u (BUY/SELL/HOLD/SKIP/WAIT). Council kararındaki
+        // .aggressiveBuy/.accumulate buraya .buy, .trim/.liquidate .sell olarak map'lenir.
+        let buySignals = signals.filter { $0.action == .buy }.count
+        let sellSignals = signals.filter { $0.action == .sell }.count
         let neutralCount = max(0, symbols.count - buySignals - sellSignals - skipLogs.count)
         let scanRatio: (_ count: Int, _ pct: Double) -> String = { c, total in
             let pct = total > 0 ? Double(c) / total * 100 : 0
