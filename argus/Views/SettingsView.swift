@@ -402,96 +402,134 @@ extension SettingsView {
     // İçerikler eski compactAutoPilotCard / aetherSensitivityCard /
     // Chiron + Alkindus TerminalSection'lar.
 
+    // 2026-05-14: TerminalSection + ArgusTerminalRow + mitolojik isim
+    // başlıklar (CHIRON, ALKINDUS) ve renkli icon spam'i → sade ayraçlı
+    // 3 section. Mitolojik isim YOK, button outline, rotating spinner kalktı.
     fileprivate var motorCalibrationSubPage: some View {
-        VStack(spacing: 12) {
-            // Chiron Öğrenme Motoru
-            TerminalSection(title: "CHIRON · ÖĞRENME",
-                            motor: .chiron) {
-                NavigationLink(destination: ChironInsightsView()) {
-                    ArgusTerminalRow(
-                        label: "Kokpit",
-                        value: chironTradeCount > 0 ? "WR %\(chironWinRate) · T \(chironTradeCount)" : "Henüz veri yok",
-                        icon: "ChironIcon",
-                        color: InstitutionalTheme.Colors.Motors.chiron
+        VStack(alignment: .leading, spacing: 0) {
+            // Section: Öğrenme
+            motorSectionLabel("Öğrenme")
+                .padding(.bottom, DesignTokens.Spacing.s10)
+
+            NavigationLink(destination: ChironInsightsView()) {
+                motorRow(
+                    label: "Kokpit",
+                    detail: chironTradeCount > 0
+                        ? "Kazanma %\(chironWinRate) · \(chironTradeCount) trade"
+                        : "Henüz veri yok"
+                )
+            }
+            .buttonStyle(.plain)
+            motorRowDivider
+
+            NavigationLink(destination: ChironPerformanceView()) {
+                motorRow(label: "Performans", detail: "Grafikler")
+            }
+            .buttonStyle(.plain)
+            motorRowDivider
+
+            NavigationLink(destination: ChironInsightsView(symbol: nil)) {
+                motorRow(label: "İçgörüler", detail: "Son dersler")
+            }
+            .buttonStyle(.plain)
+
+            // Section: Doğrulama
+            motorSectionLabel("Doğrulama")
+                .padding(.top, DesignTokens.Spacing.xl)
+                .padding(.bottom, DesignTokens.Spacing.s10)
+
+            NavigationLink(destination: BacktestValidationView()) {
+                motorRow(label: "Alpha doğrulama",
+                         detail: "10 sembol · 6 ay backtest")
+            }
+            .buttonStyle(.plain)
+
+            // Section: Kalibrasyon
+            motorSectionLabel("Kalibrasyon")
+                .padding(.top, DesignTokens.Spacing.xl)
+                .padding(.bottom, DesignTokens.Spacing.s10)
+
+            NavigationLink(destination: AlkindusDashboardView()) {
+                motorRow(
+                    label: "Gözlem paneli",
+                    detail: alkindusPendingCount > 0
+                        ? "\(alkindusPendingCount) gözlem bekliyor"
+                        : "Sıra boş"
+                )
+            }
+            .buttonStyle(.plain)
+
+            // Manuel çalıştır button — outline, rotating icon yok
+            Button(action: runCalibrationNow) {
+                Text(isRunningCalibration ? "Çalışıyor…" : "Kalibrasyonu çalıştır")
+                    .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
+                    .foregroundColor(isRunningCalibration
+                                     ? DesignTokens.Colors.textTertiary
+                                     : DesignTokens.Colors.textPrimary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, DesignTokens.Spacing.s13)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignTokens.Radius.md)
+                            .stroke(DesignTokens.Colors.border,
+                                    lineWidth: DesignTokens.BorderWidth.hairline)
                     )
-                }
-                NavigationLink(destination: ChironPerformanceView()) {
-                    ArgusTerminalRow(
-                        label: "Performans",
-                        value: "Grafikler",
-                        icon: "chart.bar.xaxis",
-                        color: DesignTokens.Colors.primary
-                    )
-                }
-                NavigationLink(destination: ChironInsightsView(symbol: nil)) {
-                    ArgusTerminalRow(
-                        label: "İçgörüler",
-                        value: "Son dersler",
-                        icon: "waveform.path.ecg",
-                        color: DesignTokens.Colors.success
-                    )
-                }
+            }
+            .buttonStyle(.plain)
+            .disabled(isRunningCalibration)
+            .accessibilityLabel(isRunningCalibration
+                                ? "Kalibrasyon çalışıyor"
+                                : "Kalibrasyonu çalıştır")
+            .padding(.top, DesignTokens.Spacing.md)
+
+            // Flash mesajı (manuel çalıştırma sonrası)
+            if let flash = calibrationFlash {
+                Text(flash)
+                    .font(DesignTokens.Fonts.custom(size: 12))
+                    .foregroundColor(DesignTokens.Colors.success)
+                    .padding(.top, DesignTokens.Spacing.sm)
             }
 
-            // Backtest Validasyon
-            TerminalSection(title: "BACKTEST · VALİDASYON",
-                            systemImage: "chart.bar.xaxis.ascending",
-                            accentColor: InstitutionalTheme.Colors.aurora) {
-                NavigationLink(destination: BacktestValidationView()) {
-                    ArgusTerminalRow(
-                        label: "V2 Alpha Doğrulama",
-                        value: "10 sembol · 6 ay",
-                        icon: "chart.bar.xaxis.ascending",
-                        color: InstitutionalTheme.Colors.aurora
-                    )
-                }
-            }
-
-            // Alkindus Kalibrasyon Motoru
-            TerminalSection(title: "ALKINDUS · KALİBRASYON",
-                            motor: .alkindus) {
-                NavigationLink(destination: AlkindusDashboardView()) {
-                    ArgusTerminalRow(
-                        label: "Gözlem Paneli",
-                        value: alkindusPendingCount > 0 ? "\(alkindusPendingCount) bekliyor" : "Boş",
-                        icon: "eye.circle.fill",
-                        color: InstitutionalTheme.Colors.neutral
-                    )
-                }
-
-                Button(action: runCalibrationNow) {
-                    HStack(spacing: 12) {
-                        Image(systemName: isRunningCalibration ? "arrow.triangle.2.circlepath" : "play.circle.fill")
-                            .font(.system(.callout))
-                            .foregroundColor(isRunningCalibration ? DesignTokens.Colors.textSecondary : DesignTokens.Colors.primary)
-                            .frame(width: 20)
-                            .rotationEffect(.degrees(isRunningCalibration ? 360 : 0))
-                            .animation(isRunningCalibration ? .linear(duration: 1.2).repeatForever(autoreverses: false) : .default, value: isRunningCalibration)
-
-                        Text(isRunningCalibration ? "Çalışıyor…" : "Kalibrasyonu şimdi çalıştır")
-                            .font(InstitutionalTheme.Typography.body)
-                            .foregroundColor(DesignTokens.Colors.textPrimary)
-
-                        Spacer()
-
-                        if let flash = calibrationFlash {
-                            Text(flash)
-                                .font(InstitutionalTheme.Typography.caption)
-                                .foregroundColor(DesignTokens.Colors.success)
-                                .transition(.opacity)
-                        }
-                    }
-                    .frame(minHeight: 44)
-                    .padding(.vertical, 12)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .disabled(isRunningCalibration)
-                .accessibilityLabel(isRunningCalibration ? "Kalibrasyon çalışıyor" : "Kalibrasyonu şimdi çalıştır")
-            }
+            // Açıklama altta
+            Text("Kalibrasyon, motor ağırlıklarını piyasaya göre günceller. Otomatik çalışır, manuel tetik nadiren gerekir.")
+                .font(DesignTokens.Fonts.custom(size: 11))
+                .foregroundColor(DesignTokens.Colors.textTertiary)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, DesignTokens.Spacing.md)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 14)
+        .padding(.horizontal, DesignTokens.Spacing.s18)
+        .padding(.top, DesignTokens.Spacing.md)
+    }
+
+    private func motorSectionLabel(_ text: String) -> some View {
+        Text(text)
+            .font(DesignTokens.Fonts.custom(size: 11, weight: .medium))
+            .foregroundColor(DesignTokens.Colors.textTertiary)
+    }
+
+    private func motorRow(label: String, detail: String) -> some View {
+        HStack(spacing: DesignTokens.Spacing.s10) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxs) {
+                Text(label)
+                    .font(DesignTokens.Fonts.custom(size: 15))
+                    .foregroundColor(DesignTokens.Colors.textPrimary)
+                Text(detail)
+                    .font(DesignTokens.Fonts.custom(size: 12))
+                    .foregroundColor(DesignTokens.Colors.textSecondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(DesignTokens.Fonts.custom(size: 12))
+                .foregroundColor(DesignTokens.Colors.textTertiary)
+        }
+        .padding(.vertical, DesignTokens.Spacing.s14)
+        .contentShape(Rectangle())
+    }
+
+    private var motorRowDivider: some View {
+        Rectangle()
+            .fill(DesignTokens.Colors.borderSubtle)
+            .frame(height: DesignTokens.BorderWidth.hairline)
     }
 
     fileprivate var autopilotRulesSubPage: some View {
@@ -580,20 +618,19 @@ extension SettingsView {
     // Sadece toggle + tek satır mod etiketi + "Detaylar →" link. Canlı teşhis,
     // Harmony paneli, blocker listesi Durum Panosu sheet'inde (Snapshot Ribbon tıkla).
 
+    // 2026-05-14: TerminalSection + bolt icon + emoji'li mod label → sade
+    // ayraçlı liste, icon yok, sentence case. Mode label "🚀 Fırsat modu" yerine
+    // "Fırsat modu ×1.50" — emoji AI-tell sinyali.
     private var compactAutoPilotCard: some View {
-        TerminalSection(title: "OTOPİLOT",
-                        motor: .argus) {
-            HStack(spacing: 12) {
-                Image(systemName: autoPilotStore.isAutoPilotEnabled ? "bolt.fill" : "bolt.slash.fill")
-                    .font(.system(.callout))
-                    .foregroundColor(autoPilotStore.isAutoPilotEnabled ? DesignTokens.Colors.success : DesignTokens.Colors.error)
-                    .frame(width: 20)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(autoPilotStore.isAutoPilotEnabled ? "Aktif" : "Kapalı")
-                        .font(InstitutionalTheme.Typography.body)
+        VStack(spacing: 0) {
+            // Toggle satır
+            HStack(spacing: DesignTokens.Spacing.md) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxs) {
+                    Text("Otopilot")
+                        .font(DesignTokens.Fonts.custom(size: 16))
                         .foregroundColor(DesignTokens.Colors.textPrimary)
                     Text(compactModeLabel)
-                        .font(InstitutionalTheme.Typography.caption)
+                        .font(DesignTokens.Fonts.custom(size: 12))
                         .foregroundColor(compactModeColor)
                 }
                 Spacer()
@@ -602,47 +639,62 @@ extension SettingsView {
                     .tint(DesignTokens.Colors.success)
                     .accessibilityLabel("Otopilot")
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, DesignTokens.Spacing.s14)
 
+            Rectangle()
+                .fill(DesignTokens.Colors.borderSubtle)
+                .frame(height: DesignTokens.BorderWidth.hairline)
+
+            // Sistem durumu link
             Button(action: { showStatusConsole = true }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "stethoscope")
-                        .font(.system(.footnote))
-                        .foregroundColor(DesignTokens.Colors.primary)
-                        .frame(width: 20)
-                    Text("Durum Panosu")
-                        .font(InstitutionalTheme.Typography.body)
-                        .foregroundColor(DesignTokens.Colors.textPrimary)
+                HStack(spacing: DesignTokens.Spacing.s10) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxs) {
+                        Text("Sistem durumu")
+                            .font(DesignTokens.Fonts.custom(size: 15))
+                            .foregroundColor(DesignTokens.Colors.textPrimary)
+                        Text("Canlı teşhis ve modül sağlığı")
+                            .font(DesignTokens.Fonts.custom(size: 12))
+                            .foregroundColor(DesignTokens.Colors.textSecondary)
+                    }
                     Spacer()
                     if !tradeBlockReasons.isEmpty {
                         Text("\(tradeBlockReasons.count) uyarı")
-                            .font(InstitutionalTheme.Typography.caption)
-                            .foregroundColor(InstitutionalTheme.Colors.neutral)
+                            .font(DesignTokens.Fonts.custom(size: 12))
+                            .foregroundColor(DesignTokens.Colors.textTertiary)
                     }
                     Image(systemName: "chevron.right")
-                        .font(.system(.caption2))
-                        .foregroundColor(DesignTokens.Colors.textSecondary.opacity(0.7))
+                        .font(DesignTokens.Fonts.custom(size: 12))
+                        .foregroundColor(DesignTokens.Colors.textTertiary)
                 }
-                .frame(minHeight: 44)
-                .padding(.vertical, 10)
+                .padding(.vertical, DesignTokens.Spacing.s14)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Durum panosunu aç")
+            .accessibilityLabel("Sistem durumunu aç")
+
+            // Açıklama altta
+            Text("Otopilot açıkken sistem ürettiği AL/SAT sinyallerini otomatik uygular. Detay için sistem durumuna bak.")
+                .font(DesignTokens.Fonts.custom(size: 11))
+                .foregroundColor(DesignTokens.Colors.textTertiary)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, DesignTokens.Spacing.md)
         }
     }
 
     private var compactModeLabel: String {
         let snap = marketContext.snapshot
-        if !autoPilotStore.isAutoPilotEnabled { return "Hiçbir alım/satım yapılmaz" }
-        if snap.opportunityMode { return "🚀 Fırsat modu (×\(String(format: "%.2f", snap.positionMultiplier)))" }
-        if snap.protectiveMode { return "🛡️ Koruyucu mod (×\(String(format: "%.2f", snap.positionMultiplier)))" }
-        return "Normal seyir"
+        if !autoPilotStore.isAutoPilotEnabled { return "Kapalı · alım/satım yapılmaz" }
+        let mult = String(format: "%.2f", snap.positionMultiplier)
+        if snap.opportunityMode { return "Fırsat modu · ×\(mult)" }
+        if snap.protectiveMode { return "Koruyucu mod · ×\(mult)" }
+        return "Normal seyir · ×\(mult)"
     }
 
     private var compactModeColor: Color {
         let snap = marketContext.snapshot
-        if !autoPilotStore.isAutoPilotEnabled { return InstitutionalTheme.Colors.neutral }
+        if !autoPilotStore.isAutoPilotEnabled { return DesignTokens.Colors.textTertiary }
         if snap.opportunityMode { return DesignTokens.Colors.success }
         if snap.protectiveMode { return DesignTokens.Colors.error }
         return DesignTokens.Colors.textSecondary
