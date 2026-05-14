@@ -428,24 +428,36 @@ final class ArgusLedger: Sendable {
                 print("🚨 FlightRecorder: Prepare Error: \(errMsg)")
             }
             sqlite3_finalize(stmt)
+            // Faz 1.B.6: Paralel cache katmanı. DB write garantili (iCloud
+            // backup); Caches/ yedeklenmez ama hızlı erişim + iOS gerekirse
+            // temizleyebilir. readBlob önce cache'i dener.
+            BlobCacheService.shared.writeToCache(hash: hash, data: storageData)
             return hash
         }
     }
-    
+
     /// Reads a blob from storage by hash.
+    /// **Faz 1.B.6:** Önce Caches katmanını dener, dosya yoksa DB'ye düşer.
+    /// iOS Caches'i otomatik temizlemiş olabilir — DB her zaman authoritative.
     func readBlob(hash: String) -> Data? {
+        // 1. Hızlı yol: Caches/argus_blobs/{hash}.dat
+        if let cached = BlobCacheService.shared.readFromCache(hash: hash) {
+            return cached
+        }
+
+        // 2. Fallback: SQLite BLOB payload
         let sql = """
         SELECT payload_bytes FROM blobs WHERE hash_id = ? LIMIT 1;
         """
-        
+
         return queue.sync {
             ensureConnection()
             var stmt: OpaquePointer?
             var result: Data?
-            
+
             if sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK {
                 sqlite3_bind_text(stmt, 1, (hash as NSString).utf8String, -1, nil)
-                
+
                 if sqlite3_step(stmt) == SQLITE_ROW {
                     if let blobPtr = sqlite3_column_blob(stmt, 0) {
                         let blobSize = Int(sqlite3_column_bytes(stmt, 0))
@@ -454,6 +466,11 @@ final class ArgusLedger: Sendable {
                 }
             }
             sqlite3_finalize(stmt)
+            // Cache'i sıcak tut: DB'den çekilen blob'u Caches'e yaz, sonraki
+            // okumalar hızlanır (iOS Caches'i son temizlemiş olabilir).
+            if let data = result {
+                BlobCacheService.shared.writeToCache(hash: hash, data: data)
+            }
             return result
         }
     }

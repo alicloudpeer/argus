@@ -29,6 +29,7 @@
 		CC2A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */; };
 		0EE62F21F17349A8B09346A4 /* LedgerTierColumnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */; };
 		43C6C15BCFE44B35937088E2 /* DataTieringEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 767A282833374E84A24ECA29 /* DataTieringEngineTests.swift */; };
+			624BD4F99553449EAC80303C /* BlobCacheServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EECD45BC00C24FC4B60D3B0C /* BlobCacheServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +68,7 @@
 		CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KararKartiViewModelTests.swift; sourceTree = "<group>"; };
 		6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LedgerTierColumnTests.swift; sourceTree = "<group>"; };
 		767A282833374E84A24ECA29 /* DataTieringEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataTieringEngineTests.swift; sourceTree = "<group>"; };
+			EECD45BC00C24FC4B60D3B0C /* BlobCacheServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlobCacheServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -160,6 +162,7 @@
 				CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */,
 				56A98C5FEAAC4C79BCD20524 /* SellLifecycleOrderingTests.swift */,
 				6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */,
+				EECD45BC00C24FC4B60D3B0C /* BlobCacheServiceTests.swift */,
 				767A282833374E84A24ECA29 /* DataTieringEngineTests.swift */,
 			);
 			path = Council;
@@ -305,6 +308,7 @@
 				7E5FA7F34F5748A884128E49 /* KellyNegativeBlockTests.swift in Sources */,
 				58C31637AED5401A9F7FEB99 /* TradeLifecycleLedgerTests.swift in Sources */,
 				0EE62F21F17349A8B09346A4 /* LedgerTierColumnTests.swift in Sources */,
+				624BD4F99553449EAC80303C /* BlobCacheServiceTests.swift in Sources */,
 				43C6C15BCFE44B35937088E2 /* DataTieringEngineTests.swift in Sources */,
 				8AF6D72DB23E493D968FD3AA /* SellLifecycleOrderingTests.swift in Sources */,
 				EA4E6EEAC49249F4ACE58240 /* OutcomesTableTests.swift in Sources */,
