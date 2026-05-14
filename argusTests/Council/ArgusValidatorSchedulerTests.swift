@@ -14,19 +14,25 @@ final class ArgusValidatorSchedulerTests: XCTestCase {
     /// Plist anahtarı ile koddaki kimlik birebir aynı olmalı. Sürüklenme olursa
     /// iOS sessizce submit fail eder, BGTask asla tetiklenmez.
     ///
-    /// Kritik: Apple BGTaskScheduler identifier'ın PRODUCT_BUNDLE_IDENTIFIER
-    /// (ArgusTeam.argus) ile başlamasını zorunlu kılar; aksi halde submit() her
-    /// zaman BGTaskSchedulerErrorDomain error 3 (notPermitted) atar.
+    /// Kritik: Apple BGTaskScheduler identifier'ın PRODUCT_BUNDLE_IDENTIFIER ile
+    /// başlamasını zorunlu kılar; aksi halde submit() her zaman
+    /// BGTaskSchedulerErrorDomain error 3 (notPermitted) atar.
+    ///
+    /// 2026-05-14: taskIdentifier runtime'da `Bundle.main.bundleIdentifier`'dan
+    /// türetiliyor (her fork kendi bundle ID'sini personalize edebilsin).
+    /// Test bundle'ı argusTests; ana app bundle ID'sinden farklıdır, bu yüzden
+    /// suffix kontratı + prefix runtime bundle ile karşılaştırma yapılıyor.
     func test_taskIdentifier_matchesInfoPlistContract() {
-        XCTAssertEqual(
-            ArgusValidatorScheduler.taskIdentifier,
-            "ArgusTeam.argus.validator.daily",
-            "Info.plist BGTaskSchedulerPermittedIdentifiers ile birebir ve bundle ID prefix'iyle eşleşmeli"
-        )
         XCTAssertTrue(
-            ArgusValidatorScheduler.taskIdentifier.hasPrefix("ArgusTeam.argus"),
-            "BGTask identifier PRODUCT_BUNDLE_IDENTIFIER ile başlamak zorunda"
+            ArgusValidatorScheduler.taskIdentifier.hasSuffix(".validator.daily"),
+            "BGTask identifier '.validator.daily' suffix'iyle bitmek zorunda"
         )
+        if let bundleID = Bundle.main.bundleIdentifier {
+            XCTAssertTrue(
+                ArgusValidatorScheduler.taskIdentifier.hasPrefix(bundleID),
+                "BGTask identifier PRODUCT_BUNDLE_IDENTIFIER prefix'i ile başlamak zorunda (Bundle.main = \(bundleID))"
+            )
+        }
     }
 
     /// Singleton kontratı: shared aynı instance dönmeli.

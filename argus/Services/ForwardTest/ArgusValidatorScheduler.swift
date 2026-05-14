@@ -29,8 +29,18 @@ final class ArgusValidatorScheduler {
     /// Info.plist `BGTaskSchedulerPermittedIdentifiers` ile birebir eşleşmeli.
     /// Apple BGTaskScheduler identifier'ın PRODUCT_BUNDLE_IDENTIFIER ile başlamasını
     /// zorunlu kılar — aksi halde `submit()` her zaman BGTaskSchedulerErrorDomain
-    /// error 3 (notPermitted) atar. Bu nedenle prefix `ArgusTeam.argus`.
-    static let taskIdentifier = "ArgusTeam.argus.validator.daily"
+    /// error 3 (notPermitted) atar.
+    ///
+    /// 2026-05-14: identifier artık runtime'da `Bundle.main.bundleIdentifier`'dan
+    /// türetiliyor. Eskiden hardcoded `"ArgusTeam.argus.validator.daily"` idi —
+    /// her geliştirici personalize.sh ile kendi bundle ID'sini setledikten sonra
+    /// BGTask hâlâ eski prefix'i kullandığı için register fail ediyordu (fork'lar
+    /// için ölü özellik). Info.plist tarafında `$(PRODUCT_BUNDLE_IDENTIFIER).validator.daily`
+    /// substitution kullanılıyor — ikisi otomatik eşleşir.
+    static let taskIdentifier: String = {
+        let prefix = Bundle.main.bundleIdentifier ?? "com.argus"
+        return "\(prefix).validator.daily"
+    }()
 
     /// Hedef tetikleme saati (lokal). iOS bu saati `earliestBeginDate` olarak alır;
     /// gerçek tetikleme cihaz uygunluğuna göre sonrasında olabilir.
