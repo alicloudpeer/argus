@@ -201,6 +201,19 @@ extension SettingsView {
                 settingsLinkRow(title: "Modül karnesi") {
                     SettingsSubPage(title: "Modül karnesi") { ModulKarneView() }
                 }
+                // 2026-05-15: Bilimsel doğrulama — ArgusValidator forward test sonuçları
+                // (Sharpe, Drawdown, Win Rate, R-multiple, doğrulama günlüğü, bekleyen
+                // hipotezler). Card mevcuttu ama hiçbir yerden render edilmiyordu —
+                // forward test arka planda çalışıyordu ama kullanıcı sonucu göremiyordu.
+                settingsLinkRow(title: "Bilimsel doğrulama") {
+                    SettingsSubPage(title: "Bilimsel doğrulama") {
+                        ScrollView {
+                            ArgusScientificDashboardCard()
+                                .padding(.horizontal, 16)
+                                .padding(.top, 14)
+                        }
+                    }
+                }
                 settingsLinkRow(title: "API anahtarları", last: true) { APIKeyCenterView() }
             }
 
