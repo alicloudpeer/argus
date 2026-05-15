@@ -103,6 +103,12 @@ Argus_Trading_Sureci_Ekonomi_Bilimi_Elestirisi.md
 Argus_Mimari_Analizi.md
 Modul_Analizleri/
 
+# 2026-05-15: Kullanıcı talimatı — markdown dosyaları (analiz, yol haritası,
+# kişisel notlar) repoya gitmez. Global kural: tüm yeni .md dosyaları lokal kalır.
+# Mevcut tracked README.md, CONTRIBUTING.md, CHANGELOG.md vs. etkilenmez
+# (git ignore tracked dosyaları yok sayar — sadece untracked'i bloklar).
+*.md
+
 # ===========================
 # Archive & Backups
 # ===========================
