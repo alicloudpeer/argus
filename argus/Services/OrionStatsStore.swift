@@ -72,7 +72,7 @@ class OrionStatsStore {
     private func save() {
         do {
             let data = try JSONEncoder().encode(snapshots)
-            try data.write(to: getFileURL())
+            try data.write(to: getFileURL(), options: [.atomic])
         } catch {
             print("❌ Argus Lab: Failed to save snapshots to disk: \(error)")
         }

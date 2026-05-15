@@ -186,7 +186,7 @@ class LearningDataMigrationService {
         let tempDir = fileManager.temporaryDirectory
         let fileName = "Argus_Learning_Migration_\(Int(Date().timeIntervalSince1970)).json"
         let fileURL = tempDir.appendingPathComponent(fileName)
-        try jsonData.write(to: fileURL)
+        try jsonData.write(to: fileURL, options: [.atomic])
 
         print("✅ Migration export tamamlandı: \(totalFiles) dosya, \(ByteCountFormatter.string(fromByteCount: Int64(totalSize), countStyle: .file))")
 
@@ -207,7 +207,7 @@ class LearningDataMigrationService {
         // 1. Chiron Weights
         if let weightsData = bundle.chironWeights {
             let path = docsPath.appendingPathComponent("ChironWeights.json")
-            try weightsData.write(to: path)
+            try weightsData.write(to: path, options: [.atomic])
             importedFiles += 1
             print("✅ ChironWeights.json içe aktarıldı")
         }
@@ -217,7 +217,7 @@ class LearningDataMigrationService {
         try fileManager.createDirectory(at: tradesDir, withIntermediateDirectories: true)
         for (fileName, fileData) in bundle.chironDataLakeTrades {
             let path = tradesDir.appendingPathComponent(fileName)
-            try fileData.write(to: path)
+            try fileData.write(to: path, options: [.atomic])
             importedFiles += 1
         }
         if !bundle.chironDataLakeTrades.isEmpty {
@@ -229,7 +229,7 @@ class LearningDataMigrationService {
         try fileManager.createDirectory(at: accuracyDir, withIntermediateDirectories: true)
         for (fileName, fileData) in bundle.chironDataLakeAccuracy {
             let path = accuracyDir.appendingPathComponent(fileName)
-            try fileData.write(to: path)
+            try fileData.write(to: path, options: [.atomic])
             importedFiles += 1
         }
         if !bundle.chironDataLakeAccuracy.isEmpty {
@@ -241,7 +241,7 @@ class LearningDataMigrationService {
             let eventsDir = docsPath.appendingPathComponent("ChironDataLake/learning_logs")
             try fileManager.createDirectory(at: eventsDir, withIntermediateDirectories: true)
             let path = eventsDir.appendingPathComponent("events.json")
-            try eventsData.write(to: path)
+            try eventsData.write(to: path, options: [.atomic])
             importedFiles += 1
             print("✅ ChironDataLake events.json içe aktarıldı")
         }
@@ -249,13 +249,13 @@ class LearningDataMigrationService {
         // 5. Chiron Council
         if let recordsData = bundle.chironCouncilRecords {
             let path = docsPath.appendingPathComponent("ChironCouncilRecords.json")
-            try recordsData.write(to: path)
+            try recordsData.write(to: path, options: [.atomic])
             importedFiles += 1
             print("✅ ChironCouncilRecords.json içe aktarıldı")
         }
         if let weightsData = bundle.chironCouncilWeights {
             let path = docsPath.appendingPathComponent("ChironCouncilWeights.json")
-            try weightsData.write(to: path)
+            try weightsData.write(to: path, options: [.atomic])
             importedFiles += 1
             print("✅ ChironCouncilWeights.json içe aktarıldı")
         }
@@ -279,7 +279,7 @@ class LearningDataMigrationService {
         for (data, fileName) in alkindusMapping {
             if let fileData = data {
                 let path = alkindusBase.appendingPathComponent(fileName)
-                try fileData.write(to: path)
+                try fileData.write(to: path, options: [.atomic])
                 importedFiles += 1
                 print("✅ alkindus_memory/\(fileName) içe aktarıldı")
             }
@@ -288,7 +288,7 @@ class LearningDataMigrationService {
         // 7. SQLite Database
         if let dbData = bundle.argusScienceDB {
             let path = docsPath.appendingPathComponent("ArgusScience_V1.sqlite")
-            try dbData.write(to: path)
+            try dbData.write(to: path, options: [.atomic])
             importedFiles += 1
             print("✅ ArgusScience_V1.sqlite içe aktarıldı")
         }

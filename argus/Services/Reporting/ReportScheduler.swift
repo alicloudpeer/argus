@@ -242,7 +242,7 @@ actor ReportScheduler {
 
         let fileURL = storagePath.appendingPathComponent("schedule_state.json")
         guard let data = try? JSONEncoder().encode(state) else { return }
-        try? data.write(to: fileURL)
+        try? data.write(to: fileURL, options: [.atomic])
     }
 }
 

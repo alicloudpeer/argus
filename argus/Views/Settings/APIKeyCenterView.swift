@@ -266,6 +266,16 @@ struct APIKeyCenterView: View {
                 source: .provider(.pinecone),
                 testMode: .provider(.pinecone),
                 signUpURL: URL(string: "https://app.pinecone.io/")
+            ),
+            KeyEntry(
+                id: "sentry_dsn",
+                title: "Sentry",
+                subtitle: "Crash reporting ve hata izleme",
+                placeholder: "https://...@sentry.io/PROJECT_ID",
+                category: .infrastructure,
+                source: .customKey("sentry_dsn"),
+                testMode: .unsupported,
+                signUpURL: URL(string: "https://sentry.io/signup/")
             )
         ]
     }

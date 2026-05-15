@@ -46,8 +46,8 @@ actor ChironDataLakeService {
         
         do {
             let data = try JSONEncoder().encode(history)
-            try data.write(to: path)
-            
+            try data.write(to: path, options: [.atomic])
+
             // RAG Sync - Push learning to vector database
             let holdingDays = Calendar.current.dateComponents([.day], from: record.entryDate, to: record.exitDate).day ?? 0
             await MainActor.run {
@@ -87,7 +87,7 @@ actor ChironDataLakeService {
             let path = basePath.appendingPathComponent("trades/\(symbol)_history.json")
             do {
                 let data = try JSONEncoder().encode(history)
-                try data.write(to: path)
+                try data.write(to: path, options: [.atomic])
                 print("✅ Chiron: Trade \(tradeId) marked as RAG synced")
             } catch {
                 print("❌ Chiron: Failed to mark trade as synced - \(error)")
@@ -122,7 +122,7 @@ actor ChironDataLakeService {
                 let path = basePath.appendingPathComponent("trades/\(symbol)_history.json")
                 do {
                     let data = try JSONEncoder().encode(history)
-                    try data.write(to: path)
+                    try data.write(to: path, options: [.atomic])
                 } catch {
                     print("❌ Chiron Cleanup: Failed for \(symbol) - \(error)")
                 }
@@ -163,7 +163,7 @@ actor ChironDataLakeService {
         
         do {
             let data = try JSONEncoder().encode(history)
-            try data.write(to: path)
+            try data.write(to: path, options: [.atomic])
         } catch {
             print("❌ ChironDataLake: Failed to save module accuracy - \(error)")
         }
@@ -205,7 +205,7 @@ actor ChironDataLakeService {
         
         do {
             let data = try JSONEncoder().encode(events)
-            try data.write(to: path)
+            try data.write(to: path, options: [.atomic])
         } catch {
             print("❌ ChironDataLake: Failed to save learning event - \(error)")
         }

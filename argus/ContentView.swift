@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var coordinator: AppStateCoordinator
-    @ObservedObject private var planStore = PositionPlanStore.shared
+    @StateObject private var planStore = PositionPlanStore.shared
     @StateObject private var deepLinkManager = DeepLinkManager.shared
     @StateObject private var router = NavigationRouter.shared
     @StateObject private var settingsViewModel = SettingsViewModel()

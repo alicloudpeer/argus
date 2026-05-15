@@ -141,7 +141,7 @@ final class OrionV2WeightStore {
     private func saveToDisk() {
         do {
             let data = try JSONEncoder().encode(cache)
-            try data.write(to: fileURL)
+            try data.write(to: fileURL, options: [.atomic])
         } catch {
             print("🧠 OrionV2WeightStore: Save error - \(error.localizedDescription)")
         }

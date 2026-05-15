@@ -58,7 +58,8 @@ actor ArgusScheduler {
             // Note: This relies on the caller ensuring Key maps to T uniquely.
             do {
                 let result = try await existing.value
-                return result as! T
+                guard let typed = result as? T else { throw CancellationError() }
+                return typed
             } catch {
                 throw error
             }

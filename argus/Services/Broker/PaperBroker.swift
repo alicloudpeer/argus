@@ -105,22 +105,6 @@ actor PaperBroker: BrokerProtocol {
         )
         tradeHistory.append(trade)
         
-        // Log to audit
-        Task {
-            await AuditLogService.shared.recordTrade(
-                symbol: symbol,
-                action: side == .buy ? .buy : .sell,
-                requestedQuantity: quantity,
-                executedQuantity: quantity,
-                requestedPrice: side == .buy ? quote.ask : quote.bid,
-                executedPrice: executionPrice,
-                slippage: abs(executionPrice - (side == .buy ? quote.ask : quote.bid)) * quantity,
-                commission: commission,
-                decisionId: nil,
-                triggerReason: "Paper Trade - Market Order",
-                moduleScoresAtEntry: nil
-            )
-        }
         
         // ADD NOTIFICATION (NEW!)
         let notification = ArgusNotification(

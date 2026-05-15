@@ -268,6 +268,6 @@ actor AlkindusInsightGenerator {
         data.lastGenerated = Date()
         
         guard let encoded = try? JSONEncoder().encode(data) else { return }
-        try? encoded.write(to: filePath)
+        try? encoded.write(to: filePath, options: [.atomic])
     }
 }

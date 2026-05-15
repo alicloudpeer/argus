@@ -162,7 +162,7 @@ actor AlkindusSymbolLearner {
     
     private func saveData(_ data: SymbolData) async {
         guard let encoded = try? JSONEncoder().encode(data) else { return }
-        try? encoded.write(to: filePath)
+        try? encoded.write(to: filePath, options: [.atomic])
     }
 }
 

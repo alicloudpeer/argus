@@ -198,7 +198,7 @@ final class OrionV2TuningStore {
         do {
             let storage = StorageFormat(global: globalConfig, perSymbol: cache)
             let data = try JSONEncoder().encode(storage)
-            try data.write(to: fileURL)
+            try data.write(to: fileURL, options: [.atomic])
         } catch {
             print("🧠 OrionV2TuningStore: Save error - \(error.localizedDescription)")
         }

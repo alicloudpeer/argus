@@ -178,7 +178,7 @@ actor AlkindusSyncRetryQueue {
 
         do {
             let data = try JSONEncoder().encode(queue)
-            try data.write(to: path)
+            try data.write(to: path, options: [.atomic])
         } catch {
             print("Error: Alkindus RAG: Failed to save retry queue: \(error)")
         }

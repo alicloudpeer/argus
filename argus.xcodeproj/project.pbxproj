@@ -234,6 +234,9 @@
 			);
 			dependencies = (
 			);
+			packageProductDependencies = (
+				5AEA143790FF415DA77FA333 /* Sentry */,
+			);
 			fileSystemSynchronizedGroups = (
 				D965BC1F2F2CB3E20051704D /* argus */,
 			);
@@ -270,6 +273,9 @@
 			productRefGroup = D965BC1E2F2CB3E20051704D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packageReferences = (
+				27A6AFF3F89647448D49FEA9 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+			);
 			targets = (
 				D965BC1C2F2CB3E20051704D /* argus */,
 				3A9E72DB5DA4E8338CF9645E /* argusTests */,
@@ -659,6 +665,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		27A6AFF3F89647448D49FEA9 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5AEA143790FF415DA77FA333 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 27A6AFF3F89647448D49FEA9 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D965BC152F2CB3E20051704D /* Project object */;
 }

@@ -2014,7 +2014,7 @@ extension ArgusLedger {
                 
                 // Filename: hash (e.g., a1b2...CANDLES_OHLCV)
                 let fileUrl = dirUrl.appendingPathComponent(hash)
-                try? data.write(to: fileUrl)
+                try? data.write(to: fileUrl, options: [.atomic])
             }
             sqlite3_finalize(stmt)
         }

@@ -157,7 +157,7 @@ final class ChironWeightStore {
             }
             
             let data = try JSONEncoder().encode(serializable)
-            try data.write(to: storePath)
+            try data.write(to: storePath, options: [.atomic])
             print("💾 ChironWeightStore: Saved to disk")
         } catch {
             print("❌ ChironWeightStore: Save failed - \(error)")

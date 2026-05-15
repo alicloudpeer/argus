@@ -323,6 +323,6 @@ final class AlkindusBacktestLearner {
     
     private func saveData(_ data: BacktestLearnings) {
         guard let encoded = try? JSONEncoder().encode(data) else { return }
-        try? encoded.write(to: filePath)
+        try? encoded.write(to: filePath, options: [.atomic])
     }
 }

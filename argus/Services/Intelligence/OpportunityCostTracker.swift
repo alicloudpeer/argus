@@ -217,7 +217,7 @@ actor OpportunityCostTracker {
     private func saveToDisk() {
         let model = PersistModel(pending: pendingOpportunities, evaluated: evaluatedOpportunities)
         if let data = try? JSONEncoder().encode(model) {
-            try? data.write(to: persistPath)
+            try? data.write(to: persistPath, options: [.atomic])
         }
     }
 

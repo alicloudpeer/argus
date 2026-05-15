@@ -252,7 +252,7 @@ actor AetherVelocityEngine {
 
     private func saveToDisk() {
         if let data = try? JSONEncoder().encode(readings) {
-            try? data.write(to: persistPath)
+            try? data.write(to: persistPath, options: [.atomic])
         }
     }
 

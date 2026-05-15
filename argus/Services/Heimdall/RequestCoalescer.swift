@@ -43,7 +43,8 @@ actor RequestCoalescer {
         do {
             let result = try await task.value
             inflight.removeValue(forKey: key)
-            return result as! T
+            guard let typed = result as? T else { throw CancellationError() }
+            return typed
         } catch {
             inflight.removeValue(forKey: key)
             throw error

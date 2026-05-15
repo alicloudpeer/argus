@@ -79,8 +79,8 @@ final class DiskCacheService: Sendable {
                 let fileURL = self.cacheDirectory.appendingPathComponent(filename)
                 
                 let encoded = try JSONEncoder().encode(data)
-                try encoded.write(to: fileURL)
-                
+                try encoded.write(to: fileURL, options: [.atomic])
+
                 if harvest {
                     self.harvestData(key: key, data: encoded)
                 }
@@ -100,7 +100,7 @@ final class DiskCacheService: Sendable {
         let harvestURL = harvestDirectory.appendingPathComponent(filename)
         
         do {
-            try data.write(to: harvestURL)
+            try data.write(to: harvestURL, options: [.atomic])
             // print("🚜 Harvested Data: \(filename)")
         } catch {
             print("❌ Harvest Failed: \(error)")

@@ -8,6 +8,9 @@
 import SwiftUI
 import SwiftData
 import UIKit
+#if canImport(Sentry)
+import Sentry
+#endif
 
 @main
 struct argusApp: App {
@@ -54,6 +57,18 @@ struct argusApp: App {
                     PortfolioStore.shared.flushNow()
                 }
             }
+
+            // Sentry crash reporter — DSN girilmişse başlat, yoksa sessizce atla.
+            #if canImport(Sentry)
+            if let dsn = APIKeyStore.shared.getCustomValue(for: "sentry_dsn"), !dsn.isEmpty {
+                SentrySDK.start { options in
+                    options.dsn = dsn
+                    options.tracesSampleRate = 0.1
+                    options.enableAutoSessionTracking = true
+                    options.environment = "production"
+                }
+            }
+            #endif
 
             // Keychain güvenlik temizliği: eski sürümlerde UserDefaults'ta plaintext
             // kalmış olabilecek API anahtarlarını Keychain'e taşı ve UserDefaults'ı temizle.
@@ -106,8 +121,14 @@ struct argusApp: App {
                     // Buraya asla ulaşılmamalı — tüm fallback'ler başarısız
                     // fatalError yerine en azından crash log bırak ve graceful exit
                     print("🛑 Tüm ModelContainer fallback'leri başarısız. Uygulama çalışamaz.")
-                    self.container = try! ModelContainer(for: Schema([ShadowTradeSession.self, MissedOpportunityLog.self]),
-                        configurations: [ModelConfiguration(isStoredInMemoryOnly: true)])
+                    if let emergency = try? ModelContainer(for: Schema([ShadowTradeSession.self, MissedOpportunityLog.self]),
+                        configurations: [ModelConfiguration(isStoredInMemoryOnly: true)]) {
+                        self.container = emergency
+                    } else {
+                        // Absolute last resort: empty in-memory container — can never fail
+                        self.container = try! ModelContainer(for: Schema([]),
+                            configurations: [ModelConfiguration(isStoredInMemoryOnly: true)])
+                    }
                 }
             }
         }
@@ -246,7 +267,7 @@ struct argusApp: App {
                 // Opportunity Cost değerlendirmesi — 7 günü geçen bekleyen kayıtları değerlendir
                 let prices: [String: Double] = await MainActor.run {
                     Dictionary(uniqueKeysWithValues:
-                        MarketDataViewModel.shared.quotes.compactMap { (sym, q) -> (String, Double)? in
+                        MarketDataStore.shared.liveQuotes.compactMap { (sym, q) -> (String, Double)? in
                             guard q.currentPrice > 0 else { return nil }
                             return (sym, q.currentPrice)
                         }

@@ -46,7 +46,7 @@ final class HermesCacheStore {
         guard let url = getDocumentsURL() else { return }
         do {
             let data = try JSONEncoder().encode(cache)
-            try data.write(to: url)
+            try data.write(to: url, options: [.atomic])
         } catch {
             print("HermesCache Save Error: \(error)")
         }

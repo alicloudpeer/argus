@@ -119,7 +119,7 @@ final class BacktestCacheService {
             encoder.dateEncodingStrategy = .iso8601
             encoder.outputFormatting = .prettyPrinted
             let data = try encoder.encode(entry)
-            try data.write(to: url)
+            try data.write(to: url, options: [.atomic])
             print("✅ [BacktestCache] Kaydedildi: \(entry.symbol)")
         } catch {
             print("⚠️ [BacktestCache] Yazma hatası: \(error.localizedDescription)")

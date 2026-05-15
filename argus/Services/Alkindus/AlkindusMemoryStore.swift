@@ -47,7 +47,7 @@ actor AlkindusMemoryStore {
 
         do {
             let encoded = try JSONEncoder().encode(updated)
-            try encoded.write(to: calibrationPath)
+            try encoded.write(to: calibrationPath, options: [.atomic])
         } catch let encodingError as EncodingError {
             print("❌ Alkindus: calibration encode hatası: \(encodingError)")
         } catch {
@@ -73,7 +73,7 @@ actor AlkindusMemoryStore {
     func savePendingObservations(_ observations: [PendingObservation]) async {
         do {
             let encoded = try JSONEncoder().encode(observations)
-            try encoded.write(to: pendingPath)
+            try encoded.write(to: pendingPath, options: [.atomic])
         } catch let encodingError as EncodingError {
             print("❌ Alkindus: pending observations encode hatası: \(encodingError)")
         } catch {
@@ -106,7 +106,7 @@ actor AlkindusMemoryStore {
         }
         do {
             let encoded = try JSONEncoder().encode(verdicts)
-            try encoded.write(to: verdictsPath)
+            try encoded.write(to: verdictsPath, options: [.atomic])
         } catch let encodingError as EncodingError {
             print("❌ Alkindus: verdict encode hatası: \(encodingError)")
         } catch {

@@ -68,7 +68,7 @@ final class AutoPilotLogger: ObservableObject {
         Task.detached(priority: .background) {
             do {
                 let data = try JSONEncoder().encode(snapshot)
-                try data.write(to: url)
+                try data.write(to: url, options: [.atomic])
             } catch {
                 print("❌ Flight Recorder Save Failed: \(error)")
             }
@@ -88,7 +88,7 @@ final class AutoPilotLogger: ObservableObject {
         let tempDir = fileManager.temporaryDirectory
         let tempURL = tempDir.appendingPathComponent("argus_autopilot_log_\(Date().timeIntervalSince1970).json")
         
-        try data.write(to: tempURL)
+        try data.write(to: tempURL, options: [.atomic])
         return tempURL
     }
     

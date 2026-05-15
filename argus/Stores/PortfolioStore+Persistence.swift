@@ -28,7 +28,7 @@ extension PortfolioStore {
         // 1. Save Trades
         do {
             let data = try encoder.encode(trades)
-            try data.write(to: docs.appendingPathComponent(portfolioFileName))
+            try data.write(to: docs.appendingPathComponent(portfolioFileName), options: [.atomic])
         } catch {
             print("❌ PortfolioStore: Portfolio save failed: \(error)")
         }
@@ -36,7 +36,7 @@ extension PortfolioStore {
         // 2. Save Transactions
         do {
             let data = try encoder.encode(transactions)
-            try data.write(to: docs.appendingPathComponent(transactionsFileName))
+            try data.write(to: docs.appendingPathComponent(transactionsFileName), options: [.atomic])
         } catch {
             print("❌ PortfolioStore: Transactions save failed: \(error)")
         }
@@ -45,7 +45,7 @@ extension PortfolioStore {
         let balances = ["usd": globalBalance, "try": bistBalance]
         do {
             let data = try encoder.encode(balances)
-            try data.write(to: docs.appendingPathComponent(balanceFileName))
+            try data.write(to: docs.appendingPathComponent(balanceFileName), options: [.atomic])
         } catch {
             print("❌ PortfolioStore: Balance save failed: \(error)")
         }

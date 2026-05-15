@@ -233,7 +233,7 @@ final class ScoutStoryStore: ObservableObject {
     private func saveToDisk() {
         do {
             let data = try JSONEncoder().encode(stories)
-            try data.write(to: fileURL)
+            try data.write(to: fileURL, options: [.atomic])
         } catch {
             print(" ScoutStoryStore: Save error - \(error.localizedDescription)")
         }

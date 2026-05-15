@@ -348,7 +348,7 @@ class ArgusValidator {
         if existing.count > 2000 { existing = Array(existing.suffix(2000)) } // Keep last 2000
         
         let path = getResultsFilePath()
-        try? JSONEncoder().encode(existing).write(to: path)
+        try? JSONEncoder().encode(existing).write(to: path, options: [.atomic])
     }
     
     private func getResultsFilePath() -> URL {

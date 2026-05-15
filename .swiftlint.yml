@@ -1,0 +1,22 @@
+excluded:
+  - ${PWD}/Packages
+  - ${PWD}/.build
+  - ${PWD}/DerivedData
+
+opt_in_rules:
+  - force_unwrapping
+  - force_cast
+  - force_try
+  - fatal_error_message
+
+disabled_rules:
+  - line_length
+  - type_body_length
+  - file_length
+  - function_body_length
+  - cyclomatic_complexity
+  - function_parameter_count
+  - identifier_name
+  - nesting
+  - large_tuple
+  - trailing_comma

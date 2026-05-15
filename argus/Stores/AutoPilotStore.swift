@@ -19,7 +19,9 @@ final class AutoPilotStore: ObservableObject {
     @Published var isAutoPilotEnabled: Bool = true {
         didSet {
             handleAutoPilotStateChange()
-            ExecutionStateViewModel.shared.isAutoPilotEnabled = isAutoPilotEnabled
+            if AutoPilotController.shared.isAutoPilotEnabled != isAutoPilotEnabled {
+                AutoPilotController.shared.isAutoPilotEnabled = isAutoPilotEnabled
+            }
         }
     }
 
@@ -76,6 +78,7 @@ final class AutoPilotStore: ObservableObject {
     /// Kullanıcı toggle kapalıysa kapalı kalır, AÇIKKEN bu çarpan agresif/temkinli
     /// ayarlar (0.40–1.20). Coordinator otopilotun enabled durumuna ASLA dokunmaz.
     var contextMultiplier: Double = 1.0
+    var controllerCancellable: AnyCancellable?
     var contextCancellable: AnyCancellable?
     var balanceCancellable: AnyCancellable?
     var lastKnownGlobalBalance: Double = 0
@@ -87,7 +90,14 @@ final class AutoPilotStore: ObservableObject {
     // MARK: - Init
 
     private init() {
-        self.isAutoPilotEnabled = ExecutionStateViewModel.shared.isAutoPilotEnabled
+        self.isAutoPilotEnabled = AutoPilotController.shared.isAutoPilotEnabled
+
+        controllerCancellable = AutoPilotController.shared.$isAutoPilotEnabled
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] enabled in
+                guard let self, self.isAutoPilotEnabled != enabled else { return }
+                self.isAutoPilotEnabled = enabled
+            }
 
         // Coordinator'ı başlat ve dinle
         MarketContextCoordinator.shared.start()

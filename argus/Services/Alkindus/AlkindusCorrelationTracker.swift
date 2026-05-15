@@ -130,6 +130,6 @@ actor AlkindusCorrelationTracker {
     
     private func saveData(_ data: CorrelationData) async {
         guard let encoded = try? JSONEncoder().encode(data) else { return }
-        try? encoded.write(to: filePath)
+        try? encoded.write(to: filePath, options: [.atomic])
     }
 }

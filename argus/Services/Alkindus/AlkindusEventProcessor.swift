@@ -255,7 +255,7 @@ final class AlkindusEventProcessor {
         
         if let data = try? JSONEncoder().encode(summary) {
             let summaryPath = FileManager.default.documentsURL.appendingPathComponent("alkindus_learning_summary.json")
-            try? data.write(to: summaryPath)
+            try? data.write(to: summaryPath, options: [.atomic])
         }
     }
     

@@ -48,7 +48,7 @@ actor ReportEngine {
         let filename = "\(report.type.rawValue)_\(ISO8601DateFormatter().string(from: report.date)).json"
         let fileURL = storagePath.appendingPathComponent(filename)
         guard let data = try? JSONEncoder().encode(report) else { return }
-        try? data.write(to: fileURL)
+        try? data.write(to: fileURL, options: [.atomic])
     }
 
     func getRecentReports(limit: Int = 10) async -> [StoredReport] {

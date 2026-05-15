@@ -65,7 +65,7 @@ actor ChironRegretEngine {
     private func saveRecords() {
         do {
             let data = try JSONEncoder().encode(regretRecords)
-            try data.write(to: regretFilePath)
+            try data.write(to: regretFilePath, options: [.atomic])
         } catch {
             print("❌ ChironRegretEngine: Kayıtlar kaydedilemedi - \(error)")
         }

@@ -326,7 +326,7 @@ actor ChironCouncilLearningService {
         do {
             // Save completed records
             let recordsData = try JSONEncoder().encode(completedRecords)
-            try recordsData.write(to: recordsPath)
+            try recordsData.write(to: recordsPath, options: [.atomic])
             
             // Save weights matrix
             var serializable: [String: [String: CouncilMemberWeights]] = [:]
@@ -338,7 +338,7 @@ actor ChironCouncilLearningService {
                 serializable[symbol] = engineDict
             }
             let weightsData = try JSONEncoder().encode(serializable)
-            try weightsData.write(to: councilWeightsPath)
+            try weightsData.write(to: councilWeightsPath, options: [.atomic])
             
             print("💾 ChironCouncilLearning: Saved \(completedRecords.count) records")
         } catch {
