@@ -167,6 +167,10 @@ extension NavigationRouter {
         case .sirkiyeAether:
             SirkiyeAetherView()
 
+        // MARK: - Görev Günlüğü
+        case .gorevGunlugu:
+            GorevGunluguView()
+
         }
     }
 }

@@ -80,6 +80,9 @@ enum NavigationRoute: Hashable, Identifiable {
     // MARK: - Sirkiye Views
     case sirkiyeDashboard
     case sirkiyeAether
+
+    // MARK: - Görev Günlüğü
+    case gorevGunlugu
 }
 
 @MainActor
