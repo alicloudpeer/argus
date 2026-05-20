@@ -39,11 +39,13 @@ final class SignalViewModel: ObservableObject {
     @Published var activeShocks: [ShockFlag] = []
 
     // MARK: - Dependencies
-    private let analysisViewModel: AnalysisViewModel
+    // Faz 3.5: lazy → init zincirinde AnalysisViewModel.shared'a dokunmuyoruz, cyclic crash riski yok.
+    private lazy var analysisViewModel: AnalysisViewModel = _injectedAnalysisVM ?? AnalysisViewModel.shared
+    private let _injectedAnalysisVM: AnalysisViewModel?
 
     // MARK: - Initialization
     private init(analysisViewModel: AnalysisViewModel? = nil) {
-        self.analysisViewModel = analysisViewModel ?? AnalysisViewModel.shared
+        self._injectedAnalysisVM = analysisViewModel
         // Manuel objectWillChange relay'i kaldırıldı (2026-04-30).
         //
         // Önceki kod AVM'in objectWillChange yayınını sink'leyip kendi

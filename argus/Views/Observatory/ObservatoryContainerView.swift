@@ -112,16 +112,14 @@ enum ObservatoryTab: String, CaseIterable {
     }
 }
 
-// MARK: - Timeline Content (Embedded)
+// MARK: - Timeline Content (Faz 3.6: VM-backed)
 struct ObservatoryTimelineContentView: View {
-    @State private var decisions: [DecisionCard] = []
-    @State private var isLoading = true
-    @State private var selectedFilter: TimelineFilter = .all
-    
+    @StateObject private var viewModel = ObservatoryTimelineViewModel()
+
     var body: some View {
         VStack(spacing: 0) {
             // Filter
-            Picker("Filtre", selection: $selectedFilter) {
+            Picker("Filtre", selection: $viewModel.selectedFilter) {
                 ForEach(TimelineFilter.allCases, id: \.self) { filter in
                     Text(filter.displayName).tag(filter)
                 }
@@ -129,12 +127,12 @@ struct ObservatoryTimelineContentView: View {
             .pickerStyle(.segmented)
             .padding(.horizontal)
             .padding(.vertical, 8)
-            
-            if isLoading {
+
+            if viewModel.isLoading {
                 Spacer()
                 ProgressView("Yükleniyor...")
                 Spacer()
-            } else if decisions.isEmpty {
+            } else if viewModel.decisions.isEmpty {
                 Spacer()
                 VStack(spacing: 12) {
                     Image(systemName: "clock.arrow.circlepath")
@@ -148,7 +146,7 @@ struct ObservatoryTimelineContentView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach(filteredDecisions) { decision in
+                        ForEach(viewModel.filteredDecisions) { decision in
                             DecisionCardView(decision: decision)
                         }
                     }
@@ -156,123 +154,96 @@ struct ObservatoryTimelineContentView: View {
                 }
             }
         }
-        .onAppear { loadDecisions() }
-    }
-    
-    private var filteredDecisions: [DecisionCard] {
-        switch selectedFilter {
-        case .all: return decisions
-        case .pending: return decisions.filter { $0.outcome == .pending }
-        case .matured: return decisions.filter { $0.outcome == .matured }
-        case .bist: return decisions.filter { $0.market == "BIST" }
-        case .global: return decisions.filter { $0.market == "US" }
-        }
-    }
-    
-    private func loadDecisions() {
-        isLoading = true
-        Task {
-            let events = ArgusLedger.shared.loadRecentDecisions(limit: 100)
-            await MainActor.run {
-                self.decisions = events
-                self.isLoading = false
-            }
-        }
+        .task { await viewModel.load() }
     }
 }
 
-// MARK: - Learning Content (Embedded)
+// MARK: - Learning Content (Faz 3.6: VM-backed)
 struct ObservatoryLearningContentView: View {
-    @State private var events: [LearningEvent] = []
-    @State private var isLoading = true
-    
+    @StateObject private var viewModel = ObservatoryLearningViewModel()
+
     var body: some View {
-        if isLoading {
-            Spacer()
-            ProgressView("Yükleniyor...")
-            Spacer()
-        } else if events.isEmpty {
-            Spacer()
-            VStack(spacing: 12) {
-                Image(systemName: "brain.head.profile")
-                    .font(DesignTokens.Fonts.custom(size: 50))
-                    .foregroundStyle(DesignTokens.Colors.textSecondary)
-                Text("Henüz öğrenme kaydı yok")
-                    .font(.headline)
-                    .foregroundStyle(DesignTokens.Colors.textSecondary)
-            }
-            Spacer()
-        } else {
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(events) { event in
-                        LearningEventCardView(event: event)
-                    }
+        Group {
+            if viewModel.isLoading {
+                Spacer()
+                ProgressView("Yükleniyor...")
+                Spacer()
+            } else if viewModel.events.isEmpty {
+                Spacer()
+                VStack(spacing: 12) {
+                    Image(systemName: "brain.head.profile")
+                        .font(DesignTokens.Fonts.custom(size: 50))
+                        .foregroundStyle(DesignTokens.Colors.textSecondary)
+                    Text("Henüz öğrenme kaydı yok")
+                        .font(.headline)
+                        .foregroundStyle(DesignTokens.Colors.textSecondary)
                 }
-                .padding()
+                Spacer()
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(viewModel.events) { event in
+                            LearningEventCardView(event: event)
+                        }
+                    }
+                    .padding()
+                }
             }
         }
-    }
-    
-    init() {
-        // Load on init
+        .task { await viewModel.load() }
     }
 }
 
-// MARK: - Health Content (Embedded)
+// MARK: - Health Content (Faz 3.6: VM-backed, hesaplama ObservatoryHealthViewModel'de)
 struct ObservatoryHealthContentView: View {
-    @State private var metrics: PerformanceMetrics = .empty
-    @State private var distribution: PredictionDistribution = .empty
-    @State private var isLoading = true
-    
+    @StateObject private var viewModel = ObservatoryHealthViewModel()
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                // Metrics Grid
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     MetricCardView(
                         title: "Sharpe",
-                        value: String(format: "%.2f", metrics.sharpe),
+                        value: String(format: "%.2f", viewModel.metrics.sharpe),
                         icon: "chart.xyaxis.line",
-                        color: metrics.sharpe > 1 ? .green : (metrics.sharpe > 0.5 ? .yellow : .red)
+                        color: viewModel.metrics.sharpe > 1 ? .green : (viewModel.metrics.sharpe > 0.5 ? .yellow : .red)
                     )
                     MetricCardView(
                         title: "İsabet",
-                        value: String(format: "%.0f%%", metrics.hitRate * 100),
+                        value: String(format: "%.0f%%", viewModel.metrics.hitRate * 100),
                         icon: "target",
-                        color: metrics.hitRate > 0.55 ? .green : .yellow
+                        color: viewModel.metrics.hitRate > 0.55 ? .green : .yellow
                     )
                     MetricCardView(
                         title: "Kâr Faktörü",
-                        value: String(format: "%.2f", metrics.profitFactor),
+                        value: String(format: "%.2f", viewModel.metrics.profitFactor),
                         icon: "dollarsign.circle",
-                        color: metrics.profitFactor > 1.5 ? .green : .yellow
+                        color: viewModel.metrics.profitFactor > 1.5 ? .green : .yellow
                     )
                     MetricCardView(
                         title: "Maks DD",
-                        value: String(format: "%.1f%%", metrics.maxDrawdown),
+                        value: String(format: "%.1f%%", viewModel.metrics.maxDrawdown),
                         icon: "arrow.down.right",
-                        color: metrics.maxDrawdown < 10 ? .green : .red
+                        color: viewModel.metrics.maxDrawdown < 10 ? .green : .red
                     )
                 }
-                
-                // Distribution Bar
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Çıktı Dağılımı")
                         .font(.headline)
-                    
+
                     HStack(spacing: 2) {
                         Rectangle().fill(Color.green)
-                            .frame(width: CGFloat(distribution.buyPercent) * 2, height: 20)
+                            .frame(width: CGFloat(viewModel.distribution.buyPercent) * 2, height: 20)
                         Rectangle().fill(Color.gray)
-                            .frame(width: CGFloat(distribution.holdPercent) * 2, height: 20)
+                            .frame(width: CGFloat(viewModel.distribution.holdPercent) * 2, height: 20)
                         Rectangle().fill(Color.red)
-                            .frame(width: CGFloat(distribution.sellPercent) * 2, height: 20)
+                            .frame(width: CGFloat(viewModel.distribution.sellPercent) * 2, height: 20)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 4))
-                    
-                    if distribution.isDrifting {
-                        Label("Drift tespit edildi: \(distribution.driftReason)", systemImage: "exclamationmark.triangle")
+
+                    if viewModel.distribution.isDrifting {
+                        Label("Drift tespit edildi: \(viewModel.distribution.driftReason)", systemImage: "exclamationmark.triangle")
                             .font(.caption)
                             .foregroundStyle(.orange)
                     }
@@ -282,33 +253,7 @@ struct ObservatoryHealthContentView: View {
             }
             .padding()
         }
-        .onAppear { loadData() }
-    }
-    
-    private func loadData() {
-        Task {
-            let decisions = ArgusLedger.shared.loadRecentDecisions(limit: 100)
-            let matured = decisions.filter { $0.outcome == .matured }
-            let wins = matured.filter { ($0.actualPnl ?? 0) > 0 }
-            let hitRate = matured.isEmpty ? 0.5 : Double(wins.count) / Double(matured.count)
-            
-            let buyCount = decisions.filter { $0.action.contains("BİRİKTİR") || $0.action.contains("HÜCUM") }.count
-            let sellCount = decisions.filter { $0.action.contains("AZALT") || $0.action.contains("ÇIK") }.count
-            let holdCount = decisions.count - buyCount - sellCount
-            let total = max(1, Double(decisions.count))
-            
-            await MainActor.run {
-                self.metrics = PerformanceMetrics(sharpe: 0.8, hitRate: hitRate, profitFactor: 1.2, maxDrawdown: 8.5)
-                self.distribution = PredictionDistribution(
-                    buyPercent: Double(buyCount) / total * 100,
-                    holdPercent: Double(holdCount) / total * 100,
-                    sellPercent: Double(sellCount) / total * 100,
-                    isDrifting: false,
-                    driftReason: ""
-                )
-                self.isLoading = false
-            }
-        }
+        .task { await viewModel.load() }
     }
 }
 

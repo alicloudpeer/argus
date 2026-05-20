@@ -3,48 +3,32 @@ import SwiftUI
 // MARK: - Trade History View
 /// Forward test verilerini gösteren UI - Chiron öğrenme geçmişi
 struct TradeHistoryView: View {
-    @State private var trades: [TradeOutcomeRecord] = []
-    @State private var isLoading = true
-    @State private var selectedFilter: TradeFilter = .all
-    
-    enum TradeFilter: String, CaseIterable {
-        case all = "Tümü"
-        case wins = "Kazançlar"
-        case losses = "Kayıplar"
-    }
-    
-    var filteredTrades: [TradeOutcomeRecord] {
-        switch selectedFilter {
-        case .all: return trades
-        case .wins: return trades.filter { $0.pnlPercent > 0 }
-        case .losses: return trades.filter { $0.pnlPercent <= 0 }
-        }
-    }
-    
+    @StateObject private var viewModel = TradeHistoryViewModel()
+
     var body: some View {
         VStack(spacing: 0) {
             // Header Stats
-            TradeStatsHeader(trades: trades)
+            TradeStatsHeader(trades: viewModel.trades)
                 .padding()
                 .background(DesignTokens.Colors.Scrim.s30)
-            
+
             // Filter Picker
-            Picker("Filtre", selection: $selectedFilter) {
-                ForEach(TradeFilter.allCases, id: \.self) { filter in
+            Picker("Filtre", selection: $viewModel.selectedFilter) {
+                ForEach(TradeHistoryViewModel.Filter.allCases, id: \.self) { filter in
                     Text(filter.rawValue).tag(filter)
                 }
             }
             .pickerStyle(.segmented)
             .padding(.horizontal)
             .padding(.vertical, 8)
-            
+
             // Trade List
-            if isLoading {
+            if viewModel.isLoading {
                 Spacer()
                 ProgressView("Trade geçmişi yükleniyor...")
                     .foregroundColor(DesignTokens.Colors.textTertiary)
                 Spacer()
-            } else if filteredTrades.isEmpty {
+            } else if viewModel.filteredTrades.isEmpty {
                 Spacer()
                 VStack(spacing: 12) {
                     Image(systemName: "chart.line.downtrend.xyaxis")
@@ -58,7 +42,7 @@ struct TradeHistoryView: View {
                 }
                 Spacer()
             } else {
-                List(filteredTrades, id: \.id) { trade in
+                List(viewModel.filteredTrades, id: \.id) { trade in
                     TradeRowView(trade: trade)
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
@@ -77,18 +61,8 @@ struct TradeHistoryView: View {
             )
             .ignoresSafeArea()
         )
-        .task {
-            await loadTrades()
-        }
-        .refreshable {
-            await loadTrades()
-        }
-    }
-    
-    private func loadTrades() async {
-        isLoading = true
-        trades = await ChironDataLakeService.shared.loadAllTradeHistory()
-        isLoading = false
+        .task { await viewModel.load() }
+        .refreshable { await viewModel.load() }
     }
 }
 

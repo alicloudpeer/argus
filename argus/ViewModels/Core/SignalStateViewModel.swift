@@ -60,11 +60,9 @@ final class SignalStateViewModel: ObservableObject {
         setupOrionStoreBinding()
         setupOrionScoresCache()
         setupWatchlistCleanup()
-        // SignalViewModel.init() AnalysisViewModel.shared erişiyor; bu init zinciri
-        // sırasında SignalVM.shared erişimi cyclic crash yapabilir. Defer.
-        DispatchQueue.main.async { [weak self] in
-            self?.setupDemeterMirror()
-        }
+        // Faz 3.5: SignalViewModel.analysisViewModel lazy var olduğu için init zinciri
+        // artık AnalysisViewModel'i tetiklemiyor; cyclic crash riski kalktı. Defer kaldırıldı.
+        setupDemeterMirror()
     }
 
     /// Demeter sektör skorları kanonik olarak SignalViewModel.shared'da yazılıyor

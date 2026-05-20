@@ -54,22 +54,15 @@ final class AnalysisViewModel: ObservableObject {
     // Overreaction Hunter
     @Published var overreactionResult: OverreactionResult?
     
-    // DEMETER (Sector Engine)
-    @Published var demeterScores: [DemeterScore] = []
-    @Published var demeterMatrix: CorrelationMatrix?
-    @Published var isRunningDemeter: Bool = false
-    @Published var activeShocks: [ShockFlag] = []
+    // DEMETER state: SignalStateViewModel'den okuyun — bu mirror'lar kaldırıldı (Faz 2.4 SSOT)
     
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        // Cyclic singleton init guard: SignalViewModel.init() AnalysisViewModel.shared
-        // erişiyor. Burada SignalVM.shared'a doğrudan erişersek re-entry crash olur.
-        // Mirror'ları runloop sonraki turda kur — o zamana kadar tüm singleton'lar
-        // tamamlanmış olur.
-        DispatchQueue.main.async { [weak self] in
-            self?.setupSourceMirrors()
-        }
+        // Faz 3.5: SignalViewModel.analysisViewModel artık lazy var — init zincirinde
+        // AnalysisViewModel.shared'a erişim yok. Cyclic crash riski kalktığı için
+        // setupSourceMirrors doğrudan çağrılır, defer kaldırıldı.
+        setupSourceMirrors()
     }
 
     /// View-facing AnalysisVM, kanonik kaynaklardan (HermesNewsVM, SignalViewModel)
@@ -88,26 +81,7 @@ final class AnalysisViewModel: ObservableObject {
             .sink { [weak self] in self?.bistAtmosphereLastUpdated = $0 }
             .store(in: &cancellables)
 
-        // Demeter (Sektör Analizi) — SignalViewModel canonical writer
-        SignalViewModel.shared.$demeterScores
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.demeterScores = $0 }
-            .store(in: &cancellables)
-
-        SignalViewModel.shared.$demeterMatrix
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.demeterMatrix = $0 }
-            .store(in: &cancellables)
-
-        SignalViewModel.shared.$isRunningDemeter
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.isRunningDemeter = $0 }
-            .store(in: &cancellables)
-
-        SignalViewModel.shared.$activeShocks
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.activeShocks = $0 }
-            .store(in: &cancellables)
+        // Demeter mirror'ları kaldırıldı (Faz 2.4 SSOT) — view'lar SignalStateViewModel'i observe etsin.
     }
 
     func generateAISignals() async {
@@ -119,7 +93,7 @@ final class AnalysisViewModel: ObservableObject {
     func refreshReports() async {
         let trades = PortfolioStore.shared.transactions
         let decisions = Array(ExecutionStateViewModel.shared.agoraTraces.values)
-        let atmosphere = (aether: macroRating?.numericScore, demeter: demeterMatrix)
+        let atmosphere = (aether: macroRating?.numericScore, demeter: SignalViewModel.shared.demeterMatrix)
 
         let bistTrades = trades.filter { $0.symbol.uppercased().hasSuffix(".IS") }
         let bistDecisions = decisions.filter { $0.symbol.uppercased().hasSuffix(".IS") }

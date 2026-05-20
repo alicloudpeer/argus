@@ -5,30 +5,25 @@ import SwiftUI
 // MARK: - Observatory Health View
 /// Displays system health metrics, drift detection, and data quality alerts
 struct ObservatoryHealthView: View {
-    @State private var metrics: PerformanceMetrics = .empty
-    @State private var distribution: PredictionDistribution = .empty
-    @State private var alerts: [DataQualityAlert] = []
-    @State private var isLoading = true
-    
+    // Faz 3.6: ObservatoryHealthViewModel'i kullanır; hesaplama VM'de.
+    @StateObject private var viewModel = ObservatoryHealthViewModel()
+
+    private var metrics: PerformanceMetrics { viewModel.metrics }
+    private var distribution: PredictionDistribution { viewModel.distribution }
+    private var alerts: [DataQualityAlert] { viewModel.alerts }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // 1. Performance HUD (Grid)
                 performanceHUD
-                
-                // 2. Drift Analysis (Energy Bar)
                 driftEnergyBar
-                
-                // 3. System Logs (Alerts)
                 systemLogConsole
             }
             .padding(.top, 20)
             .padding(.horizontal)
             .padding(.bottom, 40)
         }
-        .onAppear {
-            loadData()
-        }
+        .task { await viewModel.load() }
     }
     
     // MARK: - Performance HUD
@@ -189,74 +184,7 @@ struct ObservatoryHealthView: View {
         }
     }
     
-    // MARK: - Data Loading
-    private func loadData() {
-        isLoading = true
-        Task {
-            // Load metrics from validation results
-            let decisions = ArgusLedger.shared.loadRecentDecisions(limit: 100)
-            
-            // Calculate metrics
-            let matured = decisions.filter { $0.outcome == .matured }
-            let wins = matured.filter { ($0.actualPnl ?? 0) > 0 }
-            let hitRate = matured.isEmpty ? 0.5 : Double(wins.count) / Double(matured.count)
-            
-            let pnls = matured.compactMap { $0.actualPnl }
-            let profits = pnls.filter { $0 > 0 }.reduce(0, +)
-            let losses = abs(pnls.filter { $0 < 0 }.reduce(0, +))
-            let profitFactor = losses > 0 ? profits / losses : 2.0
-            
-            // Simple Sharpe approximation (dummy calculation for UI demo if no proper history)
-            let avgPnl = pnls.isEmpty ? 0 : pnls.reduce(0, +) / Double(pnls.count)
-            let variance = pnls.isEmpty ? 1 : pnls.map { pow($0 - avgPnl, 2) }.reduce(0, +) / Double(pnls.count)
-            let stdDev = sqrt(variance)
-            let sharpe = stdDev > 0 ? avgPnl / stdDev : 0
-            
-            // Max Drawdown (simplified)
-            var maxDD = 0.0
-            var peak = 0.0
-            var equity = 0.0
-            for pnl in pnls {
-                equity += pnl
-                if equity > peak { peak = equity }
-                let dd = peak > 0 ? (peak - equity) / peak * 100 : 0
-                if dd > maxDD { maxDD = dd }
-            }
-            
-            // Distribution
-            let buyCount = decisions.filter { $0.action.contains("BİRİKTİR") || $0.action.contains("HÜCUM") }.count
-            let sellCount = decisions.filter { $0.action.contains("AZALT") || $0.action.contains("ÇIK") }.count
-            let holdCount = decisions.count - buyCount - sellCount
-            
-            let total = max(1, Double(decisions.count))
-            let buyPct = Double(buyCount) / total * 100
-            let sellPct = Double(sellCount) / total * 100
-            let holdPct = Double(holdCount) / total * 100
-            
-            let isDrifting = buyPct > 70 || sellPct > 70 || holdPct > 80
-            let driftReason = buyPct > 70 ? "EXCESS BUY" : (sellPct > 70 ? "EXCESS SELL" : (holdPct > 80 ? "EXCESS HOLD" : ""))
-            
-            await MainActor.run {
-                self.metrics = PerformanceMetrics(
-                    sharpe: sharpe,
-                    hitRate: hitRate,
-                    profitFactor: profitFactor,
-                    maxDrawdown: maxDD
-                )
-                
-                self.distribution = PredictionDistribution(
-                    buyPercent: buyPct,
-                    holdPercent: holdPct,
-                    sellPercent: sellPct,
-                    isDrifting: isDrifting,
-                    driftReason: driftReason
-                )
-                
-                self.alerts = []
-                self.isLoading = false
-            }
-        }
-    }
+    // Faz 3.6: loadData() ObservatoryHealthViewModel.load()'a taşındı.
 }
 
 // MARK: - Holo Metric Card

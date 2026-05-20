@@ -14,45 +14,11 @@ struct SettingsView: View {
     @State private var showDrawer = false
     @StateObject private var deepLinkManager = DeepLinkManager.shared
 
-    // Alkindus kalibrasyon aksiyon durumu
-    @State private var isRunningCalibration: Bool = false
-    @State private var calibrationFlash: String? = nil
-
-    // AutoPilot durumu — kullanıcı "trade etmiyor" dediğinde nedeni burada görünür
+    // Faz 2.3: Diagnostic field'lar SettingsViewModel'e taşındı.
+    // settingsViewModel.chironTradeCount, vb. üzerinden okunur.
+    // Aşağıdaki @ObservedObject'ler binding/snapshot için View'da kalır.
     @ObservedObject private var autoPilotStore = AutoPilotStore.shared
-
-    // Özet veriler — Chiron & Alkindus durumu
-    @State private var chironTradeCount: Int = 0
-    @State private var chironWinRate: Int = 0
-    @State private var alkindusPendingCount: Int = 0
-
-    // "Neden trade etmiyor?" teşhisi
-    @State private var tradeBlockReasons: [String] = []
-    @State private var policyMode: String = "NORMAL"
-    @State private var marketOpenGlobal: Bool = false
-    @State private var marketOpenBist: Bool = false
-    @State private var watchlistCount: Int = 0
-
-    // Harmony — MarketContextCoordinator canlı durumu
     @ObservedObject private var marketContext = MarketContextCoordinator.shared
-
-    // Aether velocity durumu (trend dönüş paneli için)
-    @State private var aetherCurrent: Double = 0
-    @State private var aetherVelocity: Double = 0
-    @State private var aetherSignal: String = "—"
-    @State private var aetherCrossingMsg: String? = nil
-
-    // Aether Rejim Dönüşüm durumu
-    @State private var regimeTransitionDirection: String = "STABLE"
-    @State private var regimeTransitionSummary: String? = nil
-    @State private var regimeEvidence: [String] = []
-    @State private var regimeConfidence: Double = 0
-
-    // Watchlist Pulse — tüm listenin ortak ani hareketi
-    @State private var pulseSummary: String = "Veri yok"
-    @State private var pulseIntensity: String = "DORMANT"
-    @State private var pulseDirection: String = "MIXED"
-    @State private var pulseMoveRate: Double = 0
 
     // Trend dönüş hassasiyeti
     @AppStorage("trendReversalSensitivity") private var trendSensitivity: String = "balanced"
@@ -89,28 +55,28 @@ struct SettingsView: View {
                         .padding(.bottom, 60)
                 }
             }
-                .task { await refreshSnapshots() }
+                .task { await settingsViewModel.refreshSnapshots() }
                 .sheet(isPresented: $showStatusConsole) {
                     ArgusStatusConsoleView(
-                        aetherCurrent: aetherCurrent,
-                        aetherVelocity: aetherVelocity,
-                        aetherSignal: aetherSignal,
-                        aetherCrossingMsg: aetherCrossingMsg,
-                        regimeDirection: regimeTransitionDirection,
-                        regimeSummary: regimeTransitionSummary,
-                        regimeEvidence: regimeEvidence,
-                        regimeConfidence: regimeConfidence,
-                        pulseSummary: pulseSummary,
-                        pulseIntensity: pulseIntensity,
-                        pulseDirection: pulseDirection,
-                        chironTradeCount: chironTradeCount,
-                        chironWinRate: chironWinRate,
-                        alkindusPendingCount: alkindusPendingCount,
-                        policyMode: policyMode,
-                        marketOpenGlobal: marketOpenGlobal,
-                        marketOpenBist: marketOpenBist,
-                        watchlistCount: watchlistCount,
-                        tradeBlockReasons: tradeBlockReasons
+                        aetherCurrent: settingsViewModel.aetherCurrent,
+                        aetherVelocity: settingsViewModel.aetherVelocity,
+                        aetherSignal: settingsViewModel.aetherSignal,
+                        aetherCrossingMsg: settingsViewModel.aetherCrossingMsg,
+                        regimeDirection: settingsViewModel.regimeTransitionDirection,
+                        regimeSummary: settingsViewModel.regimeTransitionSummary,
+                        regimeEvidence: settingsViewModel.regimeEvidence,
+                        regimeConfidence: settingsViewModel.regimeConfidence,
+                        pulseSummary: settingsViewModel.pulseSummary,
+                        pulseIntensity: settingsViewModel.pulseIntensity,
+                        pulseDirection: settingsViewModel.pulseDirection,
+                        chironTradeCount: settingsViewModel.chironTradeCount,
+                        chironWinRate: settingsViewModel.chironWinRate,
+                        alkindusPendingCount: settingsViewModel.alkindusPendingCount,
+                        policyMode: settingsViewModel.policyMode,
+                        marketOpenGlobal: settingsViewModel.marketOpenGlobal,
+                        marketOpenBist: settingsViewModel.marketOpenBist,
+                        watchlistCount: settingsViewModel.watchlistCount,
+                        tradeBlockReasons: settingsViewModel.tradeBlockReasons
                     )
                     .preferredColorScheme(.dark)
                 }
@@ -427,8 +393,8 @@ extension SettingsView {
             NavigationLink(destination: ChironInsightsView()) {
                 motorRow(
                     label: "Kokpit",
-                    detail: chironTradeCount > 0
-                        ? "Kazanma %\(chironWinRate) · \(chironTradeCount) trade"
+                    detail: settingsViewModel.chironTradeCount > 0
+                        ? "Kazanma %\(settingsViewModel.chironWinRate) · \(settingsViewModel.chironTradeCount) trade"
                         : "Henüz veri yok"
                 )
             }
@@ -465,18 +431,18 @@ extension SettingsView {
             NavigationLink(destination: AlkindusDashboardView()) {
                 motorRow(
                     label: "Gözlem paneli",
-                    detail: alkindusPendingCount > 0
-                        ? "\(alkindusPendingCount) gözlem bekliyor"
+                    detail: settingsViewModel.alkindusPendingCount > 0
+                        ? "\(settingsViewModel.alkindusPendingCount) gözlem bekliyor"
                         : "Sıra boş"
                 )
             }
             .buttonStyle(.plain)
 
             // Manuel çalıştır button — outline, rotating icon yok
-            Button(action: runCalibrationNow) {
-                Text(isRunningCalibration ? "Çalışıyor…" : "Kalibrasyonu çalıştır")
+            Button(action: settingsViewModel.runCalibrationNow) {
+                Text(settingsViewModel.isRunningCalibration ? "Çalışıyor…" : "Kalibrasyonu çalıştır")
                     .font(DesignTokens.Fonts.custom(size: 14, weight: .medium))
-                    .foregroundColor(isRunningCalibration
+                    .foregroundColor(settingsViewModel.isRunningCalibration
                                      ? DesignTokens.Colors.textTertiary
                                      : DesignTokens.Colors.textPrimary)
                     .frame(maxWidth: .infinity)
@@ -488,14 +454,14 @@ extension SettingsView {
                     )
             }
             .buttonStyle(.plain)
-            .disabled(isRunningCalibration)
-            .accessibilityLabel(isRunningCalibration
+            .disabled(settingsViewModel.isRunningCalibration)
+            .accessibilityLabel(settingsViewModel.isRunningCalibration
                                 ? "Kalibrasyon çalışıyor"
                                 : "Kalibrasyonu çalıştır")
             .padding(.top, DesignTokens.Spacing.md)
 
             // Flash mesajı (manuel çalıştırma sonrası)
-            if let flash = calibrationFlash {
+            if let flash = settingsViewModel.calibrationFlash {
                 Text(flash)
                     .font(DesignTokens.Fonts.custom(size: 12))
                     .foregroundColor(DesignTokens.Colors.success)
@@ -670,8 +636,8 @@ extension SettingsView {
                             .foregroundColor(DesignTokens.Colors.textSecondary)
                     }
                     Spacer()
-                    if !tradeBlockReasons.isEmpty {
-                        Text("\(tradeBlockReasons.count) uyarı")
+                    if !settingsViewModel.tradeBlockReasons.isEmpty {
+                        Text("\(settingsViewModel.tradeBlockReasons.count) uyarı")
                             .font(DesignTokens.Fonts.custom(size: 12))
                             .foregroundColor(DesignTokens.Colors.textTertiary)
                     }
@@ -811,134 +777,6 @@ extension SettingsView {
             .accessibilityLabel(label)
     }
 
-}
-
-// MARK: - Aksiyonlar & Veri Yenileme
-
-extension SettingsView {
-
-    /// Chiron & Alkindus özet verilerini tazele.
-    /// Başlangıçta ve kalibrasyon sonrası çağrılır.
-    fileprivate func refreshSnapshots() async {
-        // Chiron istatistikleri — iki kaynak: ChironDataLake (son dönem, tam kayıt) +
-        // PortfolioStore (tüm tarihsel kapalı trade'ler). Eski import edilmemiş 92
-        // trade Chiron dosyasında olmadığı için WR hep boş kalıyordu. PortfolioStore'dan
-        // doğrudan okuyoruz, fallback olarak Chiron lake kullanılır.
-        let chironTrades = await ChironDataLakeService.shared.loadAllTradeHistory()
-        let portfolioClosed = await MainActor.run {
-            PortfolioStore.shared.trades.filter { !$0.isOpen && $0.exitPrice != nil }
-        }
-        let pending = await AlkindusMemoryStore.shared.loadPendingObservations().count
-        let velocity = await AetherVelocityEngine.shared.analyze()
-
-        // Rejim dönüşüm durumu — Settings'de banner olarak gösterilecek
-        let watchlist = await MainActor.run { WatchlistStore.shared.items }
-        let quotes = await MainActor.run { MarketDataStore.shared.quotes.compactMapValues { $0.value } }
-        let candles = await MainActor.run { MarketDataStore.shared.candles.compactMapValues { $0.value } }
-        let globalMomentum = await MarketMomentumGate.shared.assessGlobal(
-            quotes: quotes, candles: candles, watchlistSymbols: watchlist
-        )
-        let bistMomentum = await MarketMomentumGate.shared.assessBist(
-            quotes: quotes, candles: candles, watchlistSymbols: watchlist
-        )
-        // Hermes event sayımı — gerçek event store'dan son 24 saat
-        let hermesPos = HermesEventStore.shared.countHighImpactEvents(polarity: .positive)
-        let hermesNeg = HermesEventStore.shared.countHighImpactEvents(polarity: .negative)
-
-        // Watchlist pulse — tüm listenin nabzı
-        let pulse = await WatchlistPulseMonitor.shared.assess(candlesBySymbol: candles)
-
-        let transition = await AetherRegimeTransitionDetector.shared.analyze(
-            velocity: velocity,
-            recentPositiveHermesEvents: hermesPos,
-            recentNegativeHermesEvents: hermesNeg,
-            globalMomentumLevel: globalMomentum.level,
-            bistMomentumLevel: bistMomentum.level,
-            watchlistPulse: pulse
-        )
-
-        // Kapalı trade sayımı — iki kaynaktan en büyüğünü al (eski import edilmemiş
-        // trade'ler PortfolioStore'da olabilir ama Chiron'a yansımamış)
-        let tradeCount = max(chironTrades.count, portfolioClosed.count)
-        let winRate: Int = {
-            if !portfolioClosed.isEmpty {
-                let wins = portfolioClosed.filter { ($0.exitPrice ?? 0) > $0.entryPrice }.count
-                return Int((Double(wins) / Double(portfolioClosed.count)) * 100)
-            }
-            if !chironTrades.isEmpty {
-                let wins = chironTrades.filter { $0.pnlPercent > 0 }.count
-                return Int((Double(wins) / Double(chironTrades.count)) * 100)
-            }
-            return 0
-        }()
-
-        // Trade blocker teşhisi
-        let policy = RiskEscapePolicy.from(aetherScore: velocity.currentScore)
-        let globalOpen = MarketStatusService.shared.canTrade(for: .global)
-        let bistOpen   = MarketStatusService.shared.canTrade(for: .bist)
-        let watchCount = await MainActor.run { WatchlistStore.shared.items.count }
-
-        var reasons: [String] = []
-        if !autoPilotStore.isAutoPilotEnabled {
-            reasons.append("Otopilot kapalı — yukarıdaki toggle'dan aç")
-        }
-        if policy.mode != .normal {
-            reasons.append("Risk politikası \(policy.mode.rawValue) — Aether \(Int(velocity.currentScore)) (riskli alım bloke)")
-        }
-        if !globalOpen && !bistOpen {
-            reasons.append("Tüm piyasalar kapalı — açılış saatini bekliyor")
-        }
-        if watchCount == 0 {
-            reasons.append("İzleme listesi boş — sembol ekle")
-        }
-
-        await MainActor.run {
-            self.chironTradeCount = tradeCount
-            self.chironWinRate = winRate
-            self.alkindusPendingCount = pending
-            self.aetherCurrent = velocity.currentScore
-            self.aetherVelocity = velocity.velocity
-            self.aetherSignal = velocity.signal.rawValue
-            self.aetherCrossingMsg = velocity.crossingAlert?.description
-            self.regimeTransitionDirection = transition.direction.rawValue
-            self.regimeTransitionSummary = transition.direction == .stable ? nil : transition.summary
-            self.regimeEvidence = transition.evidence
-            self.regimeConfidence = transition.confidence
-            self.pulseSummary = pulse.summary
-            self.pulseIntensity = pulse.intensity.rawValue
-            self.pulseDirection = pulse.direction.rawValue
-            self.pulseMoveRate = pulse.avgMoveRate
-            self.policyMode = policy.mode.rawValue
-            self.marketOpenGlobal = globalOpen
-            self.marketOpenBist = bistOpen
-            self.watchlistCount = watchCount
-            self.tradeBlockReasons = reasons
-        }
-    }
-
-    /// Alkindus kalibrasyonu manuel tetikle.
-    /// Periyodik maturation'a bağımlı kalmadan kullanıcı "şimdi bak" diyebilir.
-    fileprivate func runCalibrationNow() {
-        guard !isRunningCalibration else { return }
-        isRunningCalibration = true
-        calibrationFlash = nil
-
-        Task {
-            await AlkindusCalibrationEngine.shared.periodicMatureCheck()
-            await refreshSnapshots()
-
-            await MainActor.run {
-                withAnimation { calibrationFlash = "Güncellendi" }
-                isRunningCalibration = false
-            }
-
-            // 2 sn sonra flash mesajını temizle
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
-            await MainActor.run {
-                withAnimation { calibrationFlash = nil }
-            }
-        }
-    }
 }
 
 // MARK: - Drawer

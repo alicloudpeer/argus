@@ -47,8 +47,8 @@ class TradeBrainExecutor: ObservableObject {
     private var prevBistMomentumLevel:   MarketMomentumGate.MomentumSignal.Level = .neutral
 
     private var cancellables = Set<AnyCancellable>()
-    private var lastExecutionTime: [String: Date] = [:]
-    
+    // Faz 3.4: lastExecutionTime kaldırıldı — CooldownRegistry tek kaynak
+
     private let baseCooldownSeconds: TimeInterval = 300
     
     private let horizonEngine = HorizonEngine.shared
@@ -251,7 +251,6 @@ class TradeBrainExecutor: ObservableObject {
                 quote: quotes[symbol],
                 candles: symbolCandles
             )
-            let cooldownSeconds = baseCooldownSeconds * profile.cooldownMultiplier
             ArgusLogger.info(
                 "TradeBrainProfile[\(symbol)] tier=\(profile.tier.rawValue) " +
                 "alloc×\(String(format: "%.2f", profile.allocationMultiplier)) " +
@@ -260,9 +259,8 @@ class TradeBrainExecutor: ObservableObject {
                 category: "TRADEBRAIN"
             )
             
-            // T2.22: CooldownRegistry'yi güncelle (tek kaynak) + geriye uyumluluk
-            let registryCooldown = await CooldownRegistry.shared.isInCooldown(symbol, type: .postTrade)
-            if registryCooldown || (lastExecutionTime[symbol].map { Date().timeIntervalSince($0) < cooldownSeconds } ?? false) {
+            // T2.22 + Faz 3.4: CooldownRegistry tek kaynak; eski lastExecutionTime kaldırıldı.
+            if await CooldownRegistry.shared.isInCooldown(symbol, type: .postTrade) {
                 skippedCooldown += 1
                 debugSkip(symbol: symbol, reason: "cooldown aktif")
                 if decision.action == .aggressiveBuy || decision.action == .accumulate {
@@ -1022,8 +1020,7 @@ class TradeBrainExecutor: ObservableObject {
             )
         }
 
-        // Cooldown ayarla (eski + yeni registry)
-        lastExecutionTime[symbol] = Date()
+        // Faz 3.4: CooldownRegistry tek kaynak
         await CooldownRegistry.shared.enter(
             symbol: symbol, type: .postTrade,
             duration: baseCooldownSeconds * profile.cooldownMultiplier,
@@ -1054,8 +1051,6 @@ class TradeBrainExecutor: ObservableObject {
         // Plan tamamla
         PositionPlanStore.shared.completePlan(tradeId: trade.id)
         
-        // Cooldown (eski + registry)
-        lastExecutionTime[trade.symbol] = Date()
         await CooldownRegistry.shared.enter(
             symbol: trade.symbol, type: .postSell,
             duration: 300, reason: "emergencySell"
@@ -1088,7 +1083,6 @@ class TradeBrainExecutor: ObservableObject {
             }
             log("🛡️ \(trade.symbol): Policy TRIM %\(Int(trimPercent)) (\(policy.mode.rawValue))")
         }
-        lastExecutionTime[trade.symbol] = Date()
         await CooldownRegistry.shared.enter(
             symbol: trade.symbol, type: .postTrade,
             duration: 300, reason: "policyReduce"
@@ -1347,7 +1341,7 @@ class TradeBrainExecutor: ObservableObject {
     }
     
     func resetCooldowns() {
-        lastExecutionTime.removeAll()
+        Task { await CooldownRegistry.shared.clearAll() }
     }
     
     // MARK: - Trade Brain 3.0 Enhanced Decision

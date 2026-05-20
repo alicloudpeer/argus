@@ -30,8 +30,10 @@
 		C20B1CCD02CAE1503C8FD35D /* PrometheusOrderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C2FD8FD8E1AFDAC1D27EE /* PrometheusOrderingTests.swift */; };
 		CC2A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1A2B3C4D5E6F7A8B9C0D1E /* KararKartiViewModelTests.swift */; };
 		D4E5F6A7B8C9D0E1F2A3B4C5 /* ModuleWeightCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D6E7F8A9B0C1D2E3F4A5B6 /* ModuleWeightCalculatorTests.swift */; };
+		D97471FA2FB76DB300138508 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 5AEA143790FF415DA77FA333 /* Sentry */; };
 		E11A11A11A11A11A11A11A11 /* ModulePerformanceTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22B22B22B22B22B22B22B22 /* ModulePerformanceTrackerTests.swift */; };
 		EA4E6EEAC49249F4ACE58240 /* OutcomesTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ECADC30C0BF438292CA6E1C /* OutcomesTableTests.swift */; };
+		F5E4D3C2B1A09F8E7D6C5B4A /* SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B3C2D1E0F9A8B7C6D5E4F3 /* SettingsViewModelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +60,7 @@
 		6353239C38C94034B2DC6486 /* LedgerTierColumnTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LedgerTierColumnTests.swift; sourceTree = "<group>"; };
 		767A282833374E84A24ECA29 /* DataTieringEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataTieringEngineTests.swift; sourceTree = "<group>"; };
 		87961FE910874CF9A994B73C /* KellyNegativeBlockTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KellyNegativeBlockTests.swift; sourceTree = "<group>"; };
+		A4B3C2D1E0F9A8B7C6D5E4F3 /* SettingsViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsViewModelTests.swift; sourceTree = "<group>"; };
 		A6E351BA28975EDAC0E1BA62 /* PulsingFABViewTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PulsingFABViewTests.swift; sourceTree = "<group>"; };
 		AA369556473747FBAF91AAF9 /* TradeLifecycleLedgerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TradeLifecycleLedgerTests.swift; sourceTree = "<group>"; };
 		B0283C4A3BA0D41C0B5F480C /* CachePolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CachePolicyTests.swift; sourceTree = "<group>"; };
@@ -96,6 +99,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D97471FA2FB76DB300138508 /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -177,6 +181,7 @@
 		C9EEADD1CC91A09D5A2BE819 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				A4B3C2D1E0F9A8B7C6D5E4F3 /* SettingsViewModelTests.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -234,13 +239,13 @@
 			);
 			dependencies = (
 			);
-			packageProductDependencies = (
-				5AEA143790FF415DA77FA333 /* Sentry */,
-			);
 			fileSystemSynchronizedGroups = (
 				D965BC1F2F2CB3E20051704D /* argus */,
 			);
 			name = argus;
+			packageProductDependencies = (
+				5AEA143790FF415DA77FA333 /* Sentry */,
+			);
 			productName = argus;
 			productReference = D965BC1D2F2CB3E20051704D /* argus.app */;
 			productType = "com.apple.product-type.application";
@@ -269,13 +274,13 @@
 			);
 			mainGroup = D965BC142F2CB3E20051704D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				27A6AFF3F89647448D49FEA9 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D965BC1E2F2CB3E20051704D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
-			packageReferences = (
-				27A6AFF3F89647448D49FEA9 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
-			);
 			targets = (
 				D965BC1C2F2CB3E20051704D /* argus */,
 				3A9E72DB5DA4E8338CF9645E /* argusTests */,
@@ -336,6 +341,7 @@
 				05C6C9FAC12544CBA6C503A0 /* AutoPilotStoreSmokeTests.swift in Sources */,
 				751AAC99E58F49E1BEDBAA72 /* PlanRepositoryTests.swift in Sources */,
 				0CDAEC8300E74D629A04724E /* PlanTriggerEngineTests.swift in Sources */,
+				F5E4D3C2B1A09F8E7D6C5B4A /* SettingsViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

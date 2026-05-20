@@ -134,6 +134,6 @@ extension AppStateCoordinator {
 
     /// Combined loading state from all sources
     var isLoading: Bool {
-        isGlobalLoading || isWatchlistLoading || isOrionLoading || isLoadingEtf || isLoadingSarTsiBacktest || isRunningDemeter
+        environment.isGlobalLoading || isWatchlistLoading || isOrionLoading || environment.isLoadingEtf || backtest.isLoadingSarTsi || shock.isRunningDemeter
     }
 }

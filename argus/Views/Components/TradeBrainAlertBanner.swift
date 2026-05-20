@@ -91,7 +91,7 @@ struct TradeBrainAlertListView: View {
             ZStack {
                 DesignTokens.Colors.background.ignoresSafeArea()
 
-                if coordinator.planAlerts.isEmpty {
+                if coordinator.executionMirror.planAlerts.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "bell.slash")
                             .font(DesignTokens.Fonts.custom(size: 60))
@@ -110,7 +110,7 @@ struct TradeBrainAlertListView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 12) {
-                            ForEach(coordinator.planAlerts) { alert in
+                            ForEach(coordinator.executionMirror.planAlerts) { alert in
                                 TradeBrainAlertBanner(
                                     alert: alert,
                                     onDismiss: {
@@ -127,7 +127,7 @@ struct TradeBrainAlertListView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if !coordinator.planAlerts.isEmpty {
+                    if !coordinator.executionMirror.planAlerts.isEmpty {
                         Button("Tümünü Temizle") {
                             ExecutionStateViewModel.shared.planAlerts.removeAll()
                         }

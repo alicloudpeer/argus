@@ -58,7 +58,7 @@ struct TransactionHistorySheet: View {
             }
             .sheet(item: $selectedTxn) { txn in
                 // Look up full snapshot if available
-                let snapshot = AppStateCoordinator.shared.agoraSnapshots.first(where: { $0.id.uuidString == txn.decisionId })
+                let snapshot = AppStateCoordinator.shared.executionMirror.agoraSnapshots.first(where: { $0.id.uuidString == txn.decisionId })
                 TransactionDetailView(transaction: txn, snapshot: snapshot)
             }
         }
