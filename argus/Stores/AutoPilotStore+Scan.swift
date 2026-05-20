@@ -29,9 +29,16 @@ extension AutoPilotStore {
             }
         }
 
-        // T3.3: Market kapalıysa tarama yapma — API çağrıları ve pil tasarrufu.
-        if !MarketSessionManager.shared.isMarketOpen() {
-            ArgusLogger.info("AutoPilotStore: Market kapalı — scan atlanıyor", category: "OTOPİLOT")
+        // T3.3 + 2026-05-20 FIX: Market guard'ı MarketSessionManager (sadece NYSE bilen)
+        // yerine MarketStatusService (Global + BIST ayrı bilen) üzerine çevrildi.
+        // Eski davranışta TR gün içi (10:00-16:30 TR) NYC kapalı olduğu için BIST
+        // açıkken bile scan tamamen iptal ediliyordu — kronik "tarama yok" şikayeti
+        // bundandı. Artık AT LEAST BİR piyasa açıksa scan çalışır; per-symbol loop
+        // zaten kapalı piyasanın sembollerini ayrı atlıyor.
+        let preGlobalOpen = MarketStatusService.shared.canTrade(for: .global)
+        let preBistOpen = MarketStatusService.shared.canTrade(for: .bist)
+        if !preGlobalOpen && !preBistOpen {
+            ArgusLogger.info("AutoPilotStore: Tüm piyasalar kapalı — scan atlanıyor (Global=KAPALI, BIST=KAPALI)", category: "OTOPİLOT")
             return
         }
 
