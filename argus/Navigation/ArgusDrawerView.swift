@@ -499,6 +499,10 @@ struct ArgusDrawerView: View {
                 DrawerItem(title: "Sistem Durumu", subtitle: "Servis sağlığı", icon: "waveform.path.ecg") {
                     openSheet(.systemHealth)
                 },
+                DrawerItem(title: "Görev Günlüğü", subtitle: "Otopilot kararları", icon: "list.bullet.clipboard") {
+                    NavigationRouter.shared.navigate(to: .gorevGunlugu)
+                    dismiss()
+                },
                 DrawerItem(title: "Geri Bildirim", subtitle: "Sorun bildir", icon: "envelope") {
                     openSheet(.feedback)
                 }

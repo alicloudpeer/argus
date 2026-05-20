@@ -117,6 +117,7 @@ struct TradeBrainView: View {
                             upcomingEventsSection
                             sectionDivider
                             recentExecutionsSection
+                            gorevGunluguLink
                             sectionDivider
                             learnLink
                         }
@@ -522,6 +523,24 @@ struct TradeBrainView: View {
                 .background(DesignTokens.Colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
+        }
+    }
+
+    private var gorevGunluguLink: some View {
+        Button {
+            NavigationRouter.shared.navigate(to: .gorevGunlugu)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "list.bullet.clipboard")
+                    .font(.system(size: 13, weight: .medium))
+                Text("Tüm görev günlüğünü gör")
+                    .font(DesignTokens.Fonts.custom(size: 13, weight: .medium))
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+            }
+            .foregroundColor(DesignTokens.Colors.primary)
+            .padding(.top, 8)
         }
     }
 
