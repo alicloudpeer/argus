@@ -10,7 +10,7 @@ struct GorevGunluguView: View {
 
             VStack(spacing: 0) {
                 ArgusNavHeader(
-                    title: "G\u{00F6}rev G\u{00FC}nl\u{00FC}\u{011F}\u{00FC}",
+                    title: "Görev Günlüğü",
                     subtitle: "Otopilot karar merkezi",
                     leadingDeco: .back(onTap: { dismiss() }),
                     titlePill: nil,
@@ -34,7 +34,7 @@ struct GorevGunluguView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 12) {
-                            ForEach(Array(viewModel.anlatılar.enumerated()), id: \.offset) { _, anlatim in
+                            ForEach(viewModel.anlatılar) { anlatim in
                                 GorevKartiView(anlatim: anlatim)
                             }
                         }
@@ -55,16 +55,16 @@ struct GorevGunluguView: View {
         if o.toplamKarar == 0 {
             return .custom(
                 dotColor: DesignTokens.Colors.textTertiary,
-                label: "Kay\u{0131}t yok",
+                label: "Kayıt yok",
                 trailing: ""
             )
         }
         var parcalar: [String] = []
-        if o.alimSayisi > 0   { parcalar.append("\(o.alimSayisi) al\u{0131}m") }
-        if o.satimSayisi > 0  { parcalar.append("\(o.satimSayisi) sat\u{0131}m") }
+        if o.alimSayisi > 0   { parcalar.append("\(o.alimSayisi) alım") }
+        if o.satimSayisi > 0  { parcalar.append("\(o.satimSayisi) satım") }
         if o.pasSayisi > 0    { parcalar.append("\(o.pasSayisi) pas") }
         if o.engelSayisi > 0  { parcalar.append("\(o.engelSayisi) engel") }
-        let ozet = parcalar.joined(separator: " \u{00B7} ")
+        let ozet = parcalar.joined(separator: " · ")
         return .custom(
             dotColor: InstitutionalTheme.Colors.aurora,
             label: ozet,
@@ -138,13 +138,13 @@ struct GorevGunluguView: View {
     private var bosEkranMesaji: String {
         switch viewModel.seciliFiltre {
         case .tumKararlar:
-            return "Hen\u{00FC}z kay\u{0131}tl\u{0131} karar yok.\nOtopilot \u{00E7}al\u{0131}\u{015F}t\u{0131}\u{011F}\u{0131}nda kararlar burada g\u{00F6}r\u{00FC}necek."
+            return "Henüz kayıtlı karar yok.\nOtopilot çalıştığında kararlar burada görünecek."
         case .alimlar:
-            return "Hen\u{00FC}z al\u{0131}m karar\u{0131} yok."
+            return "Henüz alım kararı yok."
         case .satimlar:
-            return "Hen\u{00FC}z sat\u{0131}m karar\u{0131} yok."
+            return "Henüz satım kararı yok."
         case .pasGecilenler:
-            return "Pas ge\u{00E7}ilen karar yok."
+            return "Pas geçilen karar yok."
         case .engellenenler:
             return "Engellenen karar yok."
         }

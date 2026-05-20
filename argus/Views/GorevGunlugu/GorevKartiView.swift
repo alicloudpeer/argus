@@ -154,30 +154,44 @@ struct GorevKartiView: View {
         }
     }
 
-    /// >= 1000 durumunda binlik ayraçlı, ondalıksız formatlama.
-    private func formatNoDecimal(_ deger: Double) -> String {
+    // MARK: - Static Formatters
+
+    private static let noDecimalFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 0
         formatter.groupingSeparator = "."
         formatter.locale = Locale(identifier: "tr_TR")
-        return formatter.string(from: NSNumber(value: deger)) ?? "\(Int(deger))"
+        return formatter
+    }()
+
+    private static let saatFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        f.locale = Locale(identifier: "tr_TR")
+        return f
+    }()
+
+    private static let tarihFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "d MMM"
+        f.locale = Locale(identifier: "tr_TR")
+        return f
+    }()
+
+    /// >= 1000 durumunda binlik ayraçlı, ondalıksız formatlama.
+    private func formatNoDecimal(_ deger: Double) -> String {
+        Self.noDecimalFormatter.string(from: NSNumber(value: deger)) ?? "\(Int(deger))"
     }
 
     // MARK: - Tarih formatlama
 
     private func saatFormatla(_ tarih: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm"
-        f.locale = Locale(identifier: "tr_TR")
-        return f.string(from: tarih)
+        Self.saatFormatter.string(from: tarih)
     }
 
     private func tarihFormatla(_ tarih: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "d MMM"
-        f.locale = Locale(identifier: "tr_TR")
-        return f.string(from: tarih)
+        Self.tarihFormatter.string(from: tarih)
     }
 }
 
@@ -186,6 +200,7 @@ struct GorevKartiView: View {
 #Preview("Alım Kartı") {
     GorevKartiView(
         anlatim: GorevAnlatisi(
+            id: UUID(),
             kararTipi: .alim,
             dominantFaktor: .teknikGuc(skor: 78),
             aciklama: "Teknik göstergeler güçlü bir alım fırsatına işaret ediyor (skor: 78). Diğer analizler de destekliyor.",
@@ -205,6 +220,7 @@ struct GorevKartiView: View {
 #Preview("Engellendi Kartı") {
     GorevKartiView(
         anlatim: GorevAnlatisi(
+            id: UUID(),
             kararTipi: .engellendi,
             dominantFaktor: .zamanlama(sebep: "15 dk kaldı"),
             aciklama: "Analizler olumlu ancak 15 dk kaldı. Koşullar uygun olduğunda yeniden değerlendirilecek.",

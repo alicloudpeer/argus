@@ -2,7 +2,8 @@ import Foundation
 
 // MARK: - Output Model
 
-struct GorevAnlatisi: Sendable {
+struct GorevAnlatisi: Identifiable, Sendable {
+    let id: UUID
     let kararTipi: GorevNarrator.KararTipi
     let dominantFaktor: GorevNarrator.DominantFaktor
     let aciklama: String
@@ -38,14 +39,6 @@ enum GorevNarrator {
             }
         }
 
-        var accentColorName: String {
-            switch self {
-            case .alim:        return "aurora"
-            case .satim:       return "crimson"
-            case .pasGecildi:  return "textTertiary"
-            case .engellendi:  return "crimson"
-            }
-        }
     }
 
     // MARK: - DominantFaktor
@@ -87,6 +80,7 @@ enum GorevNarrator {
         let miktar = miktarAciklamasiUret(decision)
 
         return GorevAnlatisi(
+            id: decision.id,
             kararTipi: tip,
             dominantFaktor: faktor,
             aciklama: aciklama,

@@ -61,31 +61,40 @@ final class GorevGunluguViewModel: ObservableObject {
     // MARK: - Combine Binding
 
     private func bind() {
-        let decisionsPublisher = AutoPilotLogger.shared.$decisions
-        let filterPublisher = $seciliFiltre
-
         // Decisions change -> rebuild all narratives, then apply filter
-        decisionsPublisher
-            .combineLatest(filterPublisher)
+        AutoPilotLogger.shared.$decisions
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] decisions, filtre in
+            .sink { [weak self] decisions in
                 guard let self else { return }
-                self.rebuild(decisions: decisions, filtre: filtre)
+                self.rebuildNarratives(decisions: decisions)
+            }
+            .store(in: &cancellables)
+
+        // Filter change -> re-apply filter on existing narratives
+        $seciliFiltre
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] filtre in
+                guard let self else { return }
+                self.applyFilter()
             }
             .store(in: &cancellables)
     }
 
-    private func rebuild(decisions: [AutoPilotDecision], filtre: Filtre) {
+    private func rebuildNarratives(decisions: [AutoPilotDecision]) {
         isLoading = true
 
         // Map decisions to narratives, sorted newest-first
-        let mapped = decisions
+        tumAnlatılar = decisions
             .map { GorevNarrator.anlat($0) }
             .sorted { $0.timestamp > $1.timestamp }
 
-        tumAnlatılar = mapped
-        anlatılar = filtrele(mapped, filtre: filtre)
+        applyFilter()
         isLoading = false
+    }
+
+    private func applyFilter() {
+        anlatılar = filtrele(tumAnlatılar, filtre: seciliFiltre)
     }
 
     // MARK: - Filtering
