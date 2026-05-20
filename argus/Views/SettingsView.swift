@@ -460,13 +460,18 @@ extension SettingsView {
                                 : "Kalibrasyonu çalıştır")
             .padding(.top, DesignTokens.Spacing.md)
 
-            // Flash mesajı (manuel çalıştırma sonrası)
-            if let flash = settingsViewModel.calibrationFlash {
-                Text(flash)
-                    .font(DesignTokens.Fonts.custom(size: 12))
-                    .foregroundColor(DesignTokens.Colors.success)
-                    .padding(.top, DesignTokens.Spacing.sm)
+            // Flash mesajı (manuel çalıştırma sonrası). Animasyon View katmanında;
+            // VM sadece string set ediyor (Faz Security M2).
+            Group {
+                if let flash = settingsViewModel.calibrationFlash {
+                    Text(flash)
+                        .font(DesignTokens.Fonts.custom(size: 12))
+                        .foregroundColor(DesignTokens.Colors.success)
+                        .padding(.top, DesignTokens.Spacing.sm)
+                        .transition(.opacity)
+                }
             }
+            .animation(.default, value: settingsViewModel.calibrationFlash)
 
             // Açıklama altta
             Text("Kalibrasyon, motor ağırlıklarını piyasaya göre günceller. Otomatik çalışır, manuel tetik nadiren gerekir.")

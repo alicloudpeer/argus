@@ -255,7 +255,9 @@ class SettingsViewModel: ObservableObject {
         self.tradeBlockReasons = reasons
     }
 
-    /// Alkindus kalibrasyonu manuel tetikle.
+    /// Alkindus kalibrasyonu manuel tetikle. Animasyon View katmanına ait;
+    /// VM sadece `calibrationFlash` state'ini set eder, View `.animation(_:value:)`
+    /// modifier'ı ile geçişi anime eder.
     @MainActor
     func runCalibrationNow() {
         guard !isRunningCalibration else { return }
@@ -266,11 +268,11 @@ class SettingsViewModel: ObservableObject {
             await AlkindusCalibrationEngine.shared.periodicMatureCheck()
             await refreshSnapshots()
 
-            withAnimation { self.calibrationFlash = "Güncellendi" }
+            self.calibrationFlash = "Güncellendi"
             self.isRunningCalibration = false
 
             try? await Task.sleep(nanoseconds: 2_000_000_000)
-            withAnimation { self.calibrationFlash = nil }
+            self.calibrationFlash = nil
         }
     }
 }

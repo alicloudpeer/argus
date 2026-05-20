@@ -63,6 +63,22 @@ final class ObservatoryHealthViewModel: ObservableObject {
         isLoading = true
         let decisions = ArgusLedger.shared.loadRecentDecisions(limit: 100)
 
+        // Faz Security L2: Hesaplamayı nonisolated yardımcıya taşı — UI thread
+        // bloklanmasın (100 trade'de ~1ms, hacim artarsa kritik olur).
+        let result = await Task.detached(priority: .userInitiated) {
+            Self.computeHealthSnapshot(decisions: decisions)
+        }.value
+
+        self.metrics = result.metrics
+        self.distribution = result.distribution
+        self.isLoading = false
+    }
+
+    // MARK: - Pure helper (no actor isolation, no side effects)
+
+    nonisolated static func computeHealthSnapshot(
+        decisions: [DecisionCard]
+    ) -> (metrics: PerformanceMetrics, distribution: PredictionDistribution) {
         // Matured hit rate + profit factor
         let matured = decisions.filter { $0.outcome == .matured }
         let wins = matured.filter { ($0.actualPnl ?? 0) > 0 }
@@ -101,20 +117,21 @@ final class ObservatoryHealthViewModel: ObservableObject {
         let isDrifting = buyPct > 70 || sellPct > 70 || holdPct > 80
         let driftReason = buyPct > 70 ? "EXCESS BUY" : (sellPct > 70 ? "EXCESS SELL" : (holdPct > 80 ? "EXCESS HOLD" : ""))
 
-        self.metrics = PerformanceMetrics(
-            sharpe: sharpe,
-            hitRate: hitRate,
-            profitFactor: profitFactor,
-            maxDrawdown: maxDD
+        return (
+            metrics: PerformanceMetrics(
+                sharpe: sharpe,
+                hitRate: hitRate,
+                profitFactor: profitFactor,
+                maxDrawdown: maxDD
+            ),
+            distribution: PredictionDistribution(
+                buyPercent: buyPct,
+                holdPercent: holdPct,
+                sellPercent: sellPct,
+                isDrifting: isDrifting,
+                driftReason: driftReason
+            )
         )
-        self.distribution = PredictionDistribution(
-            buyPercent: buyPct,
-            holdPercent: holdPct,
-            sellPercent: sellPct,
-            isDrifting: isDrifting,
-            driftReason: driftReason
-        )
-        self.isLoading = false
     }
 }
 

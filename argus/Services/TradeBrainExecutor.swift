@@ -1340,8 +1340,11 @@ class TradeBrainExecutor: ObservableObject {
         executionLogs.removeAll()
     }
     
-    func resetCooldowns() {
-        Task { await CooldownRegistry.shared.clearAll() }
+    /// Tüm cooldown'ları temizler. Faz 3.4'te CooldownRegistry tek kaynak oldu;
+    /// fire-and-forget Task race oluşturmasın diye fonksiyon async — caller
+    /// `await` ile çağırır ve resetin tamamlandığını bilir.
+    func resetCooldowns() async {
+        await CooldownRegistry.shared.clearAll()
     }
     
     // MARK: - Trade Brain 3.0 Enhanced Decision
