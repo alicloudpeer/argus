@@ -328,6 +328,52 @@ actor AutoPilotService {
                             generatedAt: Date()
                         )
 
+                        // GÖREV GÜNLÜĞÜ: Her taranan sembol için karar kaydı yaz.
+                        // AutoPilotLogger UI tarafından tüketiliyor — alım/satım/pas/engel
+                        // ayrımı orada ScoutLog.reason ve action üzerinden yapılıyor.
+                        let actionStr: String = {
+                            if let sig = decision.signal { return sig.action.rawValue }
+                            switch decision.log.status {
+                            case "BEKLE": return "hold"
+                            default: return "skip" // RED, ATLA, COOLDOWN, ONAYLI(signal yoksa)
+                            }
+                        }()
+
+                        let logDecisionRecord = AutoPilotDecision(
+                            id: UUID(),
+                            timestamp: Date(),
+                            mode: "live",
+                            strategy: decision.signal?.strategy.rawValue ?? "scan",
+                            symbol: symbol,
+                            action: actionStr,
+                            quantity: decision.signal?.quantity ?? 0,
+                            positionValueUSD: (decision.signal?.quantity ?? 0) * currentPrice,
+                            price: currentPrice,
+                            takeProfit: decision.signal?.takeProfit,
+                            stopLoss: decision.signal?.stopLoss,
+                            riskMultiple: nil,
+                            atlasScore: atlas?.totalScore,
+                            orionScore: orion?.score,
+                            aetherScore: aether?.numericScore,
+                            hermesScore: nil,
+                            demeterScore: 50.0,
+                            argusFinalScore: (decision.signal?.grandDecision?.confidence).map { $0 * 100 },
+                            dataQualityScore: nil,
+                            fundamentalsPartial: atlas?.totalScore == nil,
+                            technicalPartial: orion?.score == nil,
+                            macroPartial: aether == nil,
+                            cryptoFallbackUsed: false,
+                            dataSourceNotes: nil,
+                            provider: nil,
+                            portfolioValueBefore: effectiveEquity,
+                            portfolioValueAfter: nil,
+                            rationale: decision.log.reason
+                        )
+
+                        await MainActor.run {
+                            AutoPilotLogger.shared.log(logDecisionRecord)
+                        }
+
                         return (signal, decision.log, argusDecision)
                     }
                 }
