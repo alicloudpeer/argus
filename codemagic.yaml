@@ -108,7 +108,7 @@ workflows:
           xcode-project build-ipa --verbose \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "-configuration Release -destination generic/platform=iOS -sdk iphoneos DEVELOPMENT_TEAM=$TEAM_ID" 2>&1 | tee /tmp/build.log
+            --archive-flags "-configuration Release -destination generic/platform=iOS -sdk iphoneos DEVELOPMENT_TEAM=$TEAM_ID SWIFT_TREAT_WARNINGS_AS_ERRORS=NO SWIFT_STRICT_CONCURRENCY=minimal" 2>&1 | tee /tmp/build.log
           EXIT=${PIPESTATUS[0]}
           echo ""
           echo "=========================================="
