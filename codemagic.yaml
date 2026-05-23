@@ -44,9 +44,10 @@ workflows:
           set -ex
           keychain initialize
 
-          echo "=== fetch-signing-files ==="
+          echo "=== fetch-signing-files (yeni cert key ile) ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
             --create \
             --verbose
 
