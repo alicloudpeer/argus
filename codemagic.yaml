@@ -4,20 +4,14 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m1
 
-    integrations:
-      app_store_connect: codemagic_asc_key   # Codemagic → Teams → Integrations'da bu adla ekle
-
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.aliburakyilmaz.argus
       vars:
         XCODE_PROJECT: "argus.xcodeproj"
         XCODE_SCHEME: "argus"
         BUNDLE_ID: "com.aliburakyilmaz.argus"
         TEAM_ID: "LBS87M74MD"
-      # API anahtarları app-level "Environment variables" üzerinden gelir
-      # (Codemagic API ile otomatik eklendi)
+      groups:
+        - argus_secrets   # Codemagic → variables (otomatik dolduruldu)
 
     scripts:
       - name: Secrets.xcconfig oluştur
@@ -45,6 +39,15 @@ workflows:
           EOF
           echo "Secrets.xcconfig oluşturuldu."
 
+      - name: Kod imzalama (ASC env var'larıyla)
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+
       - name: Build numarası güncelle
         script: |
           BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID" --platform IOS 2>/dev/null || echo "0")
@@ -52,7 +55,6 @@ workflows:
 
       - name: Archive ve IPA oluştur
         script: |
-          xcode-project use-profiles
           xcodebuild \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
@@ -71,5 +73,7 @@ workflows:
 
     publishing:
       app_store_connect:
-        auth: integration
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
