@@ -491,7 +491,7 @@ struct PositionPlanCard: View {
         }
         .buttonStyle(.plain)
         .onAppear(perform: recalculateDelta)
-        .onChange(of: currentPrice) { _ in
+        .onChange(of: currentPrice) {
             recalculateDelta()
         }
     }

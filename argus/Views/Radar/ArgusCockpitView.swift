@@ -189,7 +189,7 @@ struct ArgusCockpitView: View {
         .task {
             await terminal.bootstrapTerminalData()
         }
-        .onChange(of: terminal.watchlist) { _ in
+        .onChange(of: terminal.watchlist) {
             terminal.refreshTerminal()
         }
     }

@@ -61,7 +61,7 @@ struct ArgusPerformanceDashboard: View {
         .navigationTitle("Performans Paneli")
         .navigationBarTitleDisplayMode(.inline)
         .task { await reload() }
-        .onChange(of: selectedPeriod) { _ in Task { await reload() } }
+        .onChange(of: selectedPeriod) { Task { await reload() } }
     }
 
     // MARK: - Period Picker

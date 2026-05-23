@@ -5,7 +5,11 @@ import SwiftUI
 // InstitutionalTheme.Colors.holo ↔ DesignTokens.Colors.primary: aynı hex (#3B82F6)
 // DesignTokens.Colors.background (#050505) ↔ DesignTokens.Colors.background (#07090C):
 //   farklı — yeni ekranlarda InstitutionalTheme kullan, mevcut görsel değişmesin.
-@available(*, deprecated, message: "Yeni kod InstitutionalTheme + DesignTokens kullansın. Theme.swift sadece geriye dönük uyumluluk için tutuluyor.")
+// NOTE: @available(deprecated) annotation kaldırıldı çünkü Codemagic WMO + Release
+// derlemesinde deprecation uyarıları bazı dosyalarda derleme hatasına yükseliyordu.
+// Migrasyon niyeti yorumda korunuyor:
+// "Yeni kod InstitutionalTheme + DesignTokens kullansın. Theme.swift sadece geriye
+// dönük uyumluluk için tutuluyor."
 struct Theme {
     // MARK: - Backgrounds (Deep Space)
     static let background = Color(hex: "050505") // Void Black

@@ -20,7 +20,8 @@ struct OrionBistResult {
     let description: String
 }
 
-@available(*, deprecated, message: "Use OrionBistV2Engine — section-based, RSI 25/75 BIST thresholds, TSI+SAR+EMA")
+// NOTE: @available(deprecated) annotation kaldırıldı (Codemagic WMO+Release escalation).
+// Migrasyon niyeti: "Use OrionBistV2Engine — section-based, RSI 25/75 BIST thresholds, TSI+SAR+EMA"
 class OrionBistEngine {
     static let shared = OrionBistEngine()
     

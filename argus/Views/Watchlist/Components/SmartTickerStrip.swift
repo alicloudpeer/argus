@@ -111,13 +111,13 @@ struct SmartTickerStrip: View {
             MarqueeTicker(items: tickerItems)
         }
         .animation(.easeInOut(duration: 0.4), value: router.isActive)
-        .onChange(of: analysis.macroRating?.numericScore) { _ in
+        .onChange(of: analysis.macroRating?.numericScore) {
             router.evaluate(
                 quotes: market.quotes,
                 aetherScore: analysis.macroRating?.numericScore
             )
         }
-        .onChange(of: market.quotes.count) { _ in
+        .onChange(of: market.quotes.count) {
             router.evaluate(
                 quotes: market.quotes,
                 aetherScore: analysis.macroRating?.numericScore
