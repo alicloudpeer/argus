@@ -21,7 +21,7 @@ struct SanctumHeader: View {
     // hemen altında yaşar — duplikasyon yok.
     var body: some View {
         if let quote {
-            let change = quote.percentChange ?? 0
+            let change = quote.percentChange
             let priceColor: Color = change >= 0
                 ? SanctumTheme.auroraGreen
                 : SanctumTheme.crimsonRed
