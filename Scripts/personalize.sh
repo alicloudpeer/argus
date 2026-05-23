@@ -106,8 +106,13 @@ current_bundle=$(grep -m1 -E '^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = ' "$PBXPR
                    | sed -E 's/^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = ([^;]+);.*$/\1/' \
                    | tr -d '"' | tr -d '[:space:]' || true)
 
-if [[ -z "$current_team" || -z "$current_bundle" ]]; then
-    err "project.pbxproj içinde DEVELOPMENT_TEAM veya PRODUCT_BUNDLE_IDENTIFIER bulunamadı."
+if ! grep -qE '^[[:space:]]*DEVELOPMENT_TEAM = ' "$PBXPROJ"; then
+    err "project.pbxproj içinde DEVELOPMENT_TEAM satırı bulunamadı."
+    err "Repo bozulmuş olabilir. 'git status' kontrol et."
+    exit 1
+fi
+if ! grep -qE '^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = ' "$PBXPROJ"; then
+    err "project.pbxproj içinde PRODUCT_BUNDLE_IDENTIFIER satırı bulunamadı."
     err "Repo bozulmuş olabilir. 'git status' kontrol et."
     exit 1
 fi
