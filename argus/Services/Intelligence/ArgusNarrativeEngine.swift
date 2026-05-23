@@ -100,9 +100,9 @@ struct ArgusNarrativeEngine {
         if let o = orion {
             lines.append("\n--- TEKNİK VERİLER ---")
             lines.append("Genel Skor: \(Int(o.score))/100 → \(o.verdict)")
-            lines.append("Trend: \(o.components.trendDesc ?? "-") (\(Int(o.components.trend))/25)")
-            lines.append("Momentum: \(o.components.momentumDesc ?? "-") (\(Int(o.components.momentum))/25)")
-            lines.append("Yapı: \(o.components.structureDesc ?? "-") (\(Int(o.components.structure))/35)")
+            lines.append("Trend: \(o.components.trendDesc) (\(Int(o.components.trend))/25)")
+            lines.append("Momentum: \(o.components.momentumDesc) (\(Int(o.components.momentum))/25)")
+            lines.append("Yapı: \(o.components.structureDesc) (\(Int(o.components.structure))/35)")
             if let rsi = o.components.rsi { lines.append("RSI: \(String(format: "%.1f", rsi))") }
             if let macd = o.components.macdHistogram { lines.append("MACD: \(String(format: "%.4f", macd))") }
             if let age = o.components.trendAge { lines.append("Trend Yaşı: \(age) gün") }

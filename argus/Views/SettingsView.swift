@@ -1031,7 +1031,7 @@ struct StorageCleanupSection: View {
         if let enumerator = fm.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles]) {
             for case let fileURL as URL in enumerator {
                 if let fileSize = try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
-                    size += Int64(fileSize ?? 0)
+                    size += Int64(fileSize)
                 }
             }
         }

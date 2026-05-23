@@ -37,7 +37,7 @@ struct ArgusDecisionEngine {
         
         let now = Date()
         // --- KERNEL CONFIGURATION (Dynamically Loaded) ---
-        let aggressiveness = UserDefaults.standard.double(forKey: "kernel_aggressiveness")
+        _ = UserDefaults.standard.double(forKey: "kernel_aggressiveness")
         let riskTolerance = UserDefaults.standard.double(forKey: "kernel_risk_tolerance")
         let authorityTech = UserDefaults.standard.double(forKey: "kernel_authority_tech")
         

@@ -26,7 +26,7 @@ class VortexEngine: ObservableObject {
     /// Analyzes the trade context to determine the "Intent" (Why are we buying?)
     func analyzeIntent(snapshot: EntrySnapshot) -> TradeIntent {
         let atlasScore = snapshot.atlasScore ?? 0.0
-        let orionScore = snapshot.orionScore ?? 0.0
+        let orionScore = snapshot.orionScore
         
         // Map Macro Stance to Score
         var demeterScore = 50.0

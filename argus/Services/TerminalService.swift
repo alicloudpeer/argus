@@ -33,8 +33,7 @@ class TerminalService {
         let candleCount = candles?.count ?? 0
         let hasFund = await FundamentalScoreStore.shared.getScore(for: symbol) != nil
         let hasMacro = MacroRegimeService.shared.getCachedRating() != nil
-        let hasNews = true // Şimdilik varsayılan
-        
+
         let health = DataHealth(
             symbol: symbol,
             lastUpdated: Date(),

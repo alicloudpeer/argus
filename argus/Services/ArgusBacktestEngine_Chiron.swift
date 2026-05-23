@@ -135,7 +135,7 @@ extension ArgusBacktestEngine {
                 orion: optimized.newArgusWeights.pulse.orion,
                 atlas: optimized.newArgusWeights.pulse.atlas,
                 phoenix: optimized.newArgusWeights.pulse.phoenix ?? 0.2,
-                aether: optimized.newArgusWeights.pulse.aether ?? 0.1,
+                aether: optimized.newArgusWeights.pulse.aether,
                 hermes: optimized.newArgusWeights.pulse.hermes ?? 0.1,
                 demeter: optimized.newArgusWeights.pulse.demeter ?? 0.1,
                 athena: optimized.newArgusWeights.pulse.athena ?? 0.05,

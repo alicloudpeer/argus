@@ -31,7 +31,7 @@ struct ChartDrawing: Identifiable, Codable, Equatable {
     
     // Helper for SwiftUI Color
     var color: Color {
-        get { Color(hex: colorHex) ?? .blue }
+        get { Color(hex: colorHex) }
         set { colorHex = newValue.toHex() ?? "#0000FF" }
     }
     

@@ -196,14 +196,14 @@ final class ScoutStoryStore: ObservableObject {
         // Trend
         highlights.append(ScoutHighlight(
             type: .trend,
-            value: result.components.trendDesc ?? "Trend",
+            value: result.components.trendDesc,
             score: result.components.trend
         ))
         
         // Momentum
         highlights.append(ScoutHighlight(
             type: .momentum,
-            value: result.components.momentumDesc ?? "Momentum",
+            value: result.components.momentumDesc,
             score: result.components.momentum
         ))
         

@@ -64,7 +64,7 @@ struct AthenaSignalRow: View {
     @State private var isExpanded = false
 
     private var signalColor: Color {
-        Color(hex: signal.type.severityColor) ?? DesignTokens.Colors.textTertiary
+        Color(hex: signal.type.severityColor)
     }
 
     var body: some View {

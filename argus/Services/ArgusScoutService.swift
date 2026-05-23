@@ -133,10 +133,10 @@ final class ArgusScoutService: Sendable {
         // User Feedback: "Too much clutter, low confidence items."
         if let orionResult = orionResult, (orionResult.score >= 45 || isInteresting) {
             let highlights = [
-                ScoutHighlight(type: .structure, value: orionResult.components.structureDesc ?? "Yapı", score: orionResult.components.structure),
-                ScoutHighlight(type: .trend, value: orionResult.components.trendDesc ?? "Trend", score: orionResult.components.trend),
-                ScoutHighlight(type: .momentum, value: orionResult.components.momentumDesc ?? "Momentum", score: orionResult.components.momentum),
-                ScoutHighlight(type: .pattern, value: orionResult.components.patternDesc ?? "Pattern", score: orionResult.components.pattern)
+                ScoutHighlight(type: .structure, value: orionResult.components.structureDesc, score: orionResult.components.structure),
+                ScoutHighlight(type: .trend, value: orionResult.components.trendDesc, score: orionResult.components.trend),
+                ScoutHighlight(type: .momentum, value: orionResult.components.momentumDesc, score: orionResult.components.momentum),
+                ScoutHighlight(type: .pattern, value: orionResult.components.patternDesc, score: orionResult.components.pattern)
             ]
             
             let story = ScoutStory(

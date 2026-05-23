@@ -100,8 +100,6 @@ struct PhoenixLogic {
             // (eski 0.20 eşiği whiplash üretiyordu, yeni eşik 4× daha sıkı).
             return PhoenixAdvice.insufficient(symbol: symbol, timeframe: timeframe)
         }
-        let channelReliable = rSquared >= 0.45 // UI/log için legacy flag
-        
         // 5. Triggers
         guard let latest = analysisSlice.last else {
              return PhoenixAdvice.insufficient(symbol: symbol, timeframe: timeframe)

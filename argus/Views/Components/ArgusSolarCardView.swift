@@ -301,7 +301,7 @@ struct ArgusSolarCardView: View {
         case .atlas: return decision.atlasScore
         case .orion: return decision.orionScore
         case .aether: return decision.aetherScore
-        case .demeter: return decision.demeterScore ?? 0
+        case .demeter: return decision.demeterScore
         case .hermes: return decision.hermesScore
         }
     }
