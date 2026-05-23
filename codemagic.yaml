@@ -55,7 +55,7 @@ workflows:
 
       - name: Archive ve IPA oluştur
         script: |
-          xcode-project build-ipa \
+          xcode-project build-ipa --verbose \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID -resolvePackageDependencies"
