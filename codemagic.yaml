@@ -41,12 +41,29 @@ workflows:
 
       - name: Kod imzalama (ASC env var'larıyla)
         script: |
+          set -ex
           keychain initialize
+
+          echo "=== fetch-signing-files ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --verbose
+
+          echo "=== Provisioning profiles indirildi mi? ==="
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "Klasor yok"
+
+          echo "=== Sertifikalar keychain'e ekleniyor ==="
           keychain add-certificates
-          xcode-project use-profiles
+
+          echo "=== Keychain code signing identities ==="
+          security find-identity -v -p codesigning || true
+
+          echo "=== use-profiles project'e uyguluyor ==="
+          xcode-project use-profiles --verbose
+
+          echo "=== Sonuc: pbxproj'da PROVISIONING_PROFILE_SPECIFIER kontrol ==="
+          grep -A1 "PROVISIONING_PROFILE_SPECIFIER" "$XCODE_PROJECT/project.pbxproj" | head -20 || true
 
       - name: Build numarası güncelle
         script: |
