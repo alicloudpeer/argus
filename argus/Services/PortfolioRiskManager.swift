@@ -168,7 +168,9 @@ class PortfolioRiskManager {
         }
 
         // 7. Portföy Drawdown Kontrolü
-        let peakEquity = isBist ? PortfolioStore.shared.peakBistEquity : PortfolioStore.shared.peakGlobalEquity
+        let peakEquity = MainActor.assumeIsolated {
+            isBist ? PortfolioStore.shared.peakBistEquity : PortfolioStore.shared.peakGlobalEquity
+        }
         if peakEquity > 0 {
             let drawdown = (peakEquity - totalEquity) / peakEquity
             if drawdown >= limits.maxPortfolioDrawdown {

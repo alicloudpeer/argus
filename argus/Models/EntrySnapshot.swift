@@ -79,9 +79,12 @@ struct EntrySnapshot: Codable {
         // içinde MotorReasoning computed property'leri (atlasScore, hermesScore,
         // aetherScore) varsa fallback olarak kullanılıyor.
         self.orionScore = orionScore
-        self.atlasScore = atlasScore ?? grandDecision.atlasScore
+        let (resolvedAtlas, resolvedHermes) = MainActor.assumeIsolated {
+            (atlasScore ?? grandDecision.atlasScore, hermesScore ?? grandDecision.hermesScore)
+        }
+        self.atlasScore = resolvedAtlas
         self.aetherStance = grandDecision.aetherDecision.stance
-        self.hermesScore = hermesScore ?? grandDecision.hermesScore
+        self.hermesScore = resolvedHermes
         
         // Teknik
         self.entryPrice = entryPrice

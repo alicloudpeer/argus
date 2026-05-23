@@ -362,7 +362,7 @@ class TradeBrainExecutor: ObservableObject {
                     continue
                 }
 
-                let dataQualityPenalty: Double = (isBistSym && BorsaPyProvider.shared.isCircuitOpen()) ? 0.85 : 1.0
+                let dataQualityPenalty: Double = (isBistSym && (await BorsaPyProvider.shared.isCircuitOpen())) ? 0.85 : 1.0
 
                 let coreScore = decision.finalScoreCore
                 let pulseScore = decision.finalScorePulse
@@ -913,7 +913,7 @@ class TradeBrainExecutor: ObservableObject {
         // Doğru kaynak: MacroRegimeService'in cached numericScore'u (0-100 aralığında,
         // satır 478'de `regimeAetherScore` olarak zaten hesaplandı).
         let scores = (
-            atlas: FundamentalScoreStore.shared.getScore(for: symbol)?.totalScore,
+            atlas: await FundamentalScoreStore.shared.getScore(for: symbol)?.totalScore,
             orion: orionScore as Double?,
             aether: regimeAetherScore,
             hermes: nil as Double?
@@ -1012,11 +1012,12 @@ class TradeBrainExecutor: ObservableObject {
                 )
             }
         } else {
-            log("❌ \(symbol): Alım REDDEDİLDİ — \(ExecutionLogger.shared.lastTradeError ?? "?")")
-            ArgusLogger.error("executeBuy: ALIM REDDEDİLDİ - \(symbol): \(ExecutionLogger.shared.lastTradeError ?? "?")", category: "TRADEBRAIN")
+            let lastErr = await ExecutionLogger.shared.lastTradeError
+            log("❌ \(symbol): Alım REDDEDİLDİ — \(lastErr ?? "?")")
+            ArgusLogger.error("executeBuy: ALIM REDDEDİLDİ - \(symbol): \(lastErr ?? "?")", category: "TRADEBRAIN")
             await TradeBrainExecutionTracker.shared.recordSkip(
                 symbol: symbol,
-                reason: "Execution failed: \(ExecutionLogger.shared.lastTradeError ?? "?")"
+                reason: "Execution failed: \(lastErr ?? "?")"
             )
         }
 
@@ -1444,7 +1445,7 @@ class TradeBrainExecutor: ObservableObject {
         holdingDays: Int
     ) async {
         guard let multiHorizon = lastMultiHorizonDecisions[symbol],
-              let contradiction = lastContradictionAnalyses[symbol] else {
+              let _ = lastContradictionAnalyses[symbol] else {
             return
         }
         

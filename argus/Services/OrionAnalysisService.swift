@@ -106,7 +106,9 @@ struct OrionBrain {
         if let learned = ChironRegimeEngine.shared.getLearnedOrionWeights(symbol: symbol) {
             base = (learned.structure, learned.trend, learned.momentum, learned.pattern, learned.volatility)
         } else {
-            let config = OrionV2TuningStore.shared.getConfig(symbol: symbol)
+            let config = MainActor.assumeIsolated {
+                OrionV2TuningStore.shared.getConfig(symbol: symbol)
+            }
             base = (config.structureWeight, config.trendWeight, config.momentumWeight, config.patternWeight, config.volatilityWeight)
         }
 

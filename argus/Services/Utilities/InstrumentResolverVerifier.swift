@@ -31,7 +31,7 @@ struct InstrumentResolverVerifier {
     
     static func expect(_ resolver: InstrumentResolver, _ inst: CanonicalInstrument, provider: ProviderTag, id: String) async {
         // Resolver is @MainActor, but likely called from MainActor context in tests
-        let res = resolver.resolve(inst.internalId)
+        let res = await resolver.resolve(inst.internalId)
         
         // Verify Provider Match Logic (simplistic check for verification)
         var matched = false
@@ -59,7 +59,7 @@ struct InstrumentResolverVerifier {
     
     // Derived Check
     static func expectDerived(_ resolver: InstrumentResolver, _ inst: CanonicalInstrument) async {
-         let _ = resolver.resolve(inst.internalId)
+         let _ = await resolver.resolve(inst.internalId)
          // In current model, we don't have isDerived flag, but we assume it's derived if no provider ID?
          // Or just skip this check if deprecated.
     }

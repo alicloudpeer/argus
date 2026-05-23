@@ -43,7 +43,7 @@ extension AutoPilotStore {
     }
 
     func getCurrentPricesForLearning() async -> [String: Double] {
-        let quotes = MarketDataStore.shared.liveQuotes
+        let quotes = await MarketDataStore.shared.liveQuotes
         var prices: [String: Double] = [:]
 
         for (symbol, quote) in quotes {

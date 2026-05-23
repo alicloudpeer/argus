@@ -135,8 +135,9 @@ final class PlanRepository: ObservableObject {
 
         // 2026-05-04: hardcoded atlasScore=50 fake'i kaldırıldı.
         let orionScore = decision.orionDecision.netSupport * 100
-        let atlasScore = decision.atlasScore
-        let hermesScore = decision.hermesScore
+        let (atlasScore, hermesScore) = MainActor.assumeIsolated {
+            (decision.atlasScore, decision.hermesScore)
+        }
 
         let defaultThesis = generateThesis(for: trade.symbol, decision: decision)
         let defaultInvalidation = generateInvalidation(for: trade.symbol, decision: decision)

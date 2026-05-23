@@ -56,7 +56,7 @@ extension AutoPilotStore {
         // başında watchlist global sembolleri paralel pre-fetch ediliyor.
         // BIST sembolleri Council.convene içinde BISTSentimentEngine kendi
         // yolundan ısıtır — bu helper sadece global'i kapsar.
-        let watchlistForHermes = WatchlistStore.shared.items
+        let watchlistForHermes = await WatchlistStore.shared.items
         async let demeterWarm: Void = DemeterEngine.shared.analyze()
         async let macroWarm: MacroEnvironmentRating = MacroRegimeService.shared.computeMacroEnvironment()
         async let hermesWarm: Void = HermesCoordinator.shared.warmupForScouting(symbols: watchlistForHermes)
@@ -74,18 +74,18 @@ extension AutoPilotStore {
             category: "OTOPİLOT"
         )
         if !bistOpen {
-            let bistCount = WatchlistStore.shared.items.filter { $0.hasSuffix(".IS") }.count
+            let bistCount = await WatchlistStore.shared.items.filter { $0.hasSuffix(".IS") }.count
             ArgusLogger.info("  ⏱️ BIST kapalı — \(bistCount) BIST sembolü bu turda atlanacak", category: "OTOPİLOT")
         }
 
-        let symbols = WatchlistStore.shared.items
-        let simpleQuotes = MarketDataStore.shared.liveQuotes
+        let symbols = await WatchlistStore.shared.items
+        let simpleQuotes = await MarketDataStore.shared.liveQuotes
 
-        let portfolio = portfolioStore.trades
-        let balance = portfolioStore.globalBalance
-        let bistBalance = portfolioStore.bistBalance
-        let equity = portfolioStore.getGlobalEquity(quotes: simpleQuotes)
-        let bistEquity = portfolioStore.getBistEquity(quotes: simpleQuotes)
+        let portfolio = await portfolioStore.trades
+        let balance = await portfolioStore.globalBalance
+        let bistBalance = await portfolioStore.bistBalance
+        let equity = await portfolioStore.getGlobalEquity(quotes: simpleQuotes)
+        let bistEquity = await portfolioStore.getBistEquity(quotes: simpleQuotes)
 
         ArgusLogger.info("AutoPilotStore: Bakiye - Global: $\(balance), BIST: ₺\(bistBalance)", category: "OTOPİLOT")
         ArgusLogger.info("AutoPilotStore: Equity - Global: $\(equity), BIST: ₺\(bistEquity)", category: "OTOPİLOT")
@@ -384,7 +384,7 @@ extension AutoPilotStore {
         // Şimdi: gerçek veri yoksa nil dön (Sirkiye analizini atla), false-positive
         // skor üretmek yerine "veri yetersiz" tutumunu üst katmana bildir.
 
-        let quotes = MarketDataStore.shared.liveQuotes
+        let quotes = await MarketDataStore.shared.liveQuotes
         var usdQuoteResolved = quotes["USD/TRY"] ?? quotes["USDTRY=X"] ?? quotes["USDTRY"]
 
         async let newsTask = SirkiyeNewsHelper.snapshotForTurkey()
@@ -470,10 +470,10 @@ extension AutoPilotStore {
     // MARK: - Plan Triggers
 
     func checkPlanTriggers() async {
-        let openTrades = portfolioStore.trades.filter { $0.isOpen }
+        let openTrades = await portfolioStore.trades.filter { $0.isOpen }
         guard !openTrades.isEmpty else { return }
 
-        let quotes = MarketDataStore.shared.liveQuotes
+        let quotes = await MarketDataStore.shared.liveQuotes
         var triggeredCount = 0
 
         // FIX #3: Makro rejim transition tepkisi.
@@ -491,7 +491,7 @@ extension AutoPilotStore {
                 print("🛡️🛡️🛡️ CRASH MODE — %30 trim tüm açık pozisyonlara")
                 for trade in openTrades {
                     guard let currentPrice = quotes[trade.symbol]?.currentPrice, currentPrice > 0 else { continue }
-                    _ = portfolioStore.trim(
+                    _ = await portfolioStore.trim(
                         tradeId: trade.id,
                         percentage: 30,
                         currentPrice: currentPrice,
@@ -508,7 +508,7 @@ extension AutoPilotStore {
                 continue
             }
 
-            let grandDecision = SignalStateViewModel.shared.grandDecisions[trade.symbol]
+            let grandDecision = await SignalStateViewModel.shared.grandDecisions[trade.symbol]
             guard let action = PositionPlanStore.shared.checkTriggers(
                 trade: trade,
                 currentPrice: currentPrice,
@@ -542,7 +542,7 @@ extension AutoPilotStore {
                     )
                     PositionPlanStore.shared.completePlan(tradeId: trade.id)
                 } else {
-                    _ = portfolioStore.trim(
+                    _ = await portfolioStore.trim(
                         tradeId: trade.id,
                         percentage: clampedPercent,
                         currentPrice: currentPrice,
@@ -560,7 +560,7 @@ extension AutoPilotStore {
                     )
                     PositionPlanStore.shared.completePlan(tradeId: trade.id)
                 } else {
-                    _ = portfolioStore.trim(
+                    _ = await portfolioStore.trim(
                         tradeId: trade.id,
                         percentage: clampedPercent,
                         currentPrice: currentPrice,
