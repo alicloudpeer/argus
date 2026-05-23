@@ -48,7 +48,20 @@ actor SymbolBlocklist {
     private static let storageKey = "ArgusSymbolBlocklist.v1"
 
     private init() {
-        loadFromDisk()
+        // Swift 6: actor init is nonisolated; inline loadFromDisk so we can
+        // directly mutate stored property `blocked` during init without
+        // crossing the isolation boundary.
+        guard let data = UserDefaults.standard.data(forKey: Self.storageKey),
+              let decoded = try? JSONDecoder().decode([String: Entry].self, from: data) else {
+            return
+        }
+        let now = Date()
+        let filtered = decoded.filter { $0.value.expiresAt > now }
+        self.blocked = filtered
+        if filtered.count != decoded.count,
+           let reencoded = try? JSONEncoder().encode(filtered) {
+            UserDefaults.standard.set(reencoded, forKey: Self.storageKey)
+        }
     }
 
     // MARK: - Public API
