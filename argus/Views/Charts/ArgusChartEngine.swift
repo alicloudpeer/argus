@@ -190,8 +190,8 @@ struct ArgusChartEngine: View {
             // Fibonacci Levels
             let levels: [Double] = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0]
             let diffY = end.y - start.y
-            let width = chartRect.width // Full width lines
-            
+            // chartRect.width was unused — lines span chartRect.minX..maxX directly.
+
             for level in levels {
                 let y = start.y + diffY * CGFloat(level)
                 
