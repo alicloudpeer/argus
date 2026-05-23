@@ -296,8 +296,6 @@ actor ChironLearningSystem {
             // Check which weights dominated
             let avgTrend = winnerWeights.reduce(0) { $0 + $1.trend } / Double(winnerWeights.count)
             let avgMomentum = winnerWeights.reduce(0) { $0 + $1.momentum } / Double(winnerWeights.count)
-            let avgRelativeStrength = winnerWeights.reduce(0) { $0 + $1.relativeStrength } / Double(winnerWeights.count)
-            
             if avgTrend > 25 && avgMomentum > 25 {
                 currentState.regime = .bull
                 currentState.regimeConfidence = 0.7

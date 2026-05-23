@@ -77,7 +77,6 @@ class PortfolioRiskManager {
         resetDailyCountIfNeeded()
         
         // 1. Nakit Oranı Kontrolü
-        let currentCashRatio = cashBalance / totalEquity
         let afterTradeCash = cashBalance - proposedAmount
         let afterTradeCashRatio = afterTradeCash / totalEquity
         

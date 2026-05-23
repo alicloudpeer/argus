@@ -141,7 +141,6 @@ class VortexEngine: ObservableObject {
         guard var plan = planStore.getPlan(for: tradeId) else { return }
         
         // Create Revision
-        let oldDesc = plan.bullishScenario.steps.first?.description ?? "N/A"
         let revision = PlanRevision(
             timestamp: Date(),
             reason: reason,

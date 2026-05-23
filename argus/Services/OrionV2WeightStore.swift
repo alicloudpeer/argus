@@ -86,13 +86,7 @@ final class OrionV2WeightStore {
         let currentWeights = getWeights(symbol: symbol)
         
         // Analyze which components contributed to wins vs losses
-        var componentScores: [String: (wins: Double, losses: Double, count: Int)] = [
-            "structure": (0, 0, 0),
-            "trend": (0, 0, 0),
-            "momentum": (0, 0, 0),
-            "pattern": (0, 0, 0)
-        ]
-        
+
         // For simplicity, we attribute success based on overall win rate
         // In a real system, you'd look at which scores were high during wins
         let winRate = Double(trades.filter { $0.pnl > 0 }.count) / Double(trades.count)

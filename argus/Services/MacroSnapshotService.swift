@@ -22,7 +22,7 @@ final class MacroSnapshotService: Sendable {
         let (sentiment, breadth, commodities) = await marketData
         
         // 2. Synthesize Mode
-        let mode = determineMarketMode(vix: sentiment.vix, fearGreed: sentiment.fearGreed)
+        _ = determineMarketMode(vix: sentiment.vix, fearGreed: sentiment.fearGreed)
         
         // 3. Synthesize Sector Rotation (Placeholder logic for now)
         let rotation = analyzeSectorRotation()
@@ -84,7 +84,7 @@ final class MacroSnapshotService: Sendable {
         
         async let gdpSeq = try? fred.fetchSeries(series: .growth, limit: 1)
         async let unrateSeq = try? fred.fetchSeries(series: .unemployment, limit: 1)
-        async let cpiSeq = try? fred.fetchSeries(series: .cpi, limit: 1) // Headline CPI
+        async let _ = try? fred.fetchSeries(series: .cpi, limit: 1) // Headline CPI
         async let fedSeq = try? fred.fetchSeries(series: .fedFunds, limit: 1)
         
         async let tenYSeq = try? fred.fetchSeries(series: .treasury10Y, limit: 1)

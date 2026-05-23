@@ -15,9 +15,7 @@ actor YahooCandleAdapter {
     func fetchCandles(symbol: String, timeframe: String, limit: Int) async throws -> ([Candle], String) {
         // Use Builder for strict URL compliance
         let url = try YahooChartURLBuilder.build(symbol: symbol, timeframe: timeframe)
-        
-        let start = Date()
-        
+
         // Use HeimdallNetwork for observability
         let data = try await HeimdallNetwork.request(
             url: url,

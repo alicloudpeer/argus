@@ -333,7 +333,7 @@ final class SignalViewModel: ObservableObject {
         // Check if stock is oversold (overreaction)
         let marketVM = MarketViewModel.shared
         if let quote = marketVM.quotes[symbol] {
-            let isOversold = (quote.percentChange ?? 0) < -5.0 && (atlas ?? 0) > 75
+            let isOversold = quote.percentChange < -5.0 && (atlas ?? 0) > 75
             if isOversold {
                 print("⚠️ Overreaction detected in \(symbol)")
             }

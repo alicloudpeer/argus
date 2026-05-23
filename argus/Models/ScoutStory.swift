@@ -210,7 +210,7 @@ final class ScoutStoryStore: ObservableObject {
         // Pattern
         highlights.append(ScoutHighlight(
             type: .pattern,
-            value: result.components.patternDesc ?? "Pattern",
+            value: result.components.patternDesc,
             score: result.components.pattern
         ))
         

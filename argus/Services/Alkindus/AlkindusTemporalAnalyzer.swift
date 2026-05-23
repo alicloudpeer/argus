@@ -32,7 +32,6 @@ private extension Date {
 
     /// Get weekday symbol for given market
     func marketWeekday(for symbol: String) -> String {
-        let calendar = Calendar.current
         let formatter = DateFormatter()
         formatter.timeZone = symbol.hasSuffix(".IS") || symbol.uppercased().contains("BIST")
             ? TimeZone(identifier: "Europe/Istanbul")

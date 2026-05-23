@@ -92,12 +92,12 @@ final class MarketViewModel: ObservableObject {
         guard !allQuotes.isEmpty else { return }
         
         self.topGainers = allQuotes
-            .sorted { ($0.percentChange ?? 0) > ($1.percentChange ?? 0) }
+            .sorted { $0.percentChange > $1.percentChange }
             .prefix(10)
             .map { $0 }
-            
+
         self.topLosers = allQuotes
-            .sorted { ($0.percentChange ?? 0) < ($1.percentChange ?? 0) }
+            .sorted { $0.percentChange < $1.percentChange }
             .prefix(10)
             .map { $0 }
             
@@ -471,7 +471,7 @@ final class MarketViewModel: ObservableObject {
             case .aggressiveGrowth:
                 return orion >= 80 && (atlas >= 50 && atlas < 80)
             case .qualityPullback:
-                return atlas >= 80 && quote.percentChange ?? 0 < -2.0 && quote.percentChange ?? 0 > -15.0
+                return atlas >= 80 && quote.percentChange < -2.0 && quote.percentChange > -15.0
             }
         }.sorted { s1, s2 in
             let sc1 = FundamentalScoreStore.shared.getScore(for: s1)?.totalScore ?? 0

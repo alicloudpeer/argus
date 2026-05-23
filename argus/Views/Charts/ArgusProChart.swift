@@ -10,9 +10,6 @@ struct ArgusProChart: View {
     
     var body: some View {
         GeometryReader { geo in
-            let width = geo.size.width
-            let height = geo.size.height
-            
             ZStack(alignment: .topLeading) {
                 Canvas { context, size in
                     let drawingWidth = size.width

@@ -71,7 +71,7 @@ class TerminalService {
         
         var processedCount = 0
         
-        for (batchIndex, batch) in batches.enumerated() {
+        for batch in batches {
             // Paralel veri çekimi
             var batchResults: [TerminalSymbolData] = []
             

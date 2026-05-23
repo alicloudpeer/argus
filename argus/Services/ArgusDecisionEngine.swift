@@ -53,9 +53,7 @@ struct ArgusDecisionEngine {
         }
         
         // Use config thresholds
-        let effectiveBuyThreshold = config.defaultBuyThreshold - ((aggressiveness > 0 ? aggressiveness : config.defaultAggressiveness) - config.defaultAggressiveness) * config.aggressivenessMultiplier
-        let effectiveSellThreshold = config.defaultSellThreshold + ((aggressiveness > 0 ? aggressiveness : config.defaultAggressiveness) - config.defaultAggressiveness) * config.aggressivenessMultiplier
-        
+
         let techAuthority = authorityTech > 0 ? authorityTech : config.defaultTechAuthority
         
         // --- PHASE 1: DATA HEALTH GATE (Hard Stop) ---
@@ -455,7 +453,7 @@ struct ArgusDecisionEngine {
         
         // --- PHASE 6: CHIRON LOGGING (The Memory) ---
         // Fire and forget logging
-        let finalTier = isApproved ? (finalAction == .buy ? determineTier(score: consensusScore, isBuy: true, quality: consensusQuality).tier : determineTier(score: consensusScore, isBuy: false, quality: consensusQuality).tier) : "RED"
+        _ = isApproved ? (finalAction == .buy ? determineTier(score: consensusScore, isBuy: true, quality: consensusQuality).tier : determineTier(score: consensusScore, isBuy: false, quality: consensusQuality).tier) : "RED"
         
 
         
@@ -545,7 +543,7 @@ struct ArgusDecisionEngine {
             )
             
             // Also Log Module Opinions
-            for op in allOpinions {
+            for _ in allOpinions {
                  // We need a helper for logModuleOpinion or just generic event.
                  // For V0, let's keep it simple or add if easy.
             }

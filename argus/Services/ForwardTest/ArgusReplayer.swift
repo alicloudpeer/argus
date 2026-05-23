@@ -136,12 +136,7 @@ actor ArgusReplayer {
     
     private func loadEvent(eventId: String) -> (symbol: String, payloadJson: String)? {
         // Query from ledger
-        let sql = """
-        SELECT symbol, payload_json FROM events WHERE event_id = ? LIMIT 1;
-        """
-        
-        var result: (String, String)?
-        
+
         // Sync query (simplified for actor isolation)
         let events = ledger.loadRecentDecisions(limit: 1000)
         if let event = events.first(where: { $0.id.uuidString == eventId }) {

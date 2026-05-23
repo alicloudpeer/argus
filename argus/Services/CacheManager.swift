@@ -80,7 +80,6 @@ actor CacheManager {
     }
     
     func getStats() -> CacheStats {
-        let now = Date()
         let expiredCount = memoryCache.values.filter { $0.isExpired }.count
         let totalSize = memoryCache.values.reduce(0) { $0 + $1.data.count }
         

@@ -335,7 +335,6 @@ struct ArgusChartEngine: View {
             var path = Path(); path.move(to: CGPoint(x: chartRect.minX, y: y)); path.addLine(to: CGPoint(x: chartRect.maxX, y: y))
             context.stroke(path, with: .color(gridColor), lineWidth: 0.5)
         }
-        let totalWidth = CGFloat(data.points.count) * (baseCandleWidth * scaleX + candleSpacing * scaleX)
         let step = max(1, data.points.count / 6)
         for i in stride(from: 0, to: data.points.count, by: step) {
             let x = chartRect.minX + CGFloat(i) * (baseCandleWidth * scaleX + candleSpacing * scaleX) + offsetX

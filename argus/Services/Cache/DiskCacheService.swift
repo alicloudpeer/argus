@@ -160,7 +160,7 @@ final class DiskCacheService: Sendable {
                     if let modDate = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate,
                        modDate < cutoff {
                         if let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize {
-                            freedBytes += Int64(size ?? 0)
+                            freedBytes += Int64(size)
                         }
                         try? self.fileManager.removeItem(at: url)
                         deletedCount += 1
@@ -175,7 +175,7 @@ final class DiskCacheService: Sendable {
                     if let modDate = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate,
                        modDate < harvestCutoff {
                         if let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize {
-                            freedBytes += Int64(size ?? 0)
+                            freedBytes += Int64(size)
                         }
                         try? self.fileManager.removeItem(at: url)
                         deletedCount += 1

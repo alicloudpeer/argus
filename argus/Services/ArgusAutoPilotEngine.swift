@@ -376,7 +376,7 @@ final class ArgusAutoPilotEngine: Sendable {
         }
         
         // 1. Data Quality
-        let dqScore = calculateDataQuality(symbol: symbol, candles: candles, atlas: atlasScore, aether: aetherRating, hermes: hermesInsight)
+        _ = calculateDataQuality(symbol: symbol, candles: candles, atlas: atlasScore, aether: aetherRating, hermes: hermesInsight)
         let policy = RiskEscapePolicy.from(aetherScore: aetherRating?.numericScore ?? 50)
         let isSafeSymbol = safeUniverse.getUniverseType(for: symbol).map {
             switch $0 {
@@ -396,8 +396,7 @@ final class ArgusAutoPilotEngine: Sendable {
         }
         
         // Context for Argus V3
-        var argusMultiplier: Double = 1.0 // Default Aggressive (Legacy behavior)
-        
+
         // 3. ARGUS GRAND COUNCIL CHECK (V3 - THE VERDICT)
         // Consult all councils for the grand decision
         

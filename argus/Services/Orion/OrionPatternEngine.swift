@@ -113,7 +113,6 @@ final class OrionPatternEngine {
         var lastLowIndex = 0
         
         for i in 1..<candles.count {
-            let close = candles[i].close
             let high = candles[i].high
             let low = candles[i].low
             
@@ -183,9 +182,8 @@ final class OrionPatternEngine {
                 // Calculate target (Neckline projection)
                 let height = ((peek1.price + peek2.price) / 2) - valley.price
                 let target = valley.price - height
-                let current = candles.last?.close ?? 0
-                
-                // Confirm strictly: CURRENT PRICE must be below neckline for breakout, 
+
+                // Confirm strictly: CURRENT PRICE must be below neckline for breakout,
                 // OR forming second top (reversal warning)
                 
                 // Let's create a "Potential" Double Top

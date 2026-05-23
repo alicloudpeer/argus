@@ -1279,7 +1279,7 @@ final class ArgusLedger: Sendable {
         queue.async {
             self.ensureConnection()
             
-            for (module, delta) in event.weightDeltas {
+            for (module, _) in event.weightDeltas {
                 let oldWeight = event.oldWeights[module] ?? 0.0
                 let newWeight = event.newWeights[module] ?? 0.0
                 
