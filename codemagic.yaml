@@ -58,7 +58,7 @@ workflows:
           xcode-project build-ipa --verbose \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID -resolvePackageDependencies"
+            --archive-flags "-configuration Release -destination generic/platform=iOS -sdk iphoneos -resolvePackageDependencies DEVELOPMENT_TEAM=$TEAM_ID"
 
     artifacts:
       - $CM_BUILD_DIR/build/ios/xcarchive/*.xcarchive
