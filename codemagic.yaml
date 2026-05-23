@@ -5,7 +5,8 @@ workflows:
     instance_type: mac_mini_m1
 
     environment:
-      xcode: 16.4
+      # Apple now requires iOS 26 SDK / Xcode 26+ for App Store Connect uploads.
+      xcode: latest
       vars:
         XCODE_PROJECT: "argus.xcodeproj"
         XCODE_SCHEME: "argus"
