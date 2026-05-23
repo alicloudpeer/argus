@@ -97,29 +97,69 @@ fi
 
 # --- Mevcut değerleri oku ---
 # project.pbxproj'da `DEVELOPMENT_TEAM = XXXXXXXXXX;` ve
-# `PRODUCT_BUNDLE_IDENTIFIER = xxx.yyy.zzz;` satırları bulunur.
-# İlk eşleşmeyi alırız (Debug ve Release'de aynı değerdir beklenen).
+# `PRODUCT_BUNDLE_IDENTIFIER = xxx.yyy.zzz;` satırları bulunur. Test target
+# kendi buildSettings bloğunda (içinde TEST_HOST = ... satırı geçer) ayrı bir
+# bundle ID kullanır; ikisini aynıya çekersek App Store Connect / Xcode
+# "duplicate bundle identifier" hatası verip IPA export kırılır. Bu yüzden
+# block-aware okuyup ana ve test bundle ID'leri ayrı tutuyoruz.
 current_team=$(grep -m1 -E '^[[:space:]]*DEVELOPMENT_TEAM = ' "$PBXPROJ" \
                  | sed -E 's/^[[:space:]]*DEVELOPMENT_TEAM = ([^;]+);.*$/\1/' \
                  | tr -d '"' | tr -d '[:space:]' || true)
-current_bundle=$(grep -m1 -E '^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = ' "$PBXPROJ" \
-                   | sed -E 's/^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = ([^;]+);.*$/\1/' \
-                   | tr -d '"' | tr -d '[:space:]' || true)
+
+# awk: her `buildSettings = { ... };` bloğunu izle. Blok kapanırken,
+# TEST_HOST görüldüyse blokta yakalanan bundle ID test target'a, yoksa
+# ana app'e ait sayılır. Birden çok config (Debug/Release) için ilk
+# karşılaşılan değer kullanılır — Debug ve Release'in aynı değer taşıması
+# beklenir (Apple kuralı).
+read_bundles=$(awk '
+    /buildSettings = \{/ {
+        in_block = 1; has_test_host = 0; cur = ""
+        next
+    }
+    in_block && /^[[:space:]]*\};[[:space:]]*$/ {
+        if (cur != "") {
+            if (has_test_host) {
+                if (test_bundle == "") test_bundle = cur
+            } else {
+                if (main_bundle == "") main_bundle = cur
+            }
+        }
+        in_block = 0
+        next
+    }
+    in_block && /TEST_HOST[[:space:]]*=/ { has_test_host = 1 }
+    in_block && /^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER[[:space:]]*=/ {
+        v = $0
+        sub(/^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER[[:space:]]*=[[:space:]]*/, "", v)
+        sub(/;.*$/, "", v)
+        gsub(/"/, "", v)
+        gsub(/[[:space:]]/, "", v)
+        cur = v
+    }
+    END { printf "%s\t%s\n", main_bundle, test_bundle }
+' "$PBXPROJ")
+
+current_main_bundle="${read_bundles%%	*}"
+current_test_bundle="${read_bundles##*	}"
 
 if ! grep -qE '^[[:space:]]*DEVELOPMENT_TEAM = ' "$PBXPROJ"; then
     err "project.pbxproj içinde DEVELOPMENT_TEAM satırı bulunamadı."
     err "Repo bozulmuş olabilir. 'git status' kontrol et."
     exit 1
 fi
-if ! grep -qE '^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = ' "$PBXPROJ"; then
-    err "project.pbxproj içinde PRODUCT_BUNDLE_IDENTIFIER satırı bulunamadı."
+if [[ -z "$current_main_bundle" ]]; then
+    err "project.pbxproj içinde ana app target'ı için PRODUCT_BUNDLE_IDENTIFIER bulunamadı."
+    err "(TEST_HOST içermeyen buildSettings bloğunda arandı.)"
     err "Repo bozulmuş olabilir. 'git status' kontrol et."
     exit 1
 fi
 
 info "Şu anki değerler:"
-info "  DEVELOPMENT_TEAM          = $current_team"
-info "  PRODUCT_BUNDLE_IDENTIFIER = $current_bundle"
+info "  DEVELOPMENT_TEAM            = $current_team"
+info "  PRODUCT_BUNDLE_IDENTIFIER   = $current_main_bundle  (ana app)"
+if [[ -n "$current_test_bundle" ]]; then
+    info "  PRODUCT_BUNDLE_IDENTIFIER   = $current_test_bundle  (test target)"
+fi
 
 # --- İnteraktif mod (argüman yoksa sor) ---
 is_interactive() {
@@ -197,12 +237,34 @@ validate_team_id
 validate_bundle_id
 validate_apple_id
 
+# --- Yeni bundle ID'leri hesapla ---
+# Test target'a, ana app bundle ID'sinin altında ayrı bir bundle ID veriyoruz.
+# Orijinal suffix'i (örn: "argusTests") koruruz; tespit edemezsek "Tests"
+# default'una düşeriz. İki target'a aynı ID atamak Xcode/App Store Connect'te
+# "duplicate bundle identifier" hatası verir — bu script'in eski hâli tam da
+# bunu yapıyordu.
+new_main_bundle="$BUNDLE_ID"
+new_test_bundle=""
+if [[ -n "$current_test_bundle" ]]; then
+    if [[ "$current_test_bundle" == "$current_main_bundle".* ]]; then
+        test_suffix="${current_test_bundle#"$current_main_bundle".}"
+    else
+        warn "Test bundle ID ($current_test_bundle) ana app'in ($current_main_bundle) child'ı görünmüyor."
+        warn "Suffix tespit edilemedi; 'Tests' default'u kullanılacak."
+        test_suffix="Tests"
+    fi
+    new_test_bundle="$BUNDLE_ID.$test_suffix"
+fi
+
 # --- Değişiklik özeti ---
 printf "\n%sUygulanacak değişiklikler:%s\n" "$BOLD" "$RESET"
-printf "  DEVELOPMENT_TEAM           %s  →  %s\n" "$current_team"   "$TEAM_ID"
-printf "  PRODUCT_BUNDLE_IDENTIFIER  %s  →  %s\n" "$current_bundle" "$BUNDLE_ID"
+printf "  DEVELOPMENT_TEAM             %s  →  %s\n" "$current_team"        "$TEAM_ID"
+printf "  PRODUCT_BUNDLE_IDENTIFIER    %s  →  %s   (ana app)\n" "$current_main_bundle" "$new_main_bundle"
+if [[ -n "$current_test_bundle" ]]; then
+    printf "  PRODUCT_BUNDLE_IDENTIFIER    %s  →  %s   (test target)\n" "$current_test_bundle" "$new_test_bundle"
+fi
 if [[ -n "$APPLE_ID" ]]; then
-    printf "  Apple ID (info only)       %s\n" "$APPLE_ID"
+    printf "  Apple ID (info only)         %s\n" "$APPLE_ID"
 fi
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
@@ -211,7 +273,9 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
 fi
 
 # Aynı değerler → değişikliğe gerek yok
-if [[ "$current_team" == "$TEAM_ID" && "$current_bundle" == "$BUNDLE_ID" ]]; then
+if [[ "$current_team" == "$TEAM_ID" \
+   && "$current_main_bundle" == "$new_main_bundle" \
+   && "$current_test_bundle" == "$new_test_bundle" ]]; then
     ok "Değerler zaten güncel, değişiklik yapılmadı."
     exit 0
 fi
@@ -234,31 +298,64 @@ info "Yedek: $BACKUP"
 # --- sed ile değiştir ---
 # BSD sed (macOS) ve GNU sed (Linux) arasında `-i` davranışı farklı: macOS -i ''
 # gerektirir, GNU gerektirmez. Portable yol: -i.tmp kullan, sonra .tmp'yi sil.
-sed -E \
-    -e "s|^([[:space:]]*DEVELOPMENT_TEAM = )[^;]+;|\1$TEAM_ID;|g" \
-    -e "s|^([[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = )[^;]+;|\1$BUNDLE_ID;|g" \
-    -i.tmp "$PBXPROJ"
+#
+# Bundle ID'leri tam-eşleşme ile değiştiriyoruz (eski `[^;]+;` wildcard'ı
+# yerine), çünkü ana ve test target'ı tek wildcard tek değere düşürüyordu —
+# duplicate bundle identifier hatasının kök sebebi buydu. Bundle ID
+# format'ında regex meta char olarak yalnız `.` var, onu da literal'a
+# escape ediyoruz.
+escape_dots() { printf '%s' "$1" | sed -e 's/\./\\./g'; }
+main_pat=$(escape_dots "$current_main_bundle")
+
+sed_args=(-E -e "s|^([[:space:]]*DEVELOPMENT_TEAM = )[^;]+;|\1$TEAM_ID;|g")
+# Test substitution'ı ana'dan ÖNCE koyuyoruz: test bundle ID, ana bundle
+# ID'nin prefix'iyle başlıyor (com.x.argus.argusTests / com.x.argus). Her
+# satırın `;` ile kapanması sayesinde pattern'lar zaten birbirine sızmaz,
+# ama uzun olanı önce yazmak ekstra güvence.
+if [[ -n "$current_test_bundle" ]]; then
+    test_pat=$(escape_dots "$current_test_bundle")
+    sed_args+=(-e "s|^([[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = )$test_pat;|\1$new_test_bundle;|g")
+fi
+sed_args+=(-e "s|^([[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = )$main_pat;|\1$new_main_bundle;|g")
+
+sed "${sed_args[@]}" -i.tmp "$PBXPROJ"
 rm -f "$PBXPROJ.tmp"
 
 # --- Doğrula ---
-new_team=$(grep -m1 -E '^[[:space:]]*DEVELOPMENT_TEAM = ' "$PBXPROJ" \
-             | sed -E 's/^[[:space:]]*DEVELOPMENT_TEAM = ([^;]+);.*$/\1/')
-new_bundle=$(grep -m1 -E '^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = ' "$PBXPROJ" \
-               | sed -E 's/^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = ([^;]+);.*$/\1/')
+# Hem ana hem test bundle ID için yeni değerin occurrence sayısını sayıyoruz;
+# sıfır olursa replace çalışmamış demektir → yedekten geri yükle.
+team_count=$(grep -cE "^[[:space:]]*DEVELOPMENT_TEAM = $TEAM_ID;" "$PBXPROJ" || true)
+main_new_pat=$(escape_dots "$new_main_bundle")
+main_count=$(grep -cE "^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = $main_new_pat;" "$PBXPROJ" || true)
+test_count=0
+if [[ -n "$current_test_bundle" ]]; then
+    test_new_pat=$(escape_dots "$new_test_bundle")
+    test_count=$(grep -cE "^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = $test_new_pat;" "$PBXPROJ" || true)
+fi
 
-if [[ "$new_team" != "$TEAM_ID" || "$new_bundle" != "$BUNDLE_ID" ]]; then
-    err "sed değişikliği beklendiği gibi uygulanmadı."
+rollback=0
+if [[ "$team_count" -eq 0 || "$main_count" -eq 0 ]]; then rollback=1; fi
+if [[ -n "$current_test_bundle" && "$test_count" -eq 0 ]]; then rollback=1; fi
+# Ek güvence: ana ve test bundle ID gerçekten farklı kaldı mı? Bu invariant
+# kırılırsa Xcode/App Store Connect "duplicate bundle identifier" hatası
+# verir; eski script'in tek hatası tam buydu.
+if [[ -n "$current_test_bundle" && "$new_main_bundle" == "$new_test_bundle" ]]; then
+    err "Ana app ve test target için aynı bundle ID üretildi: $new_main_bundle"
+    rollback=1
+fi
+
+if [[ "$rollback" -eq 1 ]]; then
+    err "sed değişikliği beklendiği gibi uygulanmadı (team=$team_count, main=$main_count, test=$test_count)."
     err "Yedekten geri yükleniyor..."
     mv "$BACKUP" "$PBXPROJ"
     exit 1
 fi
 
-# Değişikliklerin tüm occurrence'larda uygulandığını doğrula
-team_count=$(grep -cE "^[[:space:]]*DEVELOPMENT_TEAM = $TEAM_ID;" "$PBXPROJ" || true)
-bundle_count=$(grep -cE "^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER = $BUNDLE_ID;" "$PBXPROJ" || true)
-
 ok "DEVELOPMENT_TEAM değiştirildi ($team_count occurrence)"
-ok "PRODUCT_BUNDLE_IDENTIFIER değiştirildi ($bundle_count occurrence)"
+ok "PRODUCT_BUNDLE_IDENTIFIER (ana app) değiştirildi ($main_count occurrence)"
+if [[ -n "$current_test_bundle" ]]; then
+    ok "PRODUCT_BUNDLE_IDENTIFIER (test target) değiştirildi ($test_count occurrence) → $new_test_bundle"
+fi
 
 printf "\n%sSonraki adımlar:%s\n" "$BOLD" "$RESET"
 cat <<EOF
