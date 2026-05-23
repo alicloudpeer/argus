@@ -41,30 +41,60 @@ workflows:
 
       - name: Kod imzalama (ASC env var'larıyla)
         script: |
-          set -ex
+          set -e
           keychain initialize
 
-          echo "=== fetch-signing-files (yeni cert key ile) ==="
+          echo "=== ENV VAR TANI (içerik gizli) ==="
+          echo "Key ID uzunluk: ${#APP_STORE_CONNECT_KEY_IDENTIFIER} (beklenen: 10)"
+          echo "Key ID ilk 4: ${APP_STORE_CONNECT_KEY_IDENTIFIER:0:4}******"
+          echo "Issuer ID uzunluk: ${#APP_STORE_CONNECT_ISSUER_ID} (beklenen: 36)"
+          echo "Issuer ID ilk 8: ${APP_STORE_CONNECT_ISSUER_ID:0:8}***-***"
+          echo "ASC private key uzunluk: ${#APP_STORE_CONNECT_PRIVATE_KEY} chars"
+          echo "ASC private key ilk satır: $(printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" | head -1)"
+          echo "ASC private key son satır: $(printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" | tail -1)"
+          CR_COUNT=$(printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" | tr -cd '\r' | wc -c | tr -d ' ')
+          echo "ASC private key CR (Windows newline) sayısı: $CR_COUNT (beklenen: 0)"
+          echo "Cert private key uzunluk: ${#CERTIFICATE_PRIVATE_KEY} chars"
+
+          echo ""
+          echo "=== CR temizliği (varsa) ==="
+          mkdir -p /tmp/argus_signing
+          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" | tr -d '\r' > /tmp/argus_signing/asc_key.p8
+          printf '%s' "$CERTIFICATE_PRIVATE_KEY" | tr -d '\r' > /tmp/argus_signing/cert_key.pem
+          # Eğer son satırda newline yoksa ekle (PEM bunu istiyor)
+          [ -n "$(tail -c1 /tmp/argus_signing/asc_key.p8)" ] && echo >> /tmp/argus_signing/asc_key.p8
+          [ -n "$(tail -c1 /tmp/argus_signing/cert_key.pem)" ] && echo >> /tmp/argus_signing/cert_key.pem
+          echo "Temizlenmiş ASC key satır sayısı: $(wc -l < /tmp/argus_signing/asc_key.p8)"
+          echo "Temizlenmiş cert key satır sayısı: $(wc -l < /tmp/argus_signing/cert_key.pem)"
+
+          # Codemagic CLI dosyadan okusun
+          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/argus_signing/asc_key.p8)"
+
+          echo ""
+          echo "=== fetch-signing-files ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
+            --certificate-key=@file:/tmp/argus_signing/cert_key.pem \
             --create \
             --verbose
 
-          echo "=== Provisioning profiles indirildi mi? ==="
+          echo "=== Provisioning profiles ==="
           ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "Klasor yok"
 
-          echo "=== Sertifikalar keychain'e ekleniyor ==="
+          echo "=== Keychain add-certificates ==="
           keychain add-certificates
 
-          echo "=== Keychain code signing identities ==="
+          echo "=== Code signing identities ==="
           security find-identity -v -p codesigning || true
 
-          echo "=== use-profiles project'e uyguluyor ==="
+          echo "=== use-profiles ==="
           xcode-project use-profiles --verbose
 
-          echo "=== Sonuc: pbxproj'da PROVISIONING_PROFILE_SPECIFIER kontrol ==="
-          grep -A1 "PROVISIONING_PROFILE_SPECIFIER" "$XCODE_PROJECT/project.pbxproj" | head -20 || true
+          echo "=== Sonuç ==="
+          grep "PROVISIONING_PROFILE_SPECIFIER" "$XCODE_PROJECT/project.pbxproj" | head -10 || true
+
+          # Temizlik
+          rm -rf /tmp/argus_signing
 
       - name: Build numarası güncelle
         script: |
