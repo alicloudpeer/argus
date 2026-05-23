@@ -111,12 +111,14 @@ workflows:
           EXIT=${PIPESTATUS[0]}
           echo ""
           echo "=========================================="
-          echo "=== Swift compile error özeti ==="
+          echo "=== Build log son 200 satır (raw) ==="
           echo "=========================================="
-          grep -E "error: " /tmp/build.log | head -30 || echo "Spesifik error satırı bulunamadı"
+          tail -200 /tmp/build.log
           echo ""
-          echo "=== Failed build commands ==="
-          grep -B1 -A3 "Failed to archive" /tmp/build.log | head -40 || true
+          echo "=========================================="
+          echo "=== Error satırları (geniş filtre) ==="
+          echo "=========================================="
+          grep -E "(❌|✘|error: |Error: |fatal error|FAILED:|Swift Compiler Error)" /tmp/build.log | head -50 || echo "Filter boş"
           exit $EXIT
 
     artifacts:
