@@ -103,10 +103,21 @@ workflows:
 
       - name: Archive ve IPA oluştur
         script: |
+          set -o pipefail
           xcode-project build-ipa --verbose \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "-configuration Release -destination generic/platform=iOS -sdk iphoneos DEVELOPMENT_TEAM=$TEAM_ID"
+            --archive-flags "-configuration Release -destination generic/platform=iOS -sdk iphoneos DEVELOPMENT_TEAM=$TEAM_ID" 2>&1 | tee /tmp/build.log
+          EXIT=${PIPESTATUS[0]}
+          echo ""
+          echo "=========================================="
+          echo "=== Swift compile error özeti ==="
+          echo "=========================================="
+          grep -E "error: " /tmp/build.log | head -30 || echo "Spesifik error satırı bulunamadı"
+          echo ""
+          echo "=== Failed build commands ==="
+          grep -B1 -A3 "Failed to archive" /tmp/build.log | head -40 || true
+          exit $EXIT
 
     artifacts:
       - $CM_BUILD_DIR/build/ios/xcarchive/*.xcarchive
