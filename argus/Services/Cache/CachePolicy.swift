@@ -95,10 +95,11 @@ struct CacheEntry<T> {
 // MARK: - Cache Store Protocol
 
 /// Generic cache store interface
+@MainActor
 protocol CacheStore {
     associatedtype Key: Hashable
     associatedtype Value
-    
+
     func get(_ key: Key) -> Value?
     func set(_ key: Key, value: Value, ttl: TimeInterval)
     func invalidate(_ key: Key)

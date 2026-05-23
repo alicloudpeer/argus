@@ -362,7 +362,8 @@ class TradeBrainExecutor: ObservableObject {
                     continue
                 }
 
-                let dataQualityPenalty: Double = (isBistSym && (await BorsaPyProvider.shared.isCircuitOpen())) ? 0.85 : 1.0
+                let bistCircuitOpen = isBistSym ? await BorsaPyProvider.shared.isCircuitOpen() : false
+                let dataQualityPenalty: Double = (isBistSym && bistCircuitOpen) ? 0.85 : 1.0
 
                 let coreScore = decision.finalScoreCore
                 let pulseScore = decision.finalScorePulse
