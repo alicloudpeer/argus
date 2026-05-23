@@ -49,7 +49,20 @@ actor ConfidenceCalibrationService {
     ]
     
     private init() {
-        initializeBuckets()
+        // Swift 6: actor init is nonisolated; inline initializeBuckets() so we
+        // can directly mutate stored property `buckets` during init without
+        // crossing the isolation boundary. resetCalibration() still calls the
+        // actor-isolated initializeBuckets() method below.
+        for (range, id) in bucketRanges {
+            buckets[id] = ConfidenceBucket(
+                id: id,
+                range: range,
+                totalDecisions: 0,
+                correctDecisions: 0,
+                avgPnL: 0,
+                lastUpdated: Date()
+            )
+        }
     }
     
     private func initializeBuckets() {

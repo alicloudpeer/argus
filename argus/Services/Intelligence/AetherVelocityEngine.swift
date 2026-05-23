@@ -90,7 +90,10 @@ actor AetherVelocityEngine {
         .appendingPathComponent("aether_velocity.json")
 
     private init() {
-        loadFromDisk()
+        // Swift 6: actor init is nonisolated; bridge to actor-isolated
+        // loadFromDisk() via Task. Brief gap before disk data is loaded is
+        // acceptable — all reads are async.
+        Task { await loadFromDisk() }
     }
 
     // MARK: - Public API

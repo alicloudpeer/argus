@@ -55,7 +55,10 @@ actor ModulePerformanceTracker {
     // MARK: - Init
 
     init() {
-        loadFromDisk()
+        // Swift 6: actor init is nonisolated; bridge to actor-isolated
+        // loadFromDisk() via Task. Brief gap before disk data is loaded is
+        // acceptable — all reads are async and will see fresh state.
+        Task { await loadFromDisk() }
     }
 
     // MARK: - Public API

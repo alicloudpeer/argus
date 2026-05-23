@@ -71,7 +71,12 @@ actor OpportunityCostTracker {
     private let persistPath = FileManager.default.documentsURL
         .appendingPathComponent("opportunity_cost.json")
 
-    private init() { loadFromDisk() }
+    private init() {
+        // Swift 6: actor init is nonisolated; bridge to actor-isolated
+        // loadFromDisk() via Task. Brief gap before disk data is loaded is
+        // acceptable — all reads are async.
+        Task { await loadFromDisk() }
+    }
 
     // MARK: - Kayıt
 
