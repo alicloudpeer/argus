@@ -79,7 +79,8 @@ struct EntrySnapshot: Codable {
         // içinde MotorReasoning computed property'leri (atlasScore, hermesScore,
         // aetherScore) varsa fallback olarak kullanılıyor.
         self.orionScore = orionScore
-        let (resolvedAtlas, resolvedHermes) = MainActor.assumeIsolated {
+        // 2026-05-23 hot fix: assumeIsolated → runOnMainSync (iOS 26 runtime guard).
+        let (resolvedAtlas, resolvedHermes) = runOnMainSync {
             (atlasScore ?? grandDecision.atlasScore, hermesScore ?? grandDecision.hermesScore)
         }
         self.atlasScore = resolvedAtlas

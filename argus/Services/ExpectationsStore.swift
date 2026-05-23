@@ -260,9 +260,11 @@ class ExpectationsStore: ObservableObject {
     // Bu fonksiyonlar cached verileri döndürür - thread-safe snapshot
     
     nonisolated func getSurpriseImpactSync(for indicator: EconomicIndicator) -> Double {
-        // MainActor üzerinde çalışan asenkron bir fonksiyon, ama cached değer döndürür
-        // Note: Bu bir snapshot'tır, anlık değer farklı olabilir
-        return MainActor.assumeIsolated {
+        // 2026-05-23 hot fix: iOS 26 / Swift 6 runtime, background thread'den
+        // `MainActor.assumeIsolated` çağrıldığında `_dispatch_assert_queue_fail`
+        // ile patlıyor. `runOnMainSync` köprüsü kullanılıyor — main'deyse
+        // doğrudan, değilse DispatchQueue.main.sync ile.
+        return runOnMainSync {
             self.getSurpriseImpact(for: indicator)
         }
     }
@@ -271,7 +273,8 @@ class ExpectationsStore: ObservableObject {
     /// ama FRED fetch tamamlandığında tahminleri güncellemesi lazım.
     @discardableResult
     nonisolated func matchAndUpdateActualSync(indicator: EconomicIndicator, value: Double, observationDate: Date) -> Bool {
-        return MainActor.assumeIsolated {
+        // 2026-05-23 hot fix: iOS 26 runtime concurrency assert — bkz. yukarıdaki not.
+        return runOnMainSync {
             self.matchAndUpdateActual(indicator: indicator, value: value, observationDate: observationDate)
         }
     }

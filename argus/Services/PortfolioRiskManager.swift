@@ -167,7 +167,8 @@ class PortfolioRiskManager {
         }
 
         // 7. Portföy Drawdown Kontrolü
-        let peakEquity = MainActor.assumeIsolated {
+        // 2026-05-23 hot fix: assumeIsolated → runOnMainSync (iOS 26 runtime guard).
+        let peakEquity = runOnMainSync {
             isBist ? PortfolioStore.shared.peakBistEquity : PortfolioStore.shared.peakGlobalEquity
         }
         if peakEquity > 0 {

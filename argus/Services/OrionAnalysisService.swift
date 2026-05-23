@@ -106,7 +106,8 @@ struct OrionBrain {
         if let learned = ChironRegimeEngine.shared.getLearnedOrionWeights(symbol: symbol) {
             base = (learned.structure, learned.trend, learned.momentum, learned.pattern, learned.volatility)
         } else {
-            let config = MainActor.assumeIsolated {
+            // 2026-05-23 hot fix: assumeIsolated → runOnMainSync (iOS 26 runtime guard).
+            let config = runOnMainSync {
                 OrionV2TuningStore.shared.getConfig(symbol: symbol)
             }
             base = (config.structureWeight, config.trendWeight, config.momentumWeight, config.patternWeight, config.volatilityWeight)

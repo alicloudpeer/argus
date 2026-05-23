@@ -135,7 +135,8 @@ final class PlanRepository: ObservableObject {
 
         // 2026-05-04: hardcoded atlasScore=50 fake'i kaldırıldı.
         let orionScore = decision.orionDecision.netSupport * 100
-        let (atlasScore, hermesScore) = MainActor.assumeIsolated {
+        // 2026-05-23 hot fix: assumeIsolated → runOnMainSync (iOS 26 runtime guard).
+        let (atlasScore, hermesScore) = runOnMainSync {
             (decision.atlasScore, decision.hermesScore)
         }
 
