@@ -55,20 +55,14 @@ workflows:
 
       - name: Archive ve IPA oluştur
         script: |
-          xcodebuild \
-            -project "$XCODE_PROJECT" \
-            -scheme "$XCODE_SCHEME" \
-            -configuration Release \
-            -archivePath /tmp/argus.xcarchive \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            -allowProvisioningUpdates \
-            -resolvePackageDependencies \
-            archive | xcpretty
           xcode-project build-ipa \
-            --archive-path /tmp/argus.xcarchive
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID -resolvePackageDependencies"
 
     artifacts:
-      - /tmp/argus.xcarchive
+      - $CM_BUILD_DIR/build/ios/xcarchive/*.xcarchive
+      - $CM_BUILD_DIR/build/ios/ipa/*.ipa
       - $CM_EXPORT_DIR/*.ipa
 
     publishing:
