@@ -16,8 +16,8 @@ workflows:
         XCODE_SCHEME: "argus"
         BUNDLE_ID: "com.aliburakyilmaz.argus"
         TEAM_ID: "LBS87M74MD"
-      groups:
-        - argus_secrets   # Codemagic → Environment variables → Group adı bu olacak
+      # API anahtarları app-level "Environment variables" üzerinden gelir
+      # (Codemagic API ile otomatik eklendi)
 
     scripts:
       - name: Secrets.xcconfig oluştur
