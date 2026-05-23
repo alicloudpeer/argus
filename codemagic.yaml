@@ -50,7 +50,7 @@ workflows:
           BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID" --platform IOS 2>/dev/null || echo "0")
           agvtool new-version -all $((BUILD_NUMBER + 1))
 
-      - name: Archive
+      - name: Archive ve IPA oluştur
         script: |
           xcode-project use-profiles
           xcodebuild \
@@ -62,27 +62,12 @@ workflows:
             -allowProvisioningUpdates \
             -resolvePackageDependencies \
             archive | xcpretty
-
-      - name: IPA dışa aktar
-        script: |
-          xcodebuild -exportArchive \
-            -archivePath /tmp/argus.xcarchive \
-            -exportPath /tmp/argus_export \
-            -exportOptionsPlist /tmp/ExportOptions.plist \
-            -allowProvisioningUpdates
-        ignore_failure: true   # ExportOptions yoksa bir sonraki adım halleder
-
-      - name: IPA — Codemagic otomatik imzalama
-        script: |
-          # Yukarıdaki adım başarısız olursa Codemagic'in kendi export'unu kullan
-          if [ ! -f /tmp/argus_export/*.ipa ]; then
-            find /tmp/argus.xcarchive -name "*.ipa" 2>/dev/null | head -1 || true
-          fi
+          xcode-project build-ipa \
+            --archive-path /tmp/argus.xcarchive
 
     artifacts:
       - /tmp/argus.xcarchive
-      - /tmp/argus_export/*.ipa
-      - /tmp/**/*.ipa
+      - $CM_EXPORT_DIR/*.ipa
 
     publishing:
       app_store_connect:
