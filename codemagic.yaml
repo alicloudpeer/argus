@@ -100,8 +100,20 @@ workflows:
 
       - name: Build numarası güncelle
         script: |
-          BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID" --platform IOS 2>/dev/null || echo "0")
-          agvtool new-version -all $((BUILD_NUMBER + 1))
+          # Önce ASC'den son TestFlight build number'ı çek; başarısız olursa
+          # (yeni upload daha processing'de olabilir, auth gecikebilir vs.)
+          # Codemagic'in monotonic $BUILD_NUMBER counter'ına fallback yap.
+          # $BUILD_NUMBER Codemagic'in her tetikte +1'lediği ortam değişkeni
+          # (workflow başına unique).
+          ASC_NUMBER=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID" --platform IOS 2>/dev/null || echo "")
+          if [ -n "$ASC_NUMBER" ] && [ "$ASC_NUMBER" -gt 0 ]; then
+            NEW_VERSION=$((ASC_NUMBER + 1))
+            echo "ASC'de en son build: $ASC_NUMBER → yeni version: $NEW_VERSION"
+          else
+            NEW_VERSION=${BUILD_NUMBER:-2}
+            echo "ASC sorgusu boş döndü; Codemagic counter kullanılıyor: $NEW_VERSION"
+          fi
+          agvtool new-version -all "$NEW_VERSION"
 
       - name: Archive ve IPA oluştur
         script: |
