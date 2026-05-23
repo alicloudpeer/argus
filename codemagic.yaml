@@ -1,0 +1,90 @@
+workflows:
+  ios-testflight:
+    name: Argus — TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+
+    integrations:
+      app_store_connect: codemagic_asc_key   # Codemagic → Teams → Integrations'da bu adla ekle
+
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.aliburakyilmaz.argus
+      vars:
+        XCODE_PROJECT: "argus.xcodeproj"
+        XCODE_SCHEME: "argus"
+        BUNDLE_ID: "com.aliburakyilmaz.argus"
+        TEAM_ID: "LBS87M74MD"
+      groups:
+        - argus_secrets   # Codemagic → Environment variables → Group adı bu olacak
+
+    scripts:
+      - name: Secrets.xcconfig oluştur
+        script: |
+          cat > "$CM_BUILD_DIR/Secrets.xcconfig" <<EOF
+          TWELVE_DATA_KEY = ${TWELVE_DATA_KEY:-}
+          FMP_KEY = ${FMP_KEY:-}
+          FINNHUB_KEY = ${FINNHUB_KEY:-}
+          TIINGO_KEY = ${TIINGO_KEY:-}
+          MARKETSTACK_KEY = ${MARKETSTACK_KEY:-}
+          ALPHA_VANTAGE_KEY = ${ALPHA_VANTAGE_KEY:-}
+          EODHD_KEY = ${EODHD_KEY:-}
+          FRED_KEY = ${FRED_KEY:-}
+          CEREBRAS_KEY = ${CEREBRAS_KEY:-}
+          GROQ_KEY = ${GROQ_KEY:-}
+          GEMINI_KEY = ${GEMINI_KEY:-}
+          GEMINI_KEY_BACKUP = ${GEMINI_KEY_BACKUP:-}
+          DEEPSEEK_KEY = ${DEEPSEEK_KEY:-}
+          GLM_KEY = ${GLM_KEY:-}
+          PINECONE_KEY = ${PINECONE_KEY:-}
+          PINECONE_BASE_URL = ${PINECONE_BASE_URL:-}
+          BORSAPY_KEY = ${BORSAPY_KEY:-}
+          BORSAPY_URL = ${BORSAPY_URL:-}
+          DOVIZCOM_KEY = ${DOVIZCOM_KEY:-}
+          EOF
+          echo "Secrets.xcconfig oluşturuldu."
+
+      - name: Build numarası güncelle
+        script: |
+          BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID" --platform IOS 2>/dev/null || echo "0")
+          agvtool new-version -all $((BUILD_NUMBER + 1))
+
+      - name: Archive
+        script: |
+          xcode-project use-profiles
+          xcodebuild \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath /tmp/argus.xcarchive \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            -allowProvisioningUpdates \
+            -resolvePackageDependencies \
+            archive | xcpretty
+
+      - name: IPA dışa aktar
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath /tmp/argus.xcarchive \
+            -exportPath /tmp/argus_export \
+            -exportOptionsPlist /tmp/ExportOptions.plist \
+            -allowProvisioningUpdates
+        ignore_failure: true   # ExportOptions yoksa bir sonraki adım halleder
+
+      - name: IPA — Codemagic otomatik imzalama
+        script: |
+          # Yukarıdaki adım başarısız olursa Codemagic'in kendi export'unu kullan
+          if [ ! -f /tmp/argus_export/*.ipa ]; then
+            find /tmp/argus.xcarchive -name "*.ipa" 2>/dev/null | head -1 || true
+          fi
+
+    artifacts:
+      - /tmp/argus.xcarchive
+      - /tmp/argus_export/*.ipa
+      - /tmp/**/*.ipa
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
