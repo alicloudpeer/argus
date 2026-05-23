@@ -1163,8 +1163,9 @@ class TradeBrainExecutor: ObservableObject {
                     category: "TRADEBRAIN"
                 )
             } else {
+                let lastError = await ExecutionLogger.shared.lastTradeError ?? "?"
                 ArgusLogger.error(
-                    "TradeBrainSafeAllocation: BUY RED \(order.symbol) — \(ExecutionLogger.shared.lastTradeError ?? "?")",
+                    "TradeBrainSafeAllocation: BUY RED \(order.symbol) — \(lastError)",
                     category: "TRADEBRAIN"
                 )
             }
